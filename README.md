@@ -1,4 +1,4 @@
-# openimis-be-api_fhir_r4_py
+# openIMIS Backend FHIR R4 API reference module
 
 | Note |
 | --- |
