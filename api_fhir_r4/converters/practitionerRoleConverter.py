@@ -1,4 +1,4 @@
-from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, LocationConverter, ReferenceConverterMixin
+from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from claim.models import ClaimAdmin
 from api_fhir_r4.models import PractitionerRole

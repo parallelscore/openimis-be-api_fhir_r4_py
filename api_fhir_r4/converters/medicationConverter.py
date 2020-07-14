@@ -3,7 +3,6 @@ from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, Refere
 from api_fhir_r4.models import Medication as FHIRMedication, Extension, Money, CodeableConcept, UsageContext, Coding
 from django.utils.translation import gettext
 from api_fhir_r4.utils import DbManagerUtils
-from api_fhir_r4.configurations import GeneralConfiguration
 import core
 
 
@@ -328,4 +327,3 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if not cls.valid_condition(serv_care_type is None,
                                    gettext('Missing activity definition `serv care type` attribute'), errors):
             imis_medication.care_type = serv_care_type
-

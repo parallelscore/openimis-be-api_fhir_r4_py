@@ -114,4 +114,3 @@ class FHIRApiHealthServicePermissions(FHIRApiPermissions):
     permissions_put = []
     permissions_patch = []
     permissions_delete = []
-

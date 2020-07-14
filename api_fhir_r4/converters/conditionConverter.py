@@ -1,6 +1,5 @@
 from medical.models import Diagnosis
-from insuree.models import Insuree
-from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin, PatientConverter
+from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.models.condition import Condition as FHIRCondition
 from api_fhir_r4.models import Reference
 from django.utils.translation import gettext
@@ -98,4 +97,3 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         reference = Reference()
         reference.type = "Patient"
         fhir_condition.subject = reference
-

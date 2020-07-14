@@ -3,7 +3,7 @@ import uuid
 from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
 from api_fhir_r4.converters import ClaimResponseConverter, CommunicationRequestConverter
 from api_fhir_r4.models import ClaimResponse, ClaimResponsePayment, Money, ClaimResponseError, ClaimResponseItem, \
-    ClaimResponseItemAdjudication, ClaimResponseProcessNote, CommunicationRequest
+    ClaimResponseItemAdjudication, ClaimResponseProcessNote
 from api_fhir_r4.tests import GenericTestMixin
 from api_fhir_r4.utils import TimeUtils
 from claim.models import Claim, Feedback, ClaimItem, ClaimService
@@ -178,7 +178,6 @@ class ClaimResponseTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_STATUS, fhir_obj.outcome.coding[0].code)
         self.assertEqual(self._TEST_ADJUSTMENT, fhir_obj.payment.adjustmentReason.text)
         self.assertEqual(self._TEST_DATE_PROCESSED, fhir_obj.payment.date)
-        #self.assertEqual(self._TEST_APPROVED, fhir_obj.totalBenefit.value)
         self.assertEqual(self._TEST_REJECTION_REASON, fhir_obj.error[0].code.coding[0].code)
         self.assertEqual(str(self._TEST_FEEDBACK_UUID), CommunicationRequestConverter.get_resource_id_from_reference(
             fhir_obj.communicationRequest[0]))

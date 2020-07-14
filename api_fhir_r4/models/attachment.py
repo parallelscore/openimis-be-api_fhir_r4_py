@@ -11,4 +11,3 @@ class Attachment(Element):
     hash = Property('hash', str)  # Hash of the data (sha-1, base64ed
     title = Property('title', str)
     creation = Property('creation', 'FHIRDate')
-

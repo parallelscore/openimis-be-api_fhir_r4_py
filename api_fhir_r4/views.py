@@ -20,8 +20,7 @@ from api_fhir_r4.paginations import FhirBundleResultsSetPagination
 from api_fhir_r4.permissions import FHIRApiPermissions
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
 from api_fhir_r4.serializers import PatientSerializer, LocationSerializer, PractitionerRoleSerializer, \
-    PractitionerSerializer, ClaimSerializer, CoverageEligibilityRequestSerializer, \
-    PolicyCoverageEligibilityRequestSerializer, ClaimResponseSerializer, CommunicationRequestSerializer, \
+    PractitionerSerializer, ClaimSerializer, ClaimResponseSerializer, CommunicationRequestSerializer, \
     MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer
 from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
 

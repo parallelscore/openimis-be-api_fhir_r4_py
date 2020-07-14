@@ -5,7 +5,7 @@ from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig,
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.models import HealthcareService as FHIRHealthcareService, ContactPointSystem, ContactPointUse
-from api_fhir_r4.models.address import AddressUse, AddressType
+from api_fhir_r4.models.address import AddressType
 from api_fhir_r4.models.imisModelEnums import ImisHfLevel
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 

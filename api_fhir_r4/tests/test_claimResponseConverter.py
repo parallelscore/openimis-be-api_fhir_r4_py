@@ -17,7 +17,6 @@ class ClaimResponseConverterTestCase(ClaimResponseTestMixin):
         if self._test_claim_response_json_representation[-1:] == "\n":
             self._test_claim_response_json_representation = self._test_claim_response_json_representation[:-1]
 
-
     @mock.patch('claim.models.ClaimItem.objects')
     @mock.patch('claim.models.ClaimService.objects')
     def test_to_fhir_obj(self, cs_mock, ci_mock):

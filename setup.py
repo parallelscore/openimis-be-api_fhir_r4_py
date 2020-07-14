@@ -17,8 +17,8 @@ setup(
     long_description=README,
     long_description_content_type='text/markdown',
     url='https://openimis.org/',
-    author='',
-    author_email='',
+    author='Faris Ahmetasevic',
+    author_email='faris.ahmetasevic@hotmail.com',
     install_requires=[
         'django',
         'django-db-signals',

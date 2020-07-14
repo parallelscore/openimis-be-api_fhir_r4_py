@@ -212,5 +212,3 @@ class Contract(DomainResource):
     rule = Property('rule', 'ContractRule', count_max='*')
     legallyBindingAttachment = Property('legallyBindingAttachment', 'Attachment')
     legallyBindingReference = Property('legallyBindingReference', 'Reference')  # referencing 'Composition', ...
-
-

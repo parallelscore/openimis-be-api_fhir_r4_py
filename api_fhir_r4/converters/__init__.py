@@ -3,7 +3,6 @@ from abc import ABC
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from api_fhir_r4.models import CodeableConcept, ContactPoint, Address, Coding, Identifier, IdentifierUse
-from api_fhir_r4.configurations import GeneralConfiguration
 
 
 class BaseFHIRConverter(ABC):

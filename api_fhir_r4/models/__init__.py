@@ -7,6 +7,7 @@ from api_fhir_r4.exceptions import PropertyTypeError, PropertyError, PropertyMax
     UnsupportedFormatError, FHIRException
 from django.utils.translation import gettext
 
+
 SUPPORTED_FORMATS = ['json']
 
 
@@ -311,6 +312,3 @@ from api_fhir_r4.models.contactDetail import ContactDetail
 from api_fhir_r4.models.relatedArtifact import RelatedArtifact, RelatedArtifactType
 from api_fhir_r4.models.healthcareService import HealthcareNotAvailable, HealthcareService, \
     HealthcareServiceAvailableTime, HealthcareServiceEligibility, DaysOfWeek
-
-
-

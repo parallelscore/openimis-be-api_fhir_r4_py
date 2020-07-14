@@ -1,6 +1,5 @@
 from django.utils.translation import gettext
-from insuree.models import Insuree, Gender, Education, Profession, Family
-from location.models import Location
+from insuree.models import Insuree, Gender
 
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
@@ -340,7 +339,3 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         if imis_insuree.health_facility is not None:
             fhir_patient.generalPractitioner = [HealthcareServiceConverter.\
                 build_fhir_resource_reference(imis_insuree.health_facility)]
-
-
-
-
