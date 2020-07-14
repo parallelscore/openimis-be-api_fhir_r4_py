@@ -45,4 +45,4 @@ class UnsupportedFormatError(Exception):
         super(UnsupportedFormatError, self).__init__(message)
 
 
-from api_fhir_R4.exceptions.fhir_api_exception_handler import fhir_api_exception_handler
+from api_fhir_r4.exceptions.fhir_api_exception_handler import fhir_api_exception_handler

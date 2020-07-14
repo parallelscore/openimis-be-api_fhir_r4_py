@@ -1,17 +1,17 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api_fhir_R4.converters import LocationConverter
-from api_fhir_R4.models import PractitionerRole
-from api_fhir_R4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiUpdateTestMixin, \
+from api_fhir_r4.converters import LocationConverter
+from api_fhir_r4.models import PractitionerRole
+from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiUpdateTestMixin, \
     FhirApiCreateTestMixin, LocationTestMixin, PractitionerTestMixin, FhirApiDeleteTestMixin
-from api_fhir_R4.utils import TimeUtils
+from api_fhir_r4.utils import TimeUtils
 
 
 class PractitionerRoleAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin,
                                FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, APITestCase):
 
-    base_url = '/api_fhir_R4/PractitionerRole/'
+    base_url = '/api_fhir_r4/PractitionerRole/'
     _test_json_path = "/test/test_practitionerRole.json"
     _TEST_LOCATION_CODE = "12345678"
     _TEST_CLAIM_ADMIN_CODE = "1234abcd"

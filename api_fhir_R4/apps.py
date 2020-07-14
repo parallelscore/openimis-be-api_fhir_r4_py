@@ -2,7 +2,7 @@ import logging
 
 from django.apps import AppConfig
 
-from api_fhir_R4.configurations import ModuleConfiguration
+from api_fhir_r4.configurations import ModuleConfiguration
 
 logger = logging.getLogger(__name__)
 

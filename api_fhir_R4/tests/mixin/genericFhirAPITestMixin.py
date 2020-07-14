@@ -4,10 +4,10 @@ import os
 from core.models import User
 from rest_framework import status
 
-from api_fhir_R4.configurations import R4IdentifierConfig
-from api_fhir_R4.converters import BaseFHIRConverter
-from api_fhir_R4.models import FHIRBaseObject, Bundle
-from api_fhir_R4.utils import DbManagerUtils
+from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.converters import BaseFHIRConverter
+from api_fhir_r4.models import FHIRBaseObject, Bundle
+from api_fhir_r4.utils import DbManagerUtils
 
 
 class GenericFhirAPITestMixin(object):

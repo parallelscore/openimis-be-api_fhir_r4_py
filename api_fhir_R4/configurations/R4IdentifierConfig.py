@@ -1,4 +1,4 @@
-from api_fhir_R4.configurations import IdentifierConfiguration
+from api_fhir_r4.configurations import IdentifierConfiguration
 
 
 class R4IdentifierConfig(IdentifierConfiguration):

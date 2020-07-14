@@ -3,18 +3,18 @@ from django.db.models import Subquery
 from medical.models import Item, Service
 import core
 
-from api_fhir_R4.configurations import R4ClaimConfig
-from api_fhir_R4.converters import BaseFHIRConverter, CommunicationRequestConverter
-from api_fhir_R4.converters.claimConverter import ClaimConverter
-from api_fhir_R4.converters.patientConverter import PatientConverter
-from api_fhir_R4.converters.healthcareServiceConverter import HealthcareServiceConverter
-from api_fhir_R4.converters.activityDefinitionConverter import ActivityDefinitionConverter
-from api_fhir_R4.converters.medicationConverter import MedicationConverter
-from api_fhir_R4.exceptions import FHIRRequestProcessException
-from api_fhir_R4.models import ClaimResponse, Money, ClaimResponsePayment, ClaimResponseError, ClaimResponseItem, Claim, \
+from api_fhir_r4.configurations import R4ClaimConfig
+from api_fhir_r4.converters import BaseFHIRConverter, CommunicationRequestConverter
+from api_fhir_r4.converters.claimConverter import ClaimConverter
+from api_fhir_r4.converters.patientConverter import PatientConverter
+from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
+from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
+from api_fhir_r4.converters.medicationConverter import MedicationConverter
+from api_fhir_r4.exceptions import FHIRRequestProcessException
+from api_fhir_r4.models import ClaimResponse, Money, ClaimResponsePayment, ClaimResponseError, ClaimResponseItem, Claim, \
     ClaimResponseItemAdjudication, ClaimResponseProcessNote, ClaimResponseAddItem, ClaimResponseTotal, CodeableConcept, \
     Coding, Reference, Extension
-from api_fhir_R4.utils import TimeUtils, FhirUtils
+from api_fhir_r4.utils import TimeUtils, FhirUtils
 
 
 class ClaimResponseConverter(BaseFHIRConverter):

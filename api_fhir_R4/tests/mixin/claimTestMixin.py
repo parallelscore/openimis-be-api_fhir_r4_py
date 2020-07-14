@@ -2,12 +2,12 @@ from claim.models import Claim, ClaimItem, ClaimService
 from medical.models import Diagnosis
 from medical.models import Item, Service
 
-from api_fhir_R4.configurations import R4IdentifierConfig, R4ClaimConfig
-from api_fhir_R4.converters import PatientConverter, LocationConverter, PractitionerConverter
-from api_fhir_R4.converters.claimConverter import ClaimConverter
-from api_fhir_R4.models import Claim as FHIRClaim, ImisClaimIcdTypes, Period, Money
-from api_fhir_R4.tests import GenericTestMixin, PatientTestMixin, LocationTestMixin, PractitionerTestMixin
-from api_fhir_R4.utils import TimeUtils
+from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
+from api_fhir_r4.converters import PatientConverter, LocationConverter, PractitionerConverter
+from api_fhir_r4.converters.claimConverter import ClaimConverter
+from api_fhir_r4.models import Claim as FHIRClaim, ImisClaimIcdTypes, Period, Money
+from api_fhir_r4.tests import GenericTestMixin, PatientTestMixin, LocationTestMixin, PractitionerTestMixin
+from api_fhir_r4.utils import TimeUtils
 
 
 class ClaimTestMixin(GenericTestMixin):

@@ -3,7 +3,7 @@ from unittest import TestCase
 import core
 import dateutil
 
-from api_fhir_R4.utils import TimeUtils
+from api_fhir_r4.utils import TimeUtils
 
 
 class TimeUtilsTestCase(TestCase):

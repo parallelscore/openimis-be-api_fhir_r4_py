@@ -1,8 +1,8 @@
 from policy.services import ByInsureeRequest
 
-from api_fhir_R4.configurations import R4CoverageEligibilityConfiguration as Config
-from api_fhir_R4.converters import BaseFHIRConverter, PatientConverter, ContractConverter
-from api_fhir_R4.models import CoverageEligibilityResponse as FHIREligibilityResponse, \
+from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
+from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter, ContractConverter
+from api_fhir_r4.models import CoverageEligibilityResponse as FHIREligibilityResponse, \
     CoverageEligibilityResponseInsuranceItem, CoverageEligibilityResponseInsurance, \
     CoverageEligibilityResponseInsuranceItemBenefit, Money, Reference, Identifier
 

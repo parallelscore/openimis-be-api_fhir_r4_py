@@ -1,9 +1,9 @@
 from location.models import HealthFacility
 
-from api_fhir_R4.configurations import R4IdentifierConfig, R4LocationConfig
-from api_fhir_R4.converters import LocationConverter
-from api_fhir_R4.models import ContactPointSystem, AddressType, AddressUse, ContactPointUse, Location
-from api_fhir_R4.tests import GenericTestMixin
+from api_fhir_r4.configurations import R4IdentifierConfig, R4LocationConfig
+from api_fhir_r4.converters import LocationConverter
+from api_fhir_r4.models import ContactPointSystem, AddressType, AddressUse, ContactPointUse, Location
+from api_fhir_r4.tests import GenericTestMixin
 
 
 class LocationTestMixin(GenericTestMixin):

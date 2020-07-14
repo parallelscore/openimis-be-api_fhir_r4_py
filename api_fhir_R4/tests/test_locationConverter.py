@@ -1,8 +1,8 @@
 import os
 
-from api_fhir_R4.converters.locationConverter import LocationConverter
-from api_fhir_R4.models import FHIRBaseObject
-from api_fhir_R4.tests import LocationTestMixin
+from api_fhir_r4.converters.locationConverter import LocationConverter
+from api_fhir_r4.models import FHIRBaseObject
+from api_fhir_r4.tests import LocationTestMixin
 
 
 class LocationConverterTestCase(LocationTestMixin):

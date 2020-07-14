@@ -2,12 +2,12 @@ from uuid import UUID
 
 from insuree.models import Gender, Insuree
 
-from api_fhir_R4.configurations import R4IdentifierConfig, R4MaritalConfig
-from api_fhir_R4.converters import PatientConverter
-from api_fhir_R4.models import HumanName, NameUse, Identifier, AdministrativeGender, ContactPoint, ContactPointSystem, \
+from api_fhir_r4.configurations import R4IdentifierConfig, R4MaritalConfig
+from api_fhir_r4.converters import PatientConverter
+from api_fhir_r4.models import HumanName, NameUse, Identifier, AdministrativeGender, ContactPoint, ContactPointSystem, \
     Address, AddressType, ImisMaritalStatus, Patient, ContactPointUse, AddressUse
-from api_fhir_R4.tests import GenericTestMixin
-from api_fhir_R4.utils import TimeUtils
+from api_fhir_r4.tests import GenericTestMixin
+from api_fhir_r4.utils import TimeUtils
 
 
 class PatientTestMixin(GenericTestMixin):

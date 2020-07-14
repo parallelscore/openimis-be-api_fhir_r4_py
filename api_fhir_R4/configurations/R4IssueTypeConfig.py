@@ -1,4 +1,4 @@
-from api_fhir_R4.configurations import IssueTypeConfiguration
+from api_fhir_r4.configurations import IssueTypeConfiguration
 
 
 class R4IssueTypeConfig(IssueTypeConfiguration):

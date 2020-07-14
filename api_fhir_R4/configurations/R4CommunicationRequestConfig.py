@@ -1,4 +1,4 @@
-from api_fhir_R4.configurations import CommunicationRequestConfiguration
+from api_fhir_r4.configurations import CommunicationRequestConfiguration
 
 
 class R4CommunicationRequestConfig(CommunicationRequestConfiguration):

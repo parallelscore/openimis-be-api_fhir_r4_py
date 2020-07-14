@@ -1,7 +1,7 @@
-from api_fhir_R4.configurations import BaseApiFhirConfiguration, R4IdentifierConfig, \
+from api_fhir_r4.configurations import BaseApiFhirConfiguration, R4IdentifierConfig, \
     R4LocationConfig, R4MaritalConfig, R4IssueTypeConfig, R4ClaimConfig, R4CoverageEligibilityConfiguration, \
     R4CommunicationRequestConfig
-from api_fhir_R4.configurations.R4CoverageConfig import R4CoverageConfig
+from api_fhir_r4.configurations.R4CoverageConfig import R4CoverageConfig
 
 
 class R4ApiFhirConfig(BaseApiFhirConfiguration):

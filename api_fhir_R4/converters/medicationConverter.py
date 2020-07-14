@@ -1,9 +1,9 @@
 from medical.models import Item
-from api_fhir_R4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_R4.models import Medication as FHIRMedication, Extension, Money, CodeableConcept, UsageContext, Coding
+from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.models import Medication as FHIRMedication, Extension, Money, CodeableConcept, UsageContext, Coding
 from django.utils.translation import gettext
-from api_fhir_R4.utils import DbManagerUtils
-from api_fhir_R4.configurations import GeneralConfiguration
+from api_fhir_r4.utils import DbManagerUtils
+from api_fhir_r4.configurations import GeneralConfiguration
 import core
 
 

@@ -1,6 +1,6 @@
-from api_fhir_R4.models import Contract
+from api_fhir_r4.models import Contract
 
-from api_fhir_R4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 
 
 class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):

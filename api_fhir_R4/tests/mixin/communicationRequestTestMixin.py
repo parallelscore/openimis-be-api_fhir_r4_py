@@ -1,11 +1,11 @@
 from claim.models import Feedback
 
-from api_fhir_R4.configurations import R4IdentifierConfig
-from api_fhir_R4.converters import CommunicationRequestConverter as Converter
-from api_fhir_R4.configurations import R4CommunicationRequestConfig as Config
-from api_fhir_R4.models import CommunicationRequest
-from api_fhir_R4.tests import GenericTestMixin
-from api_fhir_R4.utils import TimeUtils
+from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.converters import CommunicationRequestConverter as Converter
+from api_fhir_r4.configurations import R4CommunicationRequestConfig as Config
+from api_fhir_r4.models import CommunicationRequest
+from api_fhir_r4.tests import GenericTestMixin
+from api_fhir_r4.utils import TimeUtils
 
 
 class CommunicationRequestTestMixin(GenericTestMixin):

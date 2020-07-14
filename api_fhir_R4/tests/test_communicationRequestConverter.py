@@ -1,8 +1,8 @@
 import os
 
-from api_fhir_R4.converters import CommunicationRequestConverter
-from api_fhir_R4.models import FHIRBaseObject
-from api_fhir_R4.tests import CommunicationRequestTestMixin
+from api_fhir_r4.converters import CommunicationRequestConverter
+from api_fhir_r4.models import FHIRBaseObject
+from api_fhir_r4.tests import CommunicationRequestTestMixin
 
 
 class CommunicationRequestConverterTestCase(CommunicationRequestTestMixin):

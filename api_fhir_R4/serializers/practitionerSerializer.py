@@ -2,9 +2,9 @@ import copy
 
 from claim.models import ClaimAdmin
 
-from api_fhir_R4.converters import PractitionerConverter
-from api_fhir_R4.exceptions import FHIRException
-from api_fhir_R4.serializers import BaseFHIRSerializer
+from api_fhir_r4.converters import PractitionerConverter
+from api_fhir_r4.exceptions import FHIRException
+from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
 class PractitionerSerializer(BaseFHIRSerializer):

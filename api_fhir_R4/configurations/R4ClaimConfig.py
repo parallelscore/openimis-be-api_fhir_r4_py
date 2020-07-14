@@ -1,4 +1,4 @@
-from api_fhir_R4.configurations import ClaimConfiguration
+from api_fhir_r4.configurations import ClaimConfiguration
 
 
 class R4ClaimConfig(ClaimConfiguration):

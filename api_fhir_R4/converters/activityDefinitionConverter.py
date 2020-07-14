@@ -1,8 +1,8 @@
 from medical.models import Service
-from api_fhir_R4.models import ActivityDefinition, Extension, Money, UsageContext, CodeableConcept, Coding
-from api_fhir_R4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.models import ActivityDefinition, Extension, Money, UsageContext, CodeableConcept, Coding
+from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
 from django.utils.translation import gettext
-from api_fhir_R4.utils import DbManagerUtils, TimeUtils
+from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 import core
 
 

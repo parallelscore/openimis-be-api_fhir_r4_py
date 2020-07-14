@@ -1,9 +1,9 @@
 import os
 from unittest import mock
 
-from api_fhir_R4.converters import ClaimResponseConverter
-from api_fhir_R4.models import FHIRBaseObject
-from api_fhir_R4.tests import ClaimResponseTestMixin
+from api_fhir_r4.converters import ClaimResponseConverter
+from api_fhir_r4.models import FHIRBaseObject
+from api_fhir_r4.tests import ClaimResponseTestMixin
 
 
 class ClaimResponseConverterTestCase(ClaimResponseTestMixin):

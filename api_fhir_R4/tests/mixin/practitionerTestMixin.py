@@ -1,11 +1,11 @@
 from claim.models import ClaimAdmin
 
-from api_fhir_R4.configurations import R4IdentifierConfig
-from api_fhir_R4.converters import PractitionerConverter
-from api_fhir_R4.models import HumanName, NameUse, Identifier, ContactPoint, ContactPointSystem, Practitioner, \
+from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.converters import PractitionerConverter
+from api_fhir_r4.models import HumanName, NameUse, Identifier, ContactPoint, ContactPointSystem, Practitioner, \
     ContactPointUse
-from api_fhir_R4.tests import GenericTestMixin
-from api_fhir_R4.utils import TimeUtils
+from api_fhir_r4.tests import GenericTestMixin
+from api_fhir_r4.utils import TimeUtils
 
 
 class PractitionerTestMixin(GenericTestMixin):

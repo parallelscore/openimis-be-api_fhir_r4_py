@@ -1,5 +1,5 @@
-from api_fhir_R4.models import PractitionerRole, Reference
-from api_fhir_R4.tests import GenericTestMixin, PractitionerTestMixin, LocationTestMixin
+from api_fhir_r4.models import PractitionerRole, Reference
+from api_fhir_r4.tests import GenericTestMixin, PractitionerTestMixin, LocationTestMixin
 
 
 class PractitionerRoleTestMixin(GenericTestMixin):

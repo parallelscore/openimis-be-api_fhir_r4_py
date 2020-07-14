@@ -1,10 +1,10 @@
 import os
 from unittest import mock
 
-from api_fhir_R4.converters import LocationConverter, PatientConverter, PractitionerConverter
-from api_fhir_R4.converters.claimConverter import ClaimConverter
-from api_fhir_R4.models import FHIRBaseObject
-from api_fhir_R4.tests import ClaimTestMixin
+from api_fhir_r4.converters import LocationConverter, PatientConverter, PractitionerConverter
+from api_fhir_r4.converters.claimConverter import ClaimConverter
+from api_fhir_r4.models import FHIRBaseObject
+from api_fhir_r4.tests import ClaimTestMixin
 
 
 class ClaimConverterTestCase(ClaimTestMixin):

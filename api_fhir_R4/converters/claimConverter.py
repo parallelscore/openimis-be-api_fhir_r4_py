@@ -6,17 +6,17 @@ from policy.models import Policy
 from django.utils.translation import gettext
 import core
 
-from api_fhir_R4.configurations import R4IdentifierConfig, R4ClaimConfig
-from api_fhir_R4.converters import BaseFHIRConverter, LocationConverter, PatientConverter, PractitionerConverter, \
+from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
+from api_fhir_r4.converters import BaseFHIRConverter, LocationConverter, PatientConverter, PractitionerConverter, \
     ReferenceConverterMixin, PractitionerRoleConverter
-from api_fhir_R4.converters.conditionConverter import ConditionConverter
-from api_fhir_R4.converters.medicationConverter import MedicationConverter
-from api_fhir_R4.converters.healthcareServiceConverter import HealthcareServiceConverter
-from api_fhir_R4.converters.activityDefinitionConverter import ActivityDefinitionConverter
-from api_fhir_R4.converters.coverageConventer import CoverageConventer
-from api_fhir_R4.models import Claim as FHIRClaim, ClaimItem as FHIRClaimItem, Period, ClaimDiagnosis, Money, \
+from api_fhir_r4.converters.conditionConverter import ConditionConverter
+from api_fhir_r4.converters.medicationConverter import MedicationConverter
+from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
+from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
+from api_fhir_r4.converters.coverageConventer import CoverageConventer
+from api_fhir_r4.models import Claim as FHIRClaim, ClaimItem as FHIRClaimItem, Period, ClaimDiagnosis, Money, \
     ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Condition, Extension, Reference, CodeableConcept, ClaimInsurance
-from api_fhir_R4.utils import TimeUtils, FhirUtils, DbManagerUtils
+from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
 
 
 class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):

@@ -1,8 +1,8 @@
 from coverage.annotate import os
 
-from api_fhir_R4.converters import CoverageEligibilityRequestConverter
-from api_fhir_R4.models import FHIRBaseObject
-from api_fhir_R4.tests import CoverageEligibilityRequestTestMixin
+from api_fhir_r4.converters import CoverageEligibilityRequestConverter
+from api_fhir_r4.models import FHIRBaseObject
+from api_fhir_r4.tests import CoverageEligibilityRequestTestMixin
 
 
 class CoverageEligibilityRequestConverterTestCase(CoverageEligibilityRequestTestMixin):

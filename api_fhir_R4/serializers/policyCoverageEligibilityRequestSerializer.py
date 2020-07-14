@@ -2,8 +2,8 @@ import logging
 
 from policy.services import ByInsureeRequest, ByInsureeService, ByInsureeResponse
 
-from api_fhir_R4.converters import PolicyCoverageEligibilityRequestConverter
-from api_fhir_R4.serializers import BaseFHIRSerializer
+from api_fhir_r4.converters import PolicyCoverageEligibilityRequestConverter
+from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
 class PolicyCoverageEligibilityRequestSerializer(BaseFHIRSerializer):

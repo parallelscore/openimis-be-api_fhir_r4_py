@@ -2,8 +2,8 @@ import copy
 
 from location.models import Location
 
-from api_fhir_R4.converters import LocationConverter
-from api_fhir_R4.serializers import BaseFHIRSerializer
+from api_fhir_r4.converters import LocationConverter
+from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
 class LocationSerializer(BaseFHIRSerializer):

@@ -1,10 +1,10 @@
-from api_fhir_R4.configurations import R4CoverageConfig
-from api_fhir_R4.converters import BaseFHIRConverter, PractitionerConverter, ReferenceConverterMixin
-from api_fhir_R4.models import Coverage, Reference, Period, Contract, Money, Extension, ContractTermAssetValuedItem, \
+from api_fhir_r4.configurations import R4CoverageConfig
+from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ReferenceConverterMixin
+from api_fhir_r4.models import Coverage, Reference, Period, Contract, Money, Extension, ContractTermAssetValuedItem, \
     ContractTermOfferParty, CoverageClass
 from product.models import ProductItem, ProductService
 from policy.models import Policy
-from api_fhir_R4.utils import DbManagerUtils
+from api_fhir_r4.utils import DbManagerUtils
 
 
 class CoverageConventer(BaseFHIRConverter, ReferenceConverterMixin):

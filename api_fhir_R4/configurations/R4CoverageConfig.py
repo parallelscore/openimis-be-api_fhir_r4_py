@@ -1,4 +1,4 @@
-from api_fhir_R4.configurations import CoverageConfiguration
+from api_fhir_r4.configurations import CoverageConfiguration
 
 
 class R4CoverageConfig(CoverageConfiguration):

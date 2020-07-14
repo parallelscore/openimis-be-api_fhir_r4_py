@@ -1,11 +1,11 @@
 import uuid
 
-from api_fhir_R4.configurations import R4IdentifierConfig, R4ClaimConfig
-from api_fhir_R4.converters import ClaimResponseConverter, CommunicationRequestConverter
-from api_fhir_R4.models import ClaimResponse, ClaimResponsePayment, Money, ClaimResponseError, ClaimResponseItem, \
+from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
+from api_fhir_r4.converters import ClaimResponseConverter, CommunicationRequestConverter
+from api_fhir_r4.models import ClaimResponse, ClaimResponsePayment, Money, ClaimResponseError, ClaimResponseItem, \
     ClaimResponseItemAdjudication, ClaimResponseProcessNote, CommunicationRequest
-from api_fhir_R4.tests import GenericTestMixin
-from api_fhir_R4.utils import TimeUtils
+from api_fhir_r4.tests import GenericTestMixin
+from api_fhir_r4.utils import TimeUtils
 from claim.models import Claim, Feedback, ClaimItem, ClaimService
 from medical.models import Item, Service
 

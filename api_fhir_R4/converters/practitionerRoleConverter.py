@@ -1,8 +1,8 @@
-from api_fhir_R4.converters import BaseFHIRConverter, PractitionerConverter, LocationConverter, ReferenceConverterMixin
-from api_fhir_R4.converters.healthcareServiceConverter import HealthcareServiceConverter
+from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, LocationConverter, ReferenceConverterMixin
+from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from claim.models import ClaimAdmin
-from api_fhir_R4.models import PractitionerRole
-from api_fhir_R4.utils import DbManagerUtils
+from api_fhir_r4.models import PractitionerRole
+from api_fhir_r4.utils import DbManagerUtils
 
 
 class PractitionerRoleConverter(BaseFHIRConverter, ReferenceConverterMixin):

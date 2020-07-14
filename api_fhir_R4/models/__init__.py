@@ -3,7 +3,7 @@ import json
 import sys
 
 import math
-from api_fhir_R4.exceptions import PropertyTypeError, PropertyError, PropertyMaxSizeError, InvalidAttributeError, \
+from api_fhir_r4.exceptions import PropertyTypeError, PropertyError, PropertyMaxSizeError, InvalidAttributeError, \
     UnsupportedFormatError, FHIRException
 from django.utils.translation import gettext
 
@@ -239,77 +239,77 @@ class FHIRBaseObject(object):
         return retval
 
 
-from api_fhir_R4.models.element import Element
-from api_fhir_R4.models.quantity import Quantity
-from api_fhir_R4.models.resource import Resource
-from api_fhir_R4.models.address import Address, AddressType, AddressUse
-from api_fhir_R4.models.administrative import AdministrativeGender
-from api_fhir_R4.models.age import Age
-from api_fhir_R4.models.annotation import Annotation
-from api_fhir_R4.models.attachment import Attachment
-from api_fhir_R4.models.backboneElement import BackboneElement
-from api_fhir_R4.models.coding import Coding
-from api_fhir_R4.models.codeableConcept import CodeableConcept
-from api_fhir_R4.models.contactPoint import ContactPoint, ContactPointSystem, ContactPointUse
-from api_fhir_R4.models.count import Count
-from api_fhir_R4.models.distance import Distance
-from api_fhir_R4.models.domainResource import DomainResource
-from api_fhir_R4.models.duration import Duration
-from api_fhir_R4.models.extension import Extension
-from api_fhir_R4.models.fhirdate import FHIRDate
-from api_fhir_R4.models.humanName import HumanName, NameUse
-from api_fhir_R4.models.identifier import Identifier, IdentifierUse
-from api_fhir_R4.models.imisModelEnums import ImisMaritalStatus, ImisClaimIcdTypes, ImisLocationType, ImisHfLevel
-from api_fhir_R4.models.location import LocationPosition, LocationMode, Location, LocationStatus, \
+from api_fhir_r4.models.element import Element
+from api_fhir_r4.models.quantity import Quantity
+from api_fhir_r4.models.resource import Resource
+from api_fhir_r4.models.address import Address, AddressType, AddressUse
+from api_fhir_r4.models.administrative import AdministrativeGender
+from api_fhir_r4.models.age import Age
+from api_fhir_r4.models.annotation import Annotation
+from api_fhir_r4.models.attachment import Attachment
+from api_fhir_r4.models.backboneElement import BackboneElement
+from api_fhir_r4.models.coding import Coding
+from api_fhir_r4.models.codeableConcept import CodeableConcept
+from api_fhir_r4.models.contactPoint import ContactPoint, ContactPointSystem, ContactPointUse
+from api_fhir_r4.models.count import Count
+from api_fhir_r4.models.distance import Distance
+from api_fhir_r4.models.domainResource import DomainResource
+from api_fhir_r4.models.duration import Duration
+from api_fhir_r4.models.extension import Extension
+from api_fhir_r4.models.fhirdate import FHIRDate
+from api_fhir_r4.models.humanName import HumanName, NameUse
+from api_fhir_r4.models.identifier import Identifier, IdentifierUse
+from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus, ImisClaimIcdTypes, ImisLocationType, ImisHfLevel
+from api_fhir_r4.models.location import LocationPosition, LocationMode, Location, LocationStatus, \
     LocationHoursOfOperation
-from api_fhir_R4.models.meta import Meta
-from api_fhir_R4.models.money import Money
-from api_fhir_R4.models.narrative import Narrative
-from api_fhir_R4.models.patient import Patient, PatientCommunication, PatientContact, PatientLink
-from api_fhir_R4.models.period import Period
-from api_fhir_R4.models.range import Range
-from api_fhir_R4.models.ratio import Ratio
-from api_fhir_R4.models.reference import Reference
-from api_fhir_R4.models.sampledData import SampledData
-from api_fhir_R4.models.signature import Signature
-from api_fhir_R4.models.timing import Timing, TimingRepeat
-from api_fhir_R4.models.operationOutcome import OperationOutcome, OperationOutcomeIssue, IssueSeverity
-from api_fhir_R4.models.daysOfWeek import DaysOfWeek
-from api_fhir_R4.models.endpoint import Endpoint
-from api_fhir_R4.models.practitionerRole import PractitionerRole, PractitionerAvailableTime, PractitionerNotAvailable
-from api_fhir_R4.models.practitioner import Practitioner, PractitionerQualification
-from api_fhir_R4.models.bundle import Bundle, BundleEntry, BundleEntryRequest, BundleEntryResponse, BundleEntrySearch, \
+from api_fhir_r4.models.meta import Meta
+from api_fhir_r4.models.money import Money
+from api_fhir_r4.models.narrative import Narrative
+from api_fhir_r4.models.patient import Patient, PatientCommunication, PatientContact, PatientLink
+from api_fhir_r4.models.period import Period
+from api_fhir_r4.models.range import Range
+from api_fhir_r4.models.ratio import Ratio
+from api_fhir_r4.models.reference import Reference
+from api_fhir_r4.models.sampledData import SampledData
+from api_fhir_r4.models.signature import Signature
+from api_fhir_r4.models.timing import Timing, TimingRepeat
+from api_fhir_r4.models.operationOutcome import OperationOutcome, OperationOutcomeIssue, IssueSeverity
+from api_fhir_r4.models.daysOfWeek import DaysOfWeek
+from api_fhir_r4.models.endpoint import Endpoint
+from api_fhir_r4.models.practitionerRole import PractitionerRole, PractitionerAvailableTime, PractitionerNotAvailable
+from api_fhir_r4.models.practitioner import Practitioner, PractitionerQualification
+from api_fhir_r4.models.bundle import Bundle, BundleEntry, BundleEntryRequest, BundleEntryResponse, BundleEntrySearch, \
     BundleLink, BundleType, BundleLinkRelation
-from api_fhir_R4.models.claim import Claim, ClaimAccident, ClaimCareTeam, ClaimDiagnosis, ClaimSupportingInfo, \
+from api_fhir_r4.models.claim import Claim, ClaimAccident, ClaimCareTeam, ClaimDiagnosis, ClaimSupportingInfo, \
     ClaimInsurance, ClaimItem, ClaimItemDetail, ClaimItemDetailSubDetail, ClaimPayee, ClaimProcedure, ClaimRelated
-from api_fhir_R4.models.coverageEligibilityRequest import CoverageEligibilityRequest, \
+from api_fhir_r4.models.coverageEligibilityRequest import CoverageEligibilityRequest, \
     CoverageEligibilityRequestSupportingInfo, CoverageEligibilityRequestInsurance, CoverageEligibilityRequestItem
-from api_fhir_R4.models.coverageEligibilityResponse import CoverageEligibilityResponse, \
+from api_fhir_r4.models.coverageEligibilityResponse import CoverageEligibilityResponse, \
     CoverageEligibilityResponseInsurance, CoverageEligibilityResponseInsuranceItem, \
     CoverageEligibilityResponseInsuranceItemBenefit, CoverageEligibilityResponseError
-from api_fhir_R4.models.claimResponse import ClaimResponse, ClaimResponseAddItemDetailSubDetail, ClaimResponseError, \
+from api_fhir_r4.models.claimResponse import ClaimResponse, ClaimResponseAddItemDetailSubDetail, ClaimResponseError, \
     ClaimResponseItem, ClaimResponseTotal, ClaimResponseAddItem, ClaimResponseAddItemDetail, ClaimResponseInsurance, \
     ClaimResponseItemAdjudication, ClaimResponseItemDetail, ClaimResponseItemDetailSubDetail, ClaimResponsePayment, \
     ClaimResponseProcessNote
-from api_fhir_R4.models.communicationRequest import CommunicationRequest, CommunicationRequestPayload
-from api_fhir_R4.models.requestStatus import RequestStatus
-from api_fhir_R4.models.contract import Contract, ContractFriendly, ContractLegal, ContractRule, ContractSigner, \
+from api_fhir_r4.models.communicationRequest import CommunicationRequest, CommunicationRequestPayload
+from api_fhir_r4.models.requestStatus import RequestStatus
+from api_fhir_r4.models.contract import Contract, ContractFriendly, ContractLegal, ContractRule, ContractSigner, \
     ContractTerm, ContractTermAction, ContractTermAsset, ContractTermOffer, ContractContentDefinition, \
     ContractTermActionSubject, ContractTermAssetContext, ContractTermAssetValuedItem, ContractTermOfferAnswer, \
     ContractTermOfferParty, ContractTermSecurityLabel
-from api_fhir_R4.models.coverage import Coverage, CoverageClass, CoverageCostToBeneficiary, \
+from api_fhir_r4.models.coverage import Coverage, CoverageClass, CoverageCostToBeneficiary, \
     CoverageCostToBeneficiaryException
-from api_fhir_R4.models.condition import Condition, ConditionClinicalStatusCodes, ConditionEvidence, ConditionStage, \
+from api_fhir_r4.models.condition import Condition, ConditionClinicalStatusCodes, ConditionEvidence, ConditionStage, \
     ConditionVerificationStatus
-from api_fhir_R4.models.medication import MedicationBatch, Medication, MedicationIngredient, MedicationStatusCodes
-from api_fhir_R4.models.dosage import Dosage, DosageDoseAndRate
-from api_fhir_R4.models.expression import Expression
-from api_fhir_R4.models.usageContext import UsageContext, UsageContextType
-from api_fhir_R4.models.activityDefinition import ActivityDefinition, ActivityDefinitionDynamicValue, \
+from api_fhir_r4.models.medication import MedicationBatch, Medication, MedicationIngredient, MedicationStatusCodes
+from api_fhir_r4.models.dosage import Dosage, DosageDoseAndRate
+from api_fhir_r4.models.expression import Expression
+from api_fhir_r4.models.usageContext import UsageContext, UsageContextType
+from api_fhir_r4.models.activityDefinition import ActivityDefinition, ActivityDefinitionDynamicValue, \
     ActivityDefinitionParticipant, PublicationStatus, RequestIntent, RequestPriority, RequestResourceType
-from api_fhir_R4.models.contactDetail import ContactDetail
-from api_fhir_R4.models.relatedArtifact import RelatedArtifact, RelatedArtifactType
-from api_fhir_R4.models.healthcareService import HealthcareNotAvailable, HealthcareService, \
+from api_fhir_r4.models.contactDetail import ContactDetail
+from api_fhir_r4.models.relatedArtifact import RelatedArtifact, RelatedArtifactType
+from api_fhir_r4.models.healthcareService import HealthcareNotAvailable, HealthcareService, \
     HealthcareServiceAvailableTime, HealthcareServiceEligibility, DaysOfWeek
 
 

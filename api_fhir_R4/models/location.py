@@ -1,6 +1,6 @@
 from enum import Enum
 
-from api_fhir_R4.models import Property, BackboneElement, DomainResource, FHIRDate
+from api_fhir_r4.models import Property, BackboneElement, DomainResource, FHIRDate
 
 
 class LocationPosition(BackboneElement):

@@ -1,9 +1,9 @@
 import os
 
-from api_fhir_R4.converters import PractitionerConverter
+from api_fhir_r4.converters import PractitionerConverter
 
-from api_fhir_R4.models import FHIRBaseObject
-from api_fhir_R4.tests import PractitionerTestMixin
+from api_fhir_r4.models import FHIRBaseObject
+from api_fhir_r4.tests import PractitionerTestMixin
 
 
 class PractitionerConverterTestCase(PractitionerTestMixin):

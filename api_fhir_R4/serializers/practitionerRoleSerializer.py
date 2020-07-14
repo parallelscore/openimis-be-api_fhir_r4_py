@@ -1,9 +1,9 @@
 from claim.models import ClaimAdmin
 from django.utils.translation import gettext
 
-from api_fhir_R4.converters import PractitionerRoleConverter
-from api_fhir_R4.exceptions import FHIRRequestProcessException
-from api_fhir_R4.serializers import BaseFHIRSerializer
+from api_fhir_r4.converters import PractitionerRoleConverter
+from api_fhir_r4.exceptions import FHIRRequestProcessException
+from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
 class PractitionerRoleSerializer(BaseFHIRSerializer):

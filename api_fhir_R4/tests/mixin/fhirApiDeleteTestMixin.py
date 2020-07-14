@@ -1,7 +1,7 @@
 from rest_framework import status
 
-from api_fhir_R4.configurations import R4IssueTypeConfig
-from api_fhir_R4.models import OperationOutcome
+from api_fhir_r4.configurations import R4IssueTypeConfig
+from api_fhir_r4.models import OperationOutcome
 
 
 class FhirApiDeleteTestMixin(object):

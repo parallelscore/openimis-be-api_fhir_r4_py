@@ -1,10 +1,10 @@
 from medical.models import Diagnosis
 from insuree.models import Insuree
-from api_fhir_R4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin, PatientConverter
-from api_fhir_R4.models.condition import Condition as FHIRCondition
-from api_fhir_R4.models import Reference
+from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin, PatientConverter
+from api_fhir_r4.models.condition import Condition as FHIRCondition
+from api_fhir_r4.models import Reference
 from django.utils.translation import gettext
-from api_fhir_R4.utils import DbManagerUtils, TimeUtils
+from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 
 
 class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):

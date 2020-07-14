@@ -1,15 +1,15 @@
 from insuree.models import Gender
 from rest_framework.test import APITestCase
 
-from api_fhir_R4.models import Patient
-from api_fhir_R4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
+from api_fhir_r4.models import Patient
+from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
     FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
 
 
 class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
                       FhirApiDeleteTestMixin, APITestCase):
 
-    base_url = '/api_fhir_R4/Patient/'
+    base_url = '/api_fhir_r4/Patient/'
     _test_json_path = "/test/test_patient.json"
     _TEST_GENDER_CODE = 'M'
     _TEST_EXPECTED_NAME = "UPDATED_NAME"

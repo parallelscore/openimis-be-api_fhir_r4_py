@@ -1,4 +1,4 @@
-from api_fhir_R4.configurations import BaseConfiguration, GeneralConfiguration, R4ApiFhirConfig
+from api_fhir_r4.configurations import BaseConfiguration, GeneralConfiguration, R4ApiFhirConfig
 from django.conf import settings
 
 

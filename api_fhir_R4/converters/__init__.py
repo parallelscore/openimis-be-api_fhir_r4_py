@@ -1,9 +1,9 @@
 from abc import ABC
 
-from api_fhir_R4.configurations import R4IdentifierConfig
-from api_fhir_R4.exceptions import FHIRRequestProcessException
-from api_fhir_R4.models import CodeableConcept, ContactPoint, Address, Coding, Identifier, IdentifierUse
-from api_fhir_R4.configurations import GeneralConfiguration
+from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.exceptions import FHIRRequestProcessException
+from api_fhir_r4.models import CodeableConcept, ContactPoint, Address, Coding, Identifier, IdentifierUse
+from api_fhir_r4.configurations import GeneralConfiguration
 
 
 class BaseFHIRConverter(ABC):
@@ -106,19 +106,19 @@ class BaseFHIRConverter(ABC):
         return current_address
 
 
-from api_fhir_R4.converters.personConverterMixin import PersonConverterMixin
-from api_fhir_R4.converters.referenceConverterMixin import ReferenceConverterMixin
-from api_fhir_R4.converters.contractConverter import ContractConverter
-from api_fhir_R4.converters.patientConverter import PatientConverter
-from api_fhir_R4.converters.locationConverter import LocationConverter
-from api_fhir_R4.converters.operationOutcomeConverter import OperationOutcomeConverter
-from api_fhir_R4.converters.practitionerConverter import PractitionerConverter
-from api_fhir_R4.converters.practitionerRoleConverter import PractitionerRoleConverter
-from api_fhir_R4.converters.coverageEligibilityRequestConverter import CoverageEligibilityRequestConverter
-from api_fhir_R4.converters.policyCoverageEligibilityRequestConverter import PolicyCoverageEligibilityRequestConverter
-from api_fhir_R4.converters.communicationRequestConverter import CommunicationRequestConverter
-from api_fhir_R4.converters.claimResponseConverter import ClaimResponseConverter
-from api_fhir_R4.converters.medicationConverter import MedicationConverter
-from api_fhir_R4.converters.conditionConverter import ConditionConverter
-from api_fhir_R4.converters.activityDefinitionConverter import ActivityDefinitionConverter
-from api_fhir_R4.converters.healthcareServiceConverter import HealthcareServiceConverter
+from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
+from api_fhir_r4.converters.referenceConverterMixin import ReferenceConverterMixin
+from api_fhir_r4.converters.contractConverter import ContractConverter
+from api_fhir_r4.converters.patientConverter import PatientConverter
+from api_fhir_r4.converters.locationConverter import LocationConverter
+from api_fhir_r4.converters.operationOutcomeConverter import OperationOutcomeConverter
+from api_fhir_r4.converters.practitionerConverter import PractitionerConverter
+from api_fhir_r4.converters.practitionerRoleConverter import PractitionerRoleConverter
+from api_fhir_r4.converters.coverageEligibilityRequestConverter import CoverageEligibilityRequestConverter
+from api_fhir_r4.converters.policyCoverageEligibilityRequestConverter import PolicyCoverageEligibilityRequestConverter
+from api_fhir_r4.converters.communicationRequestConverter import CommunicationRequestConverter
+from api_fhir_r4.converters.claimResponseConverter import ClaimResponseConverter
+from api_fhir_r4.converters.medicationConverter import MedicationConverter
+from api_fhir_r4.converters.conditionConverter import ConditionConverter
+from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
+from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter

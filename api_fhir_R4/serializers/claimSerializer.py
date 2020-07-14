@@ -3,9 +3,9 @@ from claim.models import Claim
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
-from api_fhir_R4.converters import ClaimResponseConverter
-from api_fhir_R4.converters.claimConverter import ClaimConverter
-from api_fhir_R4.serializers import BaseFHIRSerializer
+from api_fhir_r4.converters import ClaimResponseConverter
+from api_fhir_r4.converters.claimConverter import ClaimConverter
+from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
 class ClaimSerializer(BaseFHIRSerializer):

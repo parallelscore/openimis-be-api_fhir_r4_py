@@ -1,4 +1,4 @@
-from api_fhir_R4.models import DomainResource, BackboneElement, Property
+from api_fhir_r4.models import DomainResource, BackboneElement, Property
 from enum import Enum
 
 

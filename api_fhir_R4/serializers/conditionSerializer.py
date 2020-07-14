@@ -1,7 +1,7 @@
 import copy
 from medical.models import Diagnosis
-from api_fhir_R4.converters import ConditionConverter
-from api_fhir_R4.serializers import BaseFHIRSerializer
+from api_fhir_r4.converters import ConditionConverter
+from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
 class ConditionSerializer(BaseFHIRSerializer):

@@ -4,11 +4,11 @@ from django.http import Http404
 from django.http.response import HttpResponse
 from rest_framework.exceptions import APIException
 
-from api_fhir_R4.configurations import R4IssueTypeConfig
-from api_fhir_R4.converters import BaseFHIRConverter
-from api_fhir_R4.exceptions import FHIRException
-from api_fhir_R4.models import OperationOutcome, OperationOutcomeIssue
-from api_fhir_R4.models.operationOutcome import IssueSeverity
+from api_fhir_r4.configurations import R4IssueTypeConfig
+from api_fhir_r4.converters import BaseFHIRConverter
+from api_fhir_r4.exceptions import FHIRException
+from api_fhir_r4.models import OperationOutcome, OperationOutcomeIssue
+from api_fhir_r4.models.operationOutcome import IssueSeverity
 
 
 class OperationOutcomeConverter(BaseFHIRConverter):

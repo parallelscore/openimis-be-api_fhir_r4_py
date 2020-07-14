@@ -1,8 +1,8 @@
-from api_fhir_R4.configurations import R4IssueTypeConfig
-from api_fhir_R4.converters import BaseFHIRConverter, OperationOutcomeConverter
-from api_fhir_R4.exceptions import FHIRRequestProcessException
-from api_fhir_R4.models import IssueSeverity, CodeableConcept
-from api_fhir_R4.tests import GenericTestMixin
+from api_fhir_r4.configurations import R4IssueTypeConfig
+from api_fhir_r4.converters import BaseFHIRConverter, OperationOutcomeConverter
+from api_fhir_r4.exceptions import FHIRRequestProcessException
+from api_fhir_r4.models import IssueSeverity, CodeableConcept
+from api_fhir_r4.tests import GenericTestMixin
 
 
 class OperationOutcomeTestMixin(GenericTestMixin):

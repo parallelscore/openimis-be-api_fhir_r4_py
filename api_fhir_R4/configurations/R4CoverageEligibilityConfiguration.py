@@ -1,5 +1,5 @@
 import json
-from api_fhir_R4.configurations import CoverageEligibilityConfiguration
+from api_fhir_r4.configurations import CoverageEligibilityConfiguration
 
 
 class R4CoverageEligibilityConfiguration(CoverageEligibilityConfiguration):

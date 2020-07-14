@@ -1,7 +1,7 @@
 from rest_framework import status
 
-from api_fhir_R4.configurations import ModuleConfiguration
-from api_fhir_R4.utils import FunctionUtils
+from api_fhir_r4.configurations import ModuleConfiguration
+from api_fhir_r4.utils import FunctionUtils
 from rest_framework.response import Response
 
 from rest_framework.views import exception_handler
@@ -26,7 +26,7 @@ def fhir_api_exception_handler(exc, context):
 
     request_path = __get_path_from_context(context)
     if 'api_fhir_R4' in request_path:
-        from api_fhir_R4.converters import OperationOutcomeConverter
+        from api_fhir_r4.converters import OperationOutcomeConverter
         fhir_outcome = OperationOutcomeConverter.to_fhir_obj(exc)
         if not response:
             response = __create_server_error_response()

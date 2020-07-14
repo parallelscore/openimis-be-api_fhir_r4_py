@@ -1,7 +1,7 @@
 import inspect
 
-from api_fhir_R4.exceptions import FHIRRequestProcessException
-from api_fhir_R4.models import Reference
+from api_fhir_r4.exceptions import FHIRRequestProcessException
+from api_fhir_r4.models import Reference
 
 
 class ReferenceConverterMixin(object):

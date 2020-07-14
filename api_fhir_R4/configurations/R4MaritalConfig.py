@@ -1,4 +1,4 @@
-from api_fhir_R4.configurations import MaritalConfiguration
+from api_fhir_r4.configurations import MaritalConfiguration
 
 
 class R4MaritalConfig(MaritalConfiguration):

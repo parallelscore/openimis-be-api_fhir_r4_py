@@ -2,12 +2,12 @@ from django.utils.translation import gettext
 from insuree.models import Insuree, Gender, Education, Profession, Family
 from location.models import Location
 
-from api_fhir_R4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
-from api_fhir_R4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
-from api_fhir_R4.converters.healthcareServiceConverter import HealthcareServiceConverter
-from api_fhir_R4.models import Patient, AdministrativeGender, ImisMaritalStatus, Extension, PatientLink, Attachment
-from api_fhir_R4.models.address import AddressUse, AddressType
-from api_fhir_R4.utils import TimeUtils, DbManagerUtils
+from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
+from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
+from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
+from api_fhir_r4.models import Patient, AdministrativeGender, ImisMaritalStatus, Extension, PatientLink, Attachment
+from api_fhir_r4.models.address import AddressUse, AddressType
+from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
 class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
 

@@ -1,4 +1,4 @@
-from api_fhir_R4 import views
+from api_fhir_r4 import views
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 

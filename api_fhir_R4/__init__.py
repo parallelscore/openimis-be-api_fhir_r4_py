@@ -1,1 +1,1 @@
-default_app_config = 'api_fhir_R4.apps.ApiFhirConfig'
+default_app_config = 'api_fhir_r4.apps.ApiFhirConfig'

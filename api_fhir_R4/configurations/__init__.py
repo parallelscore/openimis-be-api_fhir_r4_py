@@ -435,14 +435,14 @@ class BaseApiFhirConfiguration(BaseConfiguration):  # pragma: no cover
         raise NotImplementedError('`get_coverage_configuration()` must be implemented.')
 
 
-from api_fhir_R4.configurations.generalConfiguration import GeneralConfiguration
-from api_fhir_R4.configurations.R4IdentifierConfig import R4IdentifierConfig
-from api_fhir_R4.configurations.R4LocationConfig import R4LocationConfig
-from api_fhir_R4.configurations.R4MaritalConfig import R4MaritalConfig
-from api_fhir_R4.configurations.R4IssueTypeConfig import R4IssueTypeConfig
-from api_fhir_R4.configurations.R4ClaimConfig import R4ClaimConfig
-from api_fhir_R4.configurations.R4CoverageEligibilityConfiguration import R4CoverageEligibilityConfiguration
-from api_fhir_R4.configurations.R4CommunicationRequestConfig import R4CommunicationRequestConfig
-from api_fhir_R4.configurations.R4ApiFhirConfig import R4ApiFhirConfig
-from api_fhir_R4.configurations.moduleConfiguration import ModuleConfiguration
-from api_fhir_R4.configurations.R4CoverageConfig import R4CoverageConfig
+from api_fhir_r4.configurations.generalConfiguration import GeneralConfiguration
+from api_fhir_r4.configurations.R4IdentifierConfig import R4IdentifierConfig
+from api_fhir_r4.configurations.R4LocationConfig import R4LocationConfig
+from api_fhir_r4.configurations.R4MaritalConfig import R4MaritalConfig
+from api_fhir_r4.configurations.R4IssueTypeConfig import R4IssueTypeConfig
+from api_fhir_r4.configurations.R4ClaimConfig import R4ClaimConfig
+from api_fhir_r4.configurations.R4CoverageEligibilityConfiguration import R4CoverageEligibilityConfiguration
+from api_fhir_r4.configurations.R4CommunicationRequestConfig import R4CommunicationRequestConfig
+from api_fhir_r4.configurations.R4ApiFhirConfig import R4ApiFhirConfig
+from api_fhir_r4.configurations.moduleConfiguration import ModuleConfiguration
+from api_fhir_r4.configurations.R4CoverageConfig import R4CoverageConfig
