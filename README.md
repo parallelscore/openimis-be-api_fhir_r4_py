@@ -41,7 +41,7 @@ and start the openIMIS backend.
 ## Example of usage
 To fetch information about all openIMIS Insurees (as FHIR R4 Patients), send a  **GET** request on:
 ```bash
-http://127.0.0.1:8000/api_fhir_R4/Patient/
+http://127.0.0.1:8000/api_fhir_r4/Patient/
 ```
 `127.0.0.1:8000` is the server address (if run on your local host).
 

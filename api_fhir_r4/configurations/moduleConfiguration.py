@@ -5,7 +5,7 @@ from django.conf import settings
 class ModuleConfiguration(BaseConfiguration):
 
     __REST_FRAMEWORK = {
-        'EXCEPTION_HANDLER': 'api_fhir_R4.exceptions.fhir_api_exception_handler'
+        'EXCEPTION_HANDLER': 'api_fhir_r4.exceptions.fhir_api_exception_handler'
     }
 
     @classmethod

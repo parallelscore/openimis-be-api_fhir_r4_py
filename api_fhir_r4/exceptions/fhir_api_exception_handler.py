@@ -25,7 +25,7 @@ def fhir_api_exception_handler(exc, context):
     response = call_default_exception_handler(exc, context)
 
     request_path = __get_path_from_context(context)
-    if 'api_fhir_R4' in request_path:
+    if 'api_fhir_r4' in request_path:
         from api_fhir_r4.converters import OperationOutcomeConverter
         fhir_outcome = OperationOutcomeConverter.to_fhir_obj(exc)
         if not response:
