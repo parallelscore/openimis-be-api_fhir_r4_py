@@ -9,7 +9,7 @@ class BaseConfiguration(object):  # pragma: no cover
 
     @classmethod
     def get_config(cls):
-        module_name = "api_fhir_R4"
+        module_name = "api_fhir_r4"
         return sys.modules[module_name]
 
 

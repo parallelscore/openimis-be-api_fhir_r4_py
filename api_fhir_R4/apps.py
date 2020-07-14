@@ -6,7 +6,7 @@ from api_fhir_r4.configurations import ModuleConfiguration
 
 logger = logging.getLogger(__name__)
 
-MODULE_NAME = "api_fhir_R4"
+MODULE_NAME = "api_fhir_r4"
 
 DEFAULT_CFG = {
     "default_audit_user_id": 1,
