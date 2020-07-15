@@ -255,7 +255,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 if hasattr(imis_insuree, "education") and imis_insuree.education is not None:
                     extension.valueCoding = Coding()
                     if imis_insuree.education is not None:
-                        extension.valueCoding.code = imis_insuree.education.id
+                        extension.valueCoding.code = str(imis_insuree.education.id)
                         extension.valueCoding.display = imis_insuree.education.education
 
             else:
@@ -263,7 +263,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 if hasattr(imis_insuree, "profession") and imis_insuree.profession is not None:
                     extension.valueCoding = Coding()
                     if imis_insuree.profession is not None:
-                        extension.valueCoding.code = imis_insuree.profession.id
+                        extension.valueCoding.code = str(imis_insuree.profession.id)
                         extension.valueCoding.display = imis_insuree.profession.profession
 
             fhir_patient.extension.append(extension)
