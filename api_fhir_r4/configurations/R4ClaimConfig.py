@@ -62,4 +62,8 @@ class R4ClaimConfig(ClaimConfiguration):
     @classmethod
     def get_fhir_claim_item_rejected_reason_adjudication_code(cls):
         return cls.get_config().R4_fhir_claim_config.get('fhir_claim_item_rejected_reason_adjudication_code',
-                                                           "rejected_reason")
+                                                         "rejected_reason")
+
+    @classmethod
+    def get_fhir_claim_organization_code(cls):
+        return cls.get_config().R4_fhir_claim_config.get('fhir_claim_organization_code', "openIMIS")  # has to be updated when 'Organization' is created

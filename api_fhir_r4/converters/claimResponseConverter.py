@@ -33,9 +33,10 @@ class ClaimResponseConverter(BaseFHIRConverter):
         cls.build_fhir_total(fhir_claim_response, imis_claim)
         cls.build_fhir_communication_request_reference(fhir_claim_response, imis_claim)
         cls.build_fhir_type(fhir_claim_response, imis_claim)
-        cls.build_fhir_status(fhir_claim_response)
+        cls.build_fhir_status(fhir_claim_response, imis_claim)
         cls.build_fhir_use(fhir_claim_response)
         cls.build_fhir_insurer(fhir_claim_response, imis_claim)
+        cls.build_fhir_requestor(fhir_claim_response, imis_claim)
         return fhir_claim_response
 
     @classmethod
@@ -205,15 +206,17 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_claim_response.type = cls.build_simple_codeable_concept(imis_claim.visit_type)
 
     @classmethod
-    def build_fhir_status(cls, fhir_claim_response):
-        if fhir_claim_response.outcome == "entered":
-            fhir_claim_response.status = "draft"
-        elif fhir_claim_response.outcome == "valuated":
-            fhir_claim_response.status = "completed"
-        elif fhir_claim_response.outcome == "rejected":
-            fhir_claim_response.status = "entered-in-error"
-        else:
-            fhir_claim_response.status = "active"
+    def build_fhir_status(cls, fhir_claim_response, imis_claim):
+        if imis_claim.review_status == 1:
+            fhir_claim_response.status = "Idle"
+        elif imis_claim.review_status == 2:
+            fhir_claim_response.status = "Not Selected"
+        elif imis_claim.review_status == 4:
+            fhir_claim_response.status = "Selected for Review"
+        elif imis_claim.review_status == 8:
+            fhir_claim_response.status = "Reviewed"
+        elif imis_claim.review_status == 16:
+            fhir_claim_response.status = "ByPassed"
 
     @classmethod
     def build_fhir_use(cls, fhir_claim_response):
@@ -221,8 +224,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
     @classmethod
     def build_fhir_insurer(cls, fhir_claim_response, imis_claim):
-        fhir_claim_response.insurer = HealthcareServiceConverter.build_fhir_resource_reference(
-            imis_claim.health_facility)
+        fhir_claim_response.insurer = Reference()
+        fhir_claim_response.insurer.reference = "Organization/" + R4ClaimConfig.get_fhir_claim_organization_code()
 
     @classmethod
     def build_fhir_items(cls, fhir_claim_response, imis_claim):
@@ -412,7 +415,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
                 item_adjudication_approved.value = value
                 item_adjudication_valuated.value = value
 
-                return [item_adjudication_asked, item_adjudication_adjusted, item_adjudication_approved, item_adjudication_valuated]
+                return [item_adjudication_asked, item_adjudication_adjusted, item_adjudication_approved,
+                        item_adjudication_valuated]
 
         if rejected_reason != 0:
             item_adjudication_asked.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
@@ -422,8 +426,6 @@ class ClaimResponseConverter(BaseFHIRConverter):
             item_adjudication_asked.value = item.qty_provided
 
             return [item_adjudication_asked]
-
-
 
     @classmethod
     def build_fhir_adjudication_reason(cls, item, rejected_reason):
@@ -448,3 +450,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_claim_response.processNote.append(note)
             result = note
         return result
+
+    @classmethod
+    def build_fhir_requestor(cls, fhir_claim_response, imis_claim):
+        if imis_claim.health_facility is not None:
+            fhir_claim_response.requestor = HealthcareServiceConverter.build_fhir_resource_reference(
+                imis_claim.health_facility)

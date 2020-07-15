@@ -81,6 +81,7 @@ DEFAULT_CFG = {
         "fhir_claim_item_status_rejected_code": "rejected",
         "fhir_claim_item_general_adjudication_code": "general",
         "fhir_claim_item_rejected_reason_adjudication_code": "rejected_reason",
+        "fhir_claim_organization_code": "openIMIS"
     },
     "R4_fhir_coverage_eligibility_config": {
         "fhir_serializer": "PolicyCoverageEligibilityRequestSerializer",

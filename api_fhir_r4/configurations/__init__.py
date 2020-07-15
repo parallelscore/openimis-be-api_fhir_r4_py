@@ -219,6 +219,18 @@ class ClaimConfiguration(BaseConfiguration):  # pragma: no cover
     def get_fhir_claim_item_status_rejected_code(cls):
         raise NotImplementedError('`get_fhir_claim_item_status_rejected_code()` must be implemented.')
 
+    @classmethod
+    def get_fhir_claim_item_general_adjudication_code(cls):
+        raise NotImplementedError('`get_fhir_claim_item_general_adjudication_code()` must be implemented')
+
+    @classmethod
+    def get_fhir_claim_item_rejected_reason_adjudication_code(cls):
+        raise NotImplementedError('`get_fhir_claim_item_rejected_reason_adjudication_code()` must be implemented')
+
+    @classmethod
+    def get_fhir_claim_organization_code(cls):
+        raise NotImplementedError('`get_fhir_claim_organization_code()` must be implemented')
+
 
 class CoverageEligibilityConfiguration(BaseConfiguration):  # pragma: no cover
 
