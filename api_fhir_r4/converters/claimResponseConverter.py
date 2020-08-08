@@ -113,8 +113,11 @@ class ClaimResponseConverter(BaseFHIRConverter):
         # else:
         #     fhir_claim_response.total = [valuated, reinsured, approved, claimed]
 
-        if imis_claim.status == 16:
+        if imis_claim.status == 16 and approved is not None:
             fhir_claim_response.total = [claimed, approved]
+
+        if imis_claim.status == 16 and approved is None:
+            fhir_claim_response.total = [claimed]
 
         else:
             fhir_claim_response.total = [claimed]
