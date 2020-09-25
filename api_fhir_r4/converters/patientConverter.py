@@ -1,5 +1,6 @@
 from django.utils.translation import gettext
-from insuree.models import Insuree, Gender
+from insuree.models import Insuree, Gender, Education, Profession, Family
+from location.models import Location
 
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin

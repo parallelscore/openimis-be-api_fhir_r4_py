@@ -2,6 +2,8 @@ import inspect
 
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from api_fhir_r4.models import Reference
+from api_fhir_r4.converters import R4IdentifierConfig
+
 
 
 class ReferenceConverterMixin(object):
@@ -19,11 +21,22 @@ class ReferenceConverterMixin(object):
         raise NotImplementedError('`get_imis_object_by_fhir_reference()` must be implemented.')  # pragma: no cover
 
     @classmethod
-    def build_fhir_resource_reference(cls, obj):
+    def build_fhir_resource_reference(cls, obj, display = None):
+        if obj is None:
+            raise FHIRRequestProcessException(['Cannot construct a reference on none: {}'])
         reference = Reference()
         resource_type = cls.__get_fhir_resource_type_as_string()
         resource_id = cls.__get_imis_object_id_as_string(obj)
+        reference.type = resource_type
+        if hasattr(obj, 'uuid'):
+            reference.identifier = cls.build_fhir_identifier(obj.uuid,
+                                            R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                            R4IdentifierConfig.get_fhir_uuid_type_code())
+        else:
+             reference.identifier = obj.id
         reference.reference = resource_type + '/' + resource_id
+        if display is not None:
+            reference.display = display
         return reference
 
     @classmethod

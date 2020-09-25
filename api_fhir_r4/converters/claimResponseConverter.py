@@ -127,7 +127,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.category.text = "Valuated < Reinsured < Approved < Claimed"
 
             fhir_total.amount.value = imis_claim.valuated
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 
@@ -148,7 +149,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
 
             fhir_total.amount.value = imis_claim.reinsured
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 
@@ -169,7 +171,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.category.text = "Valuated < Reinsured < Approved < Claimed"
 
             fhir_total.amount.value = imis_claim.approved
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 
@@ -190,7 +193,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.category.text = "Valuated < Reinsured < Approved < Claimed"
 
             fhir_total.amount.value = imis_claim.claimed
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 
@@ -314,20 +318,26 @@ class ClaimResponseConverter(BaseFHIRConverter):
         item_adjudication_valuated = ClaimResponseItemAdjudication()
 
         price_asked = Money()
-        price_asked.currency = core.currency
+        
         price_asked.value = item.price_asked
         price_adjusted = Money()
-        price_adjusted.currency = core.currency
+
         price_adjusted.value = item.price_adjusted
         price_approved = Money()
-        price_approved.currency = core.currency
         price_approved.value = item.price_approved
         price_valuated = Money()
-        price_valuated.currency = core.currency
         price_valuated.value = item.price_valuated
+        if hasattr(core, 'currency'):
+            price_asked.currency = core.currency
+            price_adjusted.currency = core.currency
+            price_valuated.currency = core.currency
+            price_approved.currency = core.currency
         value = None
 
         if rejected_reason == 0:
+            value = item.qty_approved
+        else:
+            value = item.qty_provided
 
             item_adjudication_asked.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
             item_adjudication_asked.amount = price_asked
@@ -335,7 +345,6 @@ class ClaimResponseConverter(BaseFHIRConverter):
             item_adjudication_adjusted.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
             if price_adjusted.value is not None and price_adjusted.value != 0.0:
                 item_adjudication_adjusted.amount = price_adjusted
-
             item_adjudication_approved.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
             if price_approved.value is not None and price_approved.value != 0.0:
                 item_adjudication_approved.amount = price_approved
@@ -372,9 +381,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
                 else:
                     value = item.qty_provided
                 item_adjudication_adjusted.value = value
-
+                
                 return [item_adjudication_asked, item_adjudication_adjusted]
-
+                
             if imis_claim.status == 8:
 
                 item_adjudication_asked.category = \

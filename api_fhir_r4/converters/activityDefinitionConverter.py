@@ -105,7 +105,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if not cls.valid_condition(serv_name is None,
                                    gettext('Missing activity definition `serv name` attribute'), errors):
             imis_activity_definition.name = serv_name
-
+   
     @classmethod
     def build_imis_serv_pat_cat(cls, imis_activity_definition, fhir_activity_definition):
         serv_pat_cat = fhir_activity_definition.useContext.code
@@ -170,7 +170,8 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         extension.url = "unitPrice"
         extension.valueMoney = money
         extension.valueMoney.value = value
-        extension.valueMoney.currency = core.currency
+        if hasattr(core, 'currency'):
+            extension.valueMoney.currency = core.currency
         return extension
 
     @classmethod

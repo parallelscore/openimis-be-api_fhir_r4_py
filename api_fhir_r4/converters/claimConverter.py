@@ -26,13 +26,20 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_claim = FHIRClaim()
         cls.build_fhir_pk(fhir_claim, imis_claim.uuid)
         fhir_claim.created = imis_claim.date_claimed.isoformat()
-        fhir_claim.facility = HealthcareServiceConverter.build_fhir_resource_reference(imis_claim.health_facility)
+        if imis_claim.health_facility is None:
+            raise FHIRRequestProcessException(['Cannot construct a %s claim if HF is None'],imis_claim.uuid )
+        fhir_claim.facility = HealthcareServiceConverter.build_fhir_resource_reference(imis_claim.health_facility,imis_claim.health_facility.code )
         cls.build_fhir_identifiers(fhir_claim, imis_claim)
-        fhir_claim.patient = PatientConverter.build_fhir_resource_reference(imis_claim.insuree)
+        if imis_claim.insuree is  None:
+            raise FHIRRequestProcessException(['Cannot construct a %s claim if Insuree is None'],imis_claim.uuid )
+        fhir_claim.patient = PatientConverter.build_fhir_resource_reference(imis_claim.insuree, imis_claim.insuree.chf_id)
         cls.build_fhir_billable_period(fhir_claim, imis_claim)
         cls.build_fhir_diagnoses(fhir_claim, imis_claim)
         cls.build_fhir_total(fhir_claim, imis_claim)
-        fhir_claim.enterer = PractitionerConverter.build_fhir_resource_reference(imis_claim.admin)
+        if imis_claim.admin is not None:
+            fhir_claim.enterer = PractitionerConverter.build_fhir_resource_reference(imis_claim.admin)
+        else:
+            raise FHIRRequestProcessException(['Cannot construct a %s claim if claim admin is None'],imis_claim.uuid )
         cls.build_fhir_type(fhir_claim, imis_claim)
         cls.build_fhir_supportingInfo(fhir_claim, imis_claim)
         cls.build_fhir_items(fhir_claim, imis_claim)
@@ -166,19 +173,23 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_fhir_diagnoses(cls, fhir_claim, imis_claim):
         diagnoses = []
         cls.build_fhir_diagnosis(diagnoses, imis_claim.icd, ImisClaimIcdTypes.ICD_0.value)
-        if imis_claim.icd_1:
+        if imis_claim.icd_1 is not None:
             cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_1, ImisClaimIcdTypes.ICD_1.value)
-        if imis_claim.icd_2:
+        if imis_claim.icd_2 is not None:
             cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_2, ImisClaimIcdTypes.ICD_2.value)
-        if imis_claim.icd_3:
+        if imis_claim.icd_3 is not None:
             cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_3, ImisClaimIcdTypes.ICD_3.value)
-        if imis_claim.icd_4:
+        if imis_claim.icd_4 is not None:
             cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_4, ImisClaimIcdTypes.ICD_4.value)
 
         fhir_claim.diagnosis = diagnoses
 
     @classmethod
     def build_fhir_diagnosis(cls, diagnoses, icd_code, icd_type):
+        if icd_code is None:
+            raise FHIRRequestProcessException(['ICD code cannot be null'])
+        if icd_type is None:
+            raise FHIRRequestProcessException(['ICD Type cannot be null'])
         claim_diagnosis = ClaimDiagnosis()
         claim_diagnosis.sequence = FhirUtils.get_next_array_sequential_id(diagnoses)
         claim_diagnosis.diagnosisReference = ConditionConverter.build_fhir_resource_reference(icd_code)
@@ -260,7 +271,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
             total_claimed = 0
         fhir_total = Money()
         fhir_total.value = total_claimed
-        fhir_total.currency = core.currency
+        if hasattr(core, 'currency'):
+            fhir_total.currency = core.currency
         fhir_claim.total = fhir_total
 
     @classmethod
@@ -344,7 +356,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_item.sequence = FhirUtils.get_next_array_sequential_id(fhir_claim.item)
         unit_price = Money()
         unit_price.value = item.price_asked
-        unit_price.currency = core.currency
+        if hasattr(core, 'currency'):
+            unit_price.currency = core.currency
         fhir_item.unitPrice = unit_price
         fhir_quantity = Quantity()
         fhir_quantity.value = item.qty_provided
@@ -390,6 +403,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         extension.valueReference = reference
         extension.url = "Medication"
         imis_item.item = Item()
+        if imis_item.item is None:
+            raise FHIRRequestProcessException(['Cannot construct medication on  None (Item) '] )
         extension.valueReference = MedicationConverter.build_fhir_resource_reference(imis_item.item)
         return extension
 
@@ -401,6 +416,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         extension.valueReference = reference
         extension.url = "ActivityDefinition"
         imis_service.service = Service()
+        if imis_service.service is None:
+            raise FHIRRequestProcessException(['Cannot construct activity on None (service) '] )
         extension.valueReference = ActivityDefinitionConverter.build_fhir_resource_reference(imis_service.service)
         return extension
 
@@ -457,7 +474,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_provider(cls, fhir_claim, imis_claim):
         #fhir_claim.provider = imis_claim.adjuster
-        fhir_claim.provider = PractitionerRoleConverter.build_fhir_resource_reference(imis_claim.admin)
+        if imis_claim.admin is not None:
+            fhir_claim.provider = PractitionerRoleConverter.build_fhir_resource_reference(imis_claim.admin)
 
     @classmethod
     def build_imis_adjuster(cls, imis_claim, fhir_claim, errors):
@@ -494,7 +512,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if fhir_insurance.coverage is None:
             fhir_insurance.coverage = Reference()
             fhir_insurance.coverage.reference = "Coverage"
-
+            
         fhir_insurance.sequence = 0
         fhir_insurance.focal = True
 

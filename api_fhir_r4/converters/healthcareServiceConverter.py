@@ -125,7 +125,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
             text = "Dispensary"
 
         fhir_hcs.category = \
-            [cls.build_codeable_concept(code, R4LocationConfig.get_fhir_location_role_type_system(), text=text)]
+            [cls.build_codeable_concept(code, R4LocationConfig.get_fhir_location_site_type_system(), text=text)]
 
     @classmethod
     def build_imis_hf_level(cls, imis_hf, fhir_hcs, errors):
@@ -133,7 +133,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if not cls.valid_condition(location_type is None,
                                    gettext('Missing patient `type` attribute'), errors):
             for maritalCoding in location_type.coding:
-                if maritalCoding.system == R4LocationConfig.get_fhir_location_role_type_system():
+                if maritalCoding.system == R4LocationConfig.get_fhir_location_site_type_system():
                     code = maritalCoding.code
                     if code == R4LocationConfig.get_fhir_code_for_health_center():
                         imis_hf.level = ImisHfLevel.HEALTH_CENTER.value
@@ -186,7 +186,8 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_location_reference(cls, fhir_hcs, imis_hf):
-        fhir_hcs.location = [LocationConverter.build_fhir_resource_reference(imis_hf.location)]
+        if imis_hf.location is not None:
+            fhir_hcs.location = [LocationConverter.build_fhir_resource_reference(imis_hf.location)]
 
     @classmethod
     def build_fhir_healthcare_service_program(cls, fhir_hcs, imis_hf):

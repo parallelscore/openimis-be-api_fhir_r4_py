@@ -1,6 +1,7 @@
 import logging
 
 from django.apps import AppConfig
+
 from api_fhir_r4.configurations import ModuleConfiguration
 
 logger = logging.getLogger(__name__)
@@ -41,11 +42,11 @@ DEFAULT_CFG = {
         "fhir_code_for_widowed": "W",
         "fhir_code_for_unknown": "U"
     },
-    "R4_fhir_location_role_type": {
+    "R4_fhir_location_site_type": {
         "system": "http://hl7.org/fhir/v3/ServiceDeliveryLocationRoleType/vs.html",
-        "fhir_code_for_hospital": "H",
-        "fhir_code_for_dispensary": "D",
-        "fhir_code_for_health_center": "C"
+        "fhir_code_for_hospital": "HOSP",
+        "fhir_code_for_dispensary": "COMM",
+        "fhir_code_for_health_center": "OP",
     },
     "R4_fhir_location_physical_type": {
         "system": "http://terminology.hl7.org/CodeSystem/location-physical-type.html",

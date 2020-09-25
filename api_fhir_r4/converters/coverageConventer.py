@@ -83,12 +83,13 @@ class CoverageConventer(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_contract_party(cls, contract, imis_coverage):
-        party = ContractTermOfferParty()
-        reference = PractitionerConverter.build_fhir_resource_reference(imis_coverage.officer)
-        party.reference = reference
-        provider_role = cls.build_simple_codeable_concept(R4CoverageConfig.get_practitioner_role_code())
-        party.role = [provider_role]
-        contract.term[0].offer[0].party[0] = [party]
+        if imis_coverage.officer is not None:
+            party = ContractTermOfferParty()
+            reference = PractitionerConverter.build_fhir_resource_reference(imis_coverage.officer)
+            party.reference = reference
+            provider_role = cls.build_simple_codeable_concept(R4CoverageConfig.get_practitioner_role_code())
+            party.role = [provider_role]
+            contract.term[0].offer[0].party[0] = [party]
 
     @classmethod
     def build_coverage_class(cls, fhir_coverage, imis_coverage):
