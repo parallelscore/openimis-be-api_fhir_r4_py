@@ -21,11 +21,14 @@ class ReferenceConverterMixin(object):
         raise NotImplementedError('`get_imis_object_by_fhir_reference()` must be implemented.')  # pragma: no cover
 
     @classmethod
-    def build_fhir_resource_reference(cls, obj, display = None):
+    def build_fhir_resource_reference(cls, obj, type= None, display = None):
         if obj is None:
             raise FHIRRequestProcessException(['Cannot construct a reference on none: {}'])
         reference = Reference()
-        resource_type = cls.__get_fhir_resource_type_as_string()
+        if type is None:
+            resource_type = cls.__get_fhir_resource_type_as_string()
+        else:
+            resource_type = type
         resource_id = cls.__get_imis_object_id_as_string(obj)
         reference.type = resource_type
         if hasattr(obj, 'uuid'):

@@ -113,6 +113,15 @@ DEFAULT_CFG = {
         "fhir_drug_received_code": "drug_received",
         "fhir_asessment_code": "asessment"
     },
+    "R4_fhir_contract_config": {
+        "fhir_contract_eo_signer_type":"EnrolmentOfficer",
+        "fhir_contract_head_signer_type":"HeadOfFamily",
+        "fhir_contract_insuree_role":"Insuree",
+        "fhir_contract_executable_status":"Executable",
+        "fhir_contract_renewed_status":"Renewed",
+        "fhir_contract_policy_status":"Policy",
+        "fhir_contract_Terminated_status":"Terminated"
+    },
     "R4_fhir_coverage_config": {
         "fhir_family_refereence_code": "FamilyReference",
         "fhir_status_idle_code": "Idle",

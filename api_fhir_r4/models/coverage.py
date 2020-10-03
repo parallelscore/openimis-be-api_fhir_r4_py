@@ -35,7 +35,7 @@ class Coverage(DomainResource):
     relationship = Property('relationship', 'CodeableConcept')
     period = Property('period', 'Period')
     payor = Property('payor', 'Reference', required=True, count_max='*')  # referencing `Patient` | `RelatedPerson` | `Organization`
-    class_ = Property('class', 'CoverageClass', count_max='*')
+    classes = Property('classes', 'CoverageClass', count_max='*')
     order = Property('order', int)
     network = Property('network', str)
     costToBeneficiary = Property('costToBeneficiary', 'CoverageCostToBeneficiary', count_max='*')

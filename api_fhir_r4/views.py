@@ -21,9 +21,10 @@ from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Con
 from api_fhir_r4.serializers import PatientSerializer, LocationSerializer, LocationSiteSerializer, PractitionerRoleSerializer, \
     PractitionerSerializer, ClaimSerializer, CoverageEligibilityRequestSerializer, \
     PolicyCoverageEligibilityRequestSerializer, ClaimResponseSerializer, CommunicationRequestSerializer, \
-    MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer
+    MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer ,ContractSerializer
 from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
 from django.db.models import Q
+import datetime
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return
@@ -49,25 +50,27 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
         if identifier:
             queryset = queryset.filter(chf_id=identifier)
         else:
-            queryset = queryset.filter(validity_to__isnull=True).order_by('chf_id')
+            queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
             if refDate != None:
-                year,month,day = refDate.split('-')
+                #year,month,day = refDate.split('-')
                 isValidDate = True
                 try :
-                    datetime.datetime(int(year),int(month),int(day))
+                    datevar = datetime.datetime.strptime(refDate, "%Y-%m-%d").date()
+                    #datetime.datetime(int(year),int(month),int(day))
                 except ValueError :
                     isValidDate = False
-                datevar = refDate
+                #datevar = refDate
                 queryset = queryset.filter(validity_from__gte=datevar)
             if claim_date is not None:
-                year,month,day = refDate.split('-')
+                #year,month,day = refDate.split('-')
                 try:
-                    claim_date_parsed = datetime.datetime(int(year), int(month), int(day))
+                    claim_parse_dated = datetime.datetime.strptime(claim_date, "%Y-%m-%d").date()
+                    #datetime.datetime(int(year), int(month), int(day))
                 except ValueError:
                     result = OperationOutcomeConverter.build_for_400_bad_request("claimDateFrom should be in dd-mm-yyyy format")
                     return Response(result.toDict(), status.HTTP_400_BAD_REQUEST)
                 has_claim_in_range = Claim.objects\
-                    .filter(date_claimed__gte=claim_date_parsed)\
+                    .filter(date_claimed__gte=claim_parse_dated)\
                     .filter(insuree_id=OuterRef("id"))\
                     .values("id")
                 queryset = queryset.annotate(has_claim_in_range=Exists(has_claim_in_range)).filter(has_claim_in_range=True)
@@ -221,9 +224,75 @@ class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.Li
     serializer_class = CoverageSerializer
     permission_classes = (FHIRApiCoverageRequestPermissions,)
 
-    def get_queryset(self):
-        return Policy.get_queryset(None, self.request.user)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset() 
+        queryset.select_related('Services')
+        refDate = request.GET.get('refDate')
+        refEndDate = request.GET.get('refEndDate')
+        identifier = request.GET.get("identifier")
+        if identifier:
+            queryset = queryset.filter(chf_id=identifier)
+        else:
+            queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
+            if refDate != None:
+                isValidDate = True
+                try :
+                    datevar = datetime.datetime.strptime(refDate, "%Y-%m-%d").date()
+                except ValueError :
+                    isValidDate = False
+                queryset = queryset.filter(validity_from__gte=datevar)
+            if refEndDate != None:
+                isValidDate = True
+                try :
+                    datevar = datetime.datetime.strptime(refEndDate, "%Y-%m-%d").date()
+                except ValueError :
+                    isValidDate = False
+                queryset = queryset.filter(validity_from__lt=datevar)
 
+        serializer = CoverageSerializer(self.paginate_queryset(queryset), many=True)
+        return self.get_paginated_response(serializer.data)
+
+
+    def get_queryset(self):
+        return Policy.objects.all()
+        #return Policy.get_queryset(None, self.request.user)
+
+class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+    lookup_field = 'uuid'
+    serializer_class = ContractSerializer
+    permission_classes = (FHIRApiCoverageRequestPermissions,)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset() 
+        queryset.select_related('Services')
+        refDate = request.GET.get('refDate')
+        refEndDate = request.GET.get('refEndDate')
+        identifier = request.GET.get("identifier")
+        if identifier:
+            queryset = queryset.filter(chf_id=identifier)
+        else:
+            queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
+            if refDate != None:
+                isValidDate = True
+                try :
+                    datevar = datetime.datetime.strptime(refDate, "%Y-%m-%d").date()
+                except ValueError :
+                    isValidDate = False
+                queryset = queryset.filter(validity_from__gte=datevar)
+            if refEndDate != None:
+                isValidDate = True
+                try :
+                    datevar = datetime.datetime.strptime(refEndDate, "%Y-%m-%d").date()
+                except ValueError :
+                    isValidDate = False
+                queryset = queryset.filter(validity_from__lt=datevar)
+
+        serializer = ContractSerializer(self.paginate_queryset(queryset), many=True)
+        return self.get_paginated_response(serializer.data)
+
+
+    def get_queryset(self):
+        return Policy.objects.all()
 
 class MedicationViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     lookup_field = 'uuid'

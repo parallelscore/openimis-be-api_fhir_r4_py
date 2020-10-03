@@ -13,7 +13,7 @@ from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
-from api_fhir_r4.converters.coverageConventer import CoverageConventer
+from api_fhir_r4.converters.coverageConverter import CoverageConverter
 from api_fhir_r4.models import Claim as FHIRClaim, ClaimItem as FHIRClaimItem, Period, ClaimDiagnosis, Money, \
     ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Condition, Extension, Reference, CodeableConcept, ClaimInsurance
 from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
@@ -507,7 +507,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         for pol in imis_insuree_policy:
             policy = Policy.objects.filter(id=pol["policy"])
 
-            fhir_insurance.coverage = CoverageConventer.build_fhir_resource_reference(policy[0])
+            fhir_insurance.coverage = CoverageConverter.build_fhir_resource_reference(policy[0])
 
         if fhir_insurance.coverage is None:
             fhir_insurance.coverage = Reference()
