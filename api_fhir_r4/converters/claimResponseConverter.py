@@ -188,7 +188,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.category.text = "Valuated < Reinsured < Approved < Claimed"
 
             fhir_total.amount.value = imis_claim.valuated
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 
@@ -209,7 +210,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
 
             fhir_total.amount.value = imis_claim.reinsured
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 
@@ -230,7 +232,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.category.text = "Approved"
 
             fhir_total.amount.value = imis_claim.approved
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 
@@ -251,7 +254,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.category.text = "Claimed"
 
             fhir_total.amount.value = imis_claim.claimed
-            fhir_total.amount.currency = core.currency
+            if hasattr(core, 'currency'):
+                fhir_total.amount.currency = core.currency
 
         return fhir_total
 

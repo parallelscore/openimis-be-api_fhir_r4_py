@@ -55,7 +55,7 @@ class LocationTestMixin(GenericTestMixin):
         location.name = self._TEST_HF_NAME
         location.type = LocationConverter.build_codeable_concept(
             R4LocationConfig.get_fhir_code_for_hospital(),
-            R4LocationConfig.get_fhir_location_role_type_system())
+            R4LocationConfig.get_fhir_location_site_type_system())
         location.address = LocationConverter.build_fhir_address(self._TEST_ADDRESS, AddressUse.HOME.value,
                                                                 AddressType.PHYSICAL.value)
         telecom = []

@@ -1,5 +1,6 @@
 from django.utils.translation import gettext
-from insuree.models import Insuree, Gender
+from insuree.models import Insuree, Gender, Education, Profession, Family
+from location.models import Location
 
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
@@ -133,14 +134,16 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_gender(cls, fhir_patient, imis_insuree):
-        if hasattr(imis_insuree, "gender") and imis_insuree.gender is not None:
-            code = str(imis_insuree.gender.gender).lower()
-            if code == AdministrativeGender.MALE.value:
-                fhir_patient.gender = GeneralConfiguration.get_male_gender_code()
-            elif code == AdministrativeGender.FEMALE.value:
-                fhir_patient.gender = GeneralConfiguration.get_female_gender_code()
-            elif code == AdministrativeGender.OTHER.value:
-                fhir_patient.gender = GeneralConfiguration.get_other_gender_code()
+        if imis_insuree.gender is not None:
+            code = imis_insuree.gender.code
+            if code == GeneralConfiguration.get_male_gender_code():
+                fhir_patient.gender = AdministrativeGender.MALE.value
+            elif code == GeneralConfiguration.get_female_gender_code():
+                fhir_patient.gender = AdministrativeGender.FEMALE.value
+            elif code == GeneralConfiguration.get_other_gender_code():
+                fhir_patient.gender = AdministrativeGender.OTHER.value
+        else:
+            fhir_patient.gender = AdministrativeGender.UNKNOWN.value
 
     @classmethod
     def build_imis_gender(cls, imis_insuree, fhir_patient):
@@ -336,4 +339,4 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_fhir_general_practitioner(cls, fhir_patient, imis_insuree):
         if imis_insuree.health_facility is not None:
             fhir_patient.generalPractitioner = [HealthcareServiceConverter.\
-                build_fhir_resource_reference(imis_insuree.health_facility)]
+                build_fhir_resource_reference(imis_insuree.health_facility,'Practitioner')]

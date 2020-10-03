@@ -34,7 +34,7 @@ class ContractTermOffer(BackboneElement):
     answer = Property('answer', 'ContractTermOfferAnswer', count_max='*')
     text = Property('text', str)
     linkId = Property('linkId', str, count_max='*')
-    securityLabelNumber = Property('securityLabelNumber', int, count_max='*')
+    securityLabelNumber = Property('securityLabelNumber', 'ContractTermSecurityLabel', count_max='*')
 
 
 class ContractTermSecurityLabel(BackboneElement):
@@ -68,7 +68,9 @@ class ContractTermAssetValuedItem(BackboneElement):
     responsible = Property('responsible', 'Reference')  # referencing 'Organization', 'Patient', ...
     recipient = Property('recipient', 'Reference')  # referencing 'Organization', 'Patient', ...
     linkId = Property('linkId', str, count_max='*')
-    securityLabelNumber = Property('securityLabelNumber', int, count_max='*')
+    securityLabelNumber = Property('securityLabelNumber', 'ContractTermSecurityLabel', count_max='*')
+
+
 
 
 class ContractTermAsset(BackboneElement):
@@ -76,7 +78,7 @@ class ContractTermAsset(BackboneElement):
     scope = Property('scope', 'CodeableConcept')
     type = Property('type', 'CodeableConcept', count_max='*')
     typeReference = Property('typeReference', 'Reference', count_max='*')  # referencing 'Any'
-    subtype = Property('subType', 'CodeableConcept', count_max='*')
+    subType = Property('subType', 'CodeableConcept', count_max='*')
     relationship = Property('relationship', 'Coding')
     context = Property('context', 'ContractTermAssetContext', count_max='*')
     condition = Property('condition', str)
@@ -86,9 +88,8 @@ class ContractTermAsset(BackboneElement):
     text = Property('text', str)
     linkId = Property('linkId', str, count_max='*')
     answer = Property('answer', 'ContractTermOfferAnswer', count_max='*')
-    securityLabelNumber = Property('securityLabelnumber', int, count_max='*')
+    securityLabelNumber = Property('securityLabelNumber', 'ContractTermSecurityLabel', count_max='*')
     valuedItem = Property('valuedItem', 'ContractTermAssetValuedItem', count_max='*')
-
 
 class ContractTermActionSubject(BackboneElement):
 

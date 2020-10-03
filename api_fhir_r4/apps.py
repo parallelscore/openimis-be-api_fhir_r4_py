@@ -1,6 +1,7 @@
 import logging
 
 from django.apps import AppConfig
+
 from api_fhir_r4.configurations import ModuleConfiguration
 
 logger = logging.getLogger(__name__)
@@ -41,11 +42,11 @@ DEFAULT_CFG = {
         "fhir_code_for_widowed": "W",
         "fhir_code_for_unknown": "U"
     },
-    "R4_fhir_location_role_type": {
+    "R4_fhir_location_site_type": {
         "system": "http://hl7.org/fhir/v3/ServiceDeliveryLocationRoleType/vs.html",
-        "fhir_code_for_hospital": "H",
-        "fhir_code_for_dispensary": "D",
-        "fhir_code_for_health_center": "C"
+        "fhir_code_for_hospital": "HOSP",
+        "fhir_code_for_dispensary": "COMM",
+        "fhir_code_for_health_center": "OP",
     },
     "R4_fhir_location_physical_type": {
         "system": "http://terminology.hl7.org/CodeSystem/location-physical-type.html",
@@ -113,12 +114,23 @@ DEFAULT_CFG = {
         "fhir_drug_received_code": "drug_received",
         "fhir_asessment_code": "asessment"
     },
+    "R4_fhir_contract_config": {
+        "fhir_contract_eo_signer_type":"EnrolmentOfficer",
+        "fhir_contract_head_signer_type":"HeadOfFamily",
+        "fhir_contract_insuree_role":"Insuree",
+        "fhir_contract_dependant_role":"Dependant",
+        "fhir_contract_executable_status":"Executable",
+        "fhir_contract_renewed_status":"Renewed",
+        "fhir_contract_policy_status":"Policy",
+        "fhir_contract_Terminated_status":"Terminated"
+    },
     "R4_fhir_coverage_config": {
         "fhir_family_refereence_code": "FamilyReference",
         "fhir_status_idle_code": "Idle",
-        "fhir_status_active_code": "active",
-        "fhir_status_suspended_code": "suspended",
+        "fhir_status_active_code": "Active",
+        "fhir_status_suspended_code": "Suspended",
         "fhir_status_expired_code": "Expired",
+        "fhir_status_disputed_code": "Disputed",        
         "fhir_item_code": "item",
         "fhir_service_code": "service",
         "fhir_practitioner_role_code": "Practitioner",

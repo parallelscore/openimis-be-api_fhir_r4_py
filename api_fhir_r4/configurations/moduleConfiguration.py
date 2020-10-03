@@ -11,11 +11,11 @@ class ModuleConfiguration(BaseConfiguration):
     @classmethod
     def build_configuration(cls, cfg):
         GeneralConfiguration.build_configuration(cfg)
-        cls.get_R4().build_configuration(cfg)
+        cls.get_r4().build_configuration(cfg)
         cls.configure_api_error_handler()
 
     @classmethod
-    def get_R4(cls):
+    def get_r4(cls):
         return R4ApiFhirConfig
 
     @classmethod

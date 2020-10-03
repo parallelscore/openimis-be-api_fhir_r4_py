@@ -2,7 +2,8 @@ from abc import ABC
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models import CodeableConcept, ContactPoint, Address, Coding, Identifier, IdentifierUse
+from api_fhir_r4.models import CodeableConcept, ContactPoint, Address, Coding, Identifier, IdentifierUse, Reference
+from api_fhir_r4.configurations import GeneralConfiguration
 
 
 class BaseFHIRConverter(ABC):
@@ -43,7 +44,8 @@ class BaseFHIRConverter(ABC):
         codeable_concept = CodeableConcept()
         if code or system:
             coding = Coding()
-            coding.system = system
+            if GeneralConfiguration.show_system():
+                coding.system = system
             if not isinstance(code, str):
                 code = str(code)
             coding.code = code
@@ -62,11 +64,19 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def build_fhir_uuid_identifier(cls, identifiers, imis_object):
-        if imis_object.uuid is not None:
+        if hasattr(imis_object,'uuid') and imis_object.uuid is not None:
             identifier = cls.build_fhir_identifier(imis_object.uuid,
                                                    R4IdentifierConfig.get_fhir_identifier_type_system(),
                                                    R4IdentifierConfig.get_fhir_uuid_type_code())
             identifiers.append(identifier)
+        elif hasattr(imis_object,'id') and imis_object.id is not None:
+            identifier = cls.build_fhir_identifier(imis_object.id,
+                                                   R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                                   R4IdentifierConfig.get_fhir_uuid_type_code())
+            identifiers.append(identifier)
+        else:
+            raise FHIRRequestProcessException(['Cannot construct an identifier, the object has no uuid nor id: {}'])
+
 
     @classmethod
     def build_fhir_identifier(cls, value, type_system, type_code):
@@ -83,15 +93,16 @@ class BaseFHIRConverter(ABC):
         for identifier in identifiers or []:
             first_coding = cls.get_first_coding_from_codeable_concept(identifier.type)
             if first_coding.system == R4IdentifierConfig.get_fhir_identifier_type_system() \
-                    and first_coding.code == lookup_code:
-                    value = identifier.value
-                    break
+                and first_coding.code == lookup_code:
+                value = identifier.value
+                break
         return value
 
     @classmethod
     def build_fhir_contact_point(cls, value, contact_point_system, contact_point_use):
         contact_point = ContactPoint()
-        contact_point.system = contact_point_system
+        if GeneralConfiguration.show_system():
+            contact_point.system = contact_point_system
         contact_point.use = contact_point_use
         contact_point.value = value
         return contact_point
@@ -103,13 +114,22 @@ class BaseFHIRConverter(ABC):
         current_address.use = use
         current_address.type = type
         return current_address
-
+    
+    @classmethod
+    def build_fhir_reference(cls, identifier, display, type, reference):
+        reference = Reference()
+        reference.identifier = identifier
+        reference.display = display
+        reference.type = type
+        reference.reference = reference
+        return reference
 
 from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
 from api_fhir_r4.converters.referenceConverterMixin import ReferenceConverterMixin
 from api_fhir_r4.converters.contractConverter import ContractConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
+from api_fhir_r4.converters.locationSiteConverter import LocationSiteConverter
 from api_fhir_r4.converters.operationOutcomeConverter import OperationOutcomeConverter
 from api_fhir_r4.converters.practitionerConverter import PractitionerConverter
 from api_fhir_r4.converters.practitionerRoleConverter import PractitionerRoleConverter
