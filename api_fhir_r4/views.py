@@ -3,9 +3,9 @@ from api_fhir_r4.permissions import FHIRApiClaimPermissions, FHIRApiCoverageElig
     FHIRApiCoverageRequestPermissions, FHIRApiCommunicationRequestPermissions, FHIRApiPractitionerPermissions, \
     FHIRApiHFPermissions, FHIRApiInsureePermissions, FHIRApiMedicationPermissions, FHIRApiConditionPermissions, \
     FHIRApiActivityDefinitionPermissions, FHIRApiHealthServicePermissions
-from claim.models import ClaimAdmin, Claim, Feedback
+from claim.models import ClaimAdmin, Claim, Feedback, ClaimItem ,ClaimService
 from django.db.models import OuterRef, Exists
-from insuree.models import Insuree
+from insuree.models import Insuree, InsureePolicy
 from location.models import HealthFacility, Location
 from policy.models import Policy
 from medical.models import Item, Diagnosis, Service
@@ -23,7 +23,8 @@ from api_fhir_r4.serializers import PatientSerializer, LocationSerializer, Locat
     PolicyCoverageEligibilityRequestSerializer, ClaimResponseSerializer, CommunicationRequestSerializer, \
     MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer ,ContractSerializer
 from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
-from django.db.models import Q
+from django.db.models import Q, Prefetch
+
 import datetime
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -42,8 +43,7 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
     #permission_classes = (FHIRApiInsureePermissions,)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset() 
-        queryset.select_related('Family__Photo__Gender')
+        queryset = self.get_queryset().select_related('gender').select_related('photo').select_related('family__location')
         refDate = request.GET.get('refDate')
         claim_date = request.GET.get('claimDateFrom')
         identifier = request.GET.get("identifier")
@@ -81,7 +81,7 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
 
     
     def get_queryset(self):
-        return Insuree.objects.all()
+        return Insuree.objects
         
  
         
@@ -97,7 +97,7 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
         if identifier:
             queryset = queryset.filter(code=identifier)
         else:
-            queryset = queryset.filter(validity_to__isnull=True)
+            queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
         if ( physicalType and physicalType == 'si'):
             self.serializer_class=LocationSiteSerializer
             serializer = LocationSiteSerializer(self.paginate_queryset(queryset), many=True)
@@ -116,9 +116,9 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
     def get_queryset(self, physicalType = 'area'):
         #return Location.get_queryset(None, self.request.user)
         if physicalType == 'si':
-            return HealthFacility.objects.all()
+            return HealthFacility.objects.select_related('location').select_related('sub_level').select_related('legal_form')
         else:
-            return Location.objects.all()
+            return Location.objects.select_related('parent')
         
 class PractitionerRoleViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
@@ -161,14 +161,18 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
     #permission_classes = (FHIRApiClaimPermissions,)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().select_related('insuree').select_related('health_facility').select_related('icd')\
+        .select_related('icd_1').select_related('icd_2').select_related('icd_3').select_related('icd_4')\
+            .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True)))\
+            .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True)))\
+            .prefetch_related(Prefetch('insuree__insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True).select_related("policy"))) #.filter(start_date__lte=date_from , expiry_date__gte=date_from)
         refDate = request.GET.get('refDate')
         identifier = request.GET.get("identifier")
         patient = request.GET.get("patient")
         if identifier is not None:
             queryset = queryset.filter(identifier=identifier)
         else:
-            queryset = queryset.filter(validity_to__isnull=True)
+            queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
             if refDate is not None:
                 year,month,day = refDate.split('-')
                 isValidDate = True
@@ -188,7 +192,7 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
 
     def get_queryset(self):
         #return Claim.get_queryset(None, self.request.user)
-        return Claim.objects.all()
+        return Claim.objects
 
 
 class ClaimResponseViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
@@ -226,7 +230,7 @@ class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.Li
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset() 
-        queryset.select_related('Services')
+        queryset.prefetch_related('services')
         refDate = request.GET.get('refDate')
         refEndDate = request.GET.get('refEndDate')
         identifier = request.GET.get("identifier")
@@ -254,7 +258,7 @@ class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.Li
 
 
     def get_queryset(self):
-        return Policy.objects.all()
+        return Policy.objects
         #return Policy.get_queryset(None, self.request.user)
 
 class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
@@ -263,8 +267,10 @@ class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelM
     permission_classes = (FHIRApiCoverageRequestPermissions,)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset() 
-        queryset.select_related('Services')
+        #queryset = self.get_queryset() 
+        queryset =   self.get_queryset().select_related('product').select_related('officer')\
+            .select_related('family__head_insuree').select_related('family__location')\
+            .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.select_related('insuree')))
         refDate = request.GET.get('refDate')
         refEndDate = request.GET.get('refEndDate')
         identifier = request.GET.get("identifier")
@@ -292,7 +298,7 @@ class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelM
 
 
     def get_queryset(self):
-        return Policy.objects.all()
+        return Policy.objects
 
 class MedicationViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     lookup_field = 'uuid'
