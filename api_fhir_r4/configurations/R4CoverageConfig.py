@@ -18,6 +18,9 @@ class R4CoverageConfig(CoverageConfiguration):
     def get_status_terminated_code(cls):
         return cls.get_config().R4_fhir_contract_config.get('fhir_contract_terminated_status', "Terminated")
     @classmethod
+    def get_status_disputed_code(cls):
+        return cls.get_config().R4_fhir_contract_config.get('fhir_contract_disputed_status', "Disputed")
+    @classmethod
     def get_status_offered_code(cls):
         return cls.get_config().R4_fhir_contract_config.get('fhir_contract_offered_status', "Offered")
     @classmethod
@@ -35,6 +38,9 @@ class R4CoverageConfig(CoverageConfiguration):
     @classmethod
     def get_offer_insuree_role_code(cls):
         return cls.get_config().R4_fhir_contract_config.get('fhir_contract_insuree_role', "Insuree")
+    @classmethod
+    def get_offer_dependant_role_code(cls):
+        return cls.get_config().R4_fhir_contract_config.get('fhir_contract_dependant_role', "Dependant")
     @classmethod
     def get_family_reference_code(cls):
         return cls.get_config().R4_fhir_claim_config.get('fhir_family_refereence_code', "FamilyReference")

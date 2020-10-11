@@ -17,7 +17,7 @@ from api_fhir_r4.converters.coverageConverter import CoverageConverter
 from api_fhir_r4.models import Claim as FHIRClaim, ClaimItem as FHIRClaimItem, Period, ClaimDiagnosis, Money, \
     ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Condition, Extension, Reference, CodeableConcept, ClaimInsurance
 from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
-
+from api_fhir_r4.exceptions import FHIRRequestProcessException
 
 class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
@@ -27,19 +27,19 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_pk(fhir_claim, imis_claim.uuid)
         fhir_claim.created = imis_claim.date_claimed.isoformat()
         if imis_claim.health_facility is None:
-            raise FHIRRequestProcessException(['Cannot construct a %s claim if HF is None'],imis_claim.uuid )
+            raise FHIRRequestProcessException(['Cannot construct a %s claim if HF is None' % (imis_claim.uuid) ])
         fhir_claim.facility = HealthcareServiceConverter.build_fhir_resource_reference(imis_claim.health_facility,imis_claim.health_facility.code )
         cls.build_fhir_identifiers(fhir_claim, imis_claim)
         if imis_claim.insuree is  None:
-            raise FHIRRequestProcessException(['Cannot construct a %s claim if Insuree is None'],imis_claim.uuid )
+            raise FHIRRequestProcessException(['Cannot construct a %s claim if Insuree is None' % (imis_claim.uuid)] )
         fhir_claim.patient = PatientConverter.build_fhir_resource_reference(imis_claim.insuree, imis_claim.insuree.chf_id)
         cls.build_fhir_billable_period(fhir_claim, imis_claim)
         cls.build_fhir_diagnoses(fhir_claim, imis_claim)
         cls.build_fhir_total(fhir_claim, imis_claim)
         if imis_claim.admin is not None:
             fhir_claim.enterer = PractitionerConverter.build_fhir_resource_reference(imis_claim.admin)
-        else:
-            raise FHIRRequestProcessException(['Cannot construct a %s claim if claim admin is None'],imis_claim.uuid )
+        #else:
+        #    raise FHIRRequestProcessException(['Cannot construct a %s claim if claim admin is None' %(imis_claim.uuid)] )
         cls.build_fhir_type(fhir_claim, imis_claim)
         cls.build_fhir_supportingInfo(fhir_claim, imis_claim)
         cls.build_fhir_items(fhir_claim, imis_claim)
@@ -338,8 +338,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_items_for_imis_item(cls, fhir_claim, imis_claim):
-        for item in cls.get_imis_items_for_claim(imis_claim):
-            if item.item:
+        for item in imis_claim.items.all():
+            if item:
                 type = R4ClaimConfig.get_fhir_claim_item_code()
                 cls.build_fhir_item(fhir_claim, item.item.code, type, item)
 
@@ -383,8 +383,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_items_for_imis_services(cls, fhir_claim, imis_claim):
-        for service in cls.get_imis_services_for_claim(imis_claim):
-            if service.service:
+        for service in imis_claim.services.all():
+            if service:
                 type = R4ClaimConfig.get_fhir_claim_service_code()
                 cls.build_fhir_item(fhir_claim, service.service.code, type, service)
 
@@ -499,15 +499,11 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_insurance(cls, fhir_claim, imis_claim):
         fhir_insurance = ClaimInsurance()
-
-        imis_insuree_policy = InsureePolicy.objects \
-            .filter(insuree=imis_claim.insuree) \
-            .select_related("policy") \
-            .values("policy") #policyID = 32
+        imis_insuree_policy  = imis_claim.insuree.insuree_policies.all()
+        # fixme get latest policy, not the one active at the claim
         for pol in imis_insuree_policy:
-            policy = Policy.objects.filter(id=pol["policy"])
-
-            fhir_insurance.coverage = CoverageConverter.build_fhir_resource_reference(policy[0])
+            policy = pol.policy
+            fhir_insurance.coverage = CoverageConverter.build_fhir_resource_reference(policy)
 
         if fhir_insurance.coverage is None:
             fhir_insurance.coverage = Reference()

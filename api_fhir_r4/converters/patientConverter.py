@@ -132,7 +132,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_gender(cls, fhir_patient, imis_insuree):
-        if hasattr(imis_insuree, "gender") and imis_insuree.gender is not None:
+        if imis_insuree.gender is not None:
             code = imis_insuree.gender.code
             if code == GeneralConfiguration.get_male_gender_code():
                 fhir_patient.gender = AdministrativeGender.MALE.value
@@ -339,4 +339,4 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_fhir_general_practitioner(cls, fhir_patient, imis_insuree):
         if imis_insuree.health_facility is not None:
             fhir_patient.generalPractitioner = [HealthcareServiceConverter.\
-                build_fhir_resource_reference(imis_insuree.health_facility)]
+                build_fhir_resource_reference(imis_insuree.health_facility,'Practitioner')]

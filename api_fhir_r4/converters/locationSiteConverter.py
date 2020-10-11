@@ -119,7 +119,7 @@ class LocationSiteConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_fhir_part_of(cls, fhir_location, imis_hf):
         partOf = None
         if imis_hf.location is not None:
-            fhir_location.partOf =  LocationSiteConverter.build_fhir_resource_reference(imis_hf.location,imis_hf.location.code)
+            fhir_location.partOf =  LocationSiteConverter.build_fhir_resource_reference(imis_hf.location,'Location',imis_hf.location.code)
 
     @classmethod
     def build_imis_parent_location_id(cls, imis_hf, fhir_location, errors):
