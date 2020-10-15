@@ -162,7 +162,7 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset().select_related('insuree').select_related('health_facility').select_related('icd')\
-        .select_related('icd_1').select_related('icd_2').select_related('icd_3').select_related('icd_4')\
+            .select_related('icd_1').select_related('icd_2').select_related('icd_3').select_related('icd_4')\
             .prefetch_related(Prefetch('items', queryset=ClaimItem.objects.filter(validity_to__isnull=True)))\
             .prefetch_related(Prefetch('services', queryset=ClaimService.objects.filter(validity_to__isnull=True)))\
             .prefetch_related(Prefetch('insuree__insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True).select_related("policy"))) #.filter(start_date__lte=date_from , expiry_date__gte=date_from)
@@ -270,7 +270,7 @@ class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelM
         #queryset = self.get_queryset() 
         queryset =   self.get_queryset().select_related('product').select_related('officer')\
             .select_related('family__head_insuree').select_related('family__location')\
-            .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.select_related('insuree')))
+            .prefetch_related(Prefetch('insuree_policies', queryset=InsureePolicy.objects.filter(validity_to__isnull=True).select_related('insuree')))
         refDate = request.GET.get('refDate')
         refEndDate = request.GET.get('refEndDate')
         identifier = request.GET.get("identifier")

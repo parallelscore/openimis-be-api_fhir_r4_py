@@ -79,7 +79,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_contract_asset_context(cls, contract_term_asset, imis_policy):
-        insureePolicies = imis_policy.insuree_policies.filter(validity_to__isnull=True)
+        insureePolicies = imis_policy.insuree_policies.all()
         for insureePolicy in insureePolicies:
             if insureePolicy.insuree.head is True:
                 party_role = cls.build_simple_codeable_concept(R4CoverageConfig.get_offer_insuree_role_code())
