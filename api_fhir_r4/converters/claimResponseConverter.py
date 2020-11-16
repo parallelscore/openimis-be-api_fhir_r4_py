@@ -479,24 +479,24 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
                 item_adjudication_asked.category = \
                     cls.build_codeable_concept(2, text="entered")
-                item_adjudication_adjusted.category = \
+                item_adjudication_approved.category = \
                     cls.build_codeable_concept(4, text="checked")
                 item_adjudication_asked.value = item.qty_provided
                 if item.qty_approved is not None and item.qty_approved != 0.0:
                     value = item.qty_approved
                 else:
                     value = item.qty_provided
-                item_adjudication_adjusted.value = value
+                item_adjudication_approved.value = value
 
-                return [item_adjudication_asked, item_adjudication_adjusted]
+                return [item_adjudication_asked, item_adjudication_approved]
 
             if imis_claim.status == 8:
 
                 item_adjudication_asked.category = \
                     cls.build_codeable_concept(2, text="entered")
-                item_adjudication_adjusted.category = \
-                    cls.build_codeable_concept(4, text="checked")
                 item_adjudication_approved.category = \
+                    cls.build_codeable_concept(4, text="checked")
+                item_adjudication_adjusted.category = \
                     cls.build_codeable_concept(8, text="processed")
                 item_adjudication_asked.value = item.qty_provided
                 if item.qty_approved is not None and item.qty_approved != 0.0:
@@ -506,15 +506,15 @@ class ClaimResponseConverter(BaseFHIRConverter):
                 item_adjudication_adjusted.value = value
                 item_adjudication_approved.value = value
 
-                return [item_adjudication_asked, item_adjudication_adjusted, item_adjudication_approved]
+                return [item_adjudication_asked, item_adjudication_approved, item_adjudication_adjusted]
 
             if imis_claim.status == 16:
 
                 item_adjudication_asked.category = \
                     cls.build_codeable_concept(2, text="entered")
-                item_adjudication_adjusted.category = \
-                    cls.build_codeable_concept(4, text="checked")
                 item_adjudication_approved.category = \
+                    cls.build_codeable_concept(4, text="checked")
+                item_adjudication_adjusted.category = \
                     cls.build_codeable_concept(8, text="processed")
                 item_adjudication_valuated.category = \
                     cls.build_codeable_concept(16, text="valuated")
@@ -527,7 +527,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
                 item_adjudication_approved.value = value
                 item_adjudication_valuated.value = value
 
-                return [item_adjudication_asked, item_adjudication_adjusted, item_adjudication_approved,
+                return [item_adjudication_asked, item_adjudication_approved, item_adjudication_adjusted,
                         item_adjudication_valuated]
 
         if rejected_reason != 0:
@@ -580,18 +580,24 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
     @classmethod
     def build_item_checked(cls, claim_item, adjudication):
-        claim_item.qty_approved = adjudication.value
-        claim_item.price_adjusted = adjudication.amount.value
+        if adjudication.value and adjudication.value != claim_item.qty_provided:
+            claim_item.qty_approved = adjudication.value
+        if adjudication.amount and adjudication.amount.value != claim_item.price_asked:
+            claim_item.price_approved = adjudication.amount.value
 
     @classmethod
     def build_item_processed(cls, claim_item, adjudication):
-        claim_item.qty_approved = adjudication.value
-        claim_item.price_approved = adjudication.amount.value
+        if adjudication.value and adjudication.value != claim_item.qty_provided:
+            claim_item.qty_approved = adjudication.value
+        if adjudication.amount and adjudication.amount.value != claim_item.price_asked:
+            claim_item.price_adjusted = adjudication.amount.value
 
     @classmethod
     def build_item_valuated(cls, claim_item, adjudication):
-        claim_item.qty_approved = adjudication.value
-        claim_item.price_valuated = adjudication.amount.value
+        if adjudication.value and adjudication.value != claim_item.qty_provided:
+            claim_item.qty_approved = adjudication.value
+        if adjudication.amount and adjudication.amount.value != claim_item.price_asked * claim_item.qty_provided:
+            claim_item.price_valuated = adjudication.amount.value
 
     @classmethod
     def build_process_note(cls, fhir_claim_response, string_value):
