@@ -130,7 +130,8 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
         return Claim.get_queryset(None, self.request.user)
 
 
-class ClaimResponseViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class ClaimResponseViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet,
+                           mixins.UpdateModelMixin):
     lookup_field = 'uuid'
     serializer_class = ClaimResponseSerializer
     permission_classes = (FHIRApiClaimPermissions,)

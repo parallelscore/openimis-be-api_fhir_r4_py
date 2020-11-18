@@ -1,3 +1,4 @@
+from core.models import User, TechnicalUser
 from django.http.response import HttpResponseBase
 
 from api_fhir_r4.configurations import GeneralConfiguration
@@ -35,8 +36,16 @@ class BaseFHIRSerializer(serializers.Serializer):
         audit_user_id = request.user.id_for_audit if request.user else None
         if audit_user_id is None:
             audit_user_id = GeneralConfiguration.get_default_audit_user_id()
-        return audit_user_id
+        if isinstance(audit_user_id, int):
+            return audit_user_id
+        else:
+            return self.__get_technical_audit_user(audit_user_id)
 
+    def __get_technical_audit_user(self, technical_user_uuid):
+        technical_user = TechnicalUser.objects.get(id=technical_user_uuid)
+        core_user = User.objects.get(t_user=technical_user_uuid)
+        interactive_user = core_user.i_user
+        return interactive_user.id if interactive_user else technical_user.id_for_audit
 
 from api_fhir_r4.serializers.patientSerializer import PatientSerializer
 from api_fhir_r4.serializers.locationSerializer import LocationSerializer
