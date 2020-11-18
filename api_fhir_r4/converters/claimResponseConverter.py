@@ -422,122 +422,68 @@ class ClaimResponseConverter(BaseFHIRConverter):
         return extension
 
     @classmethod
+    def __build_item_price(cls, item_price):
+        price = Money()
+        price.currency = core.currency
+        price.value = item_price
+        return price
+
+    @classmethod
+    def __build_adjudication(cls, item, rejected_reason, amount, category, quantity, explicit_amount=False):
+        adjudication = ClaimResponseItemAdjudication()
+        adjudication.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
+        if explicit_amount or (amount.value is not None and amount.value != 0.0):
+            adjudication.amount = amount
+        adjudication.category = category
+        adjudication.value = quantity
+        return adjudication
+
+    _CLAIM_STATUS_DISPLAY = {
+        1: "rejected",
+        2: "entered",
+        4: "checked",
+        8: "processed",
+        16: "valuated"
+    }
+
+    @classmethod
     def build_fhir_item_adjudication(cls, item, rejected_reason, imis_claim):
-        item_adjudication_asked = ClaimResponseItemAdjudication()
-        item_adjudication_adjusted = ClaimResponseItemAdjudication()
-        item_adjudication_approved = ClaimResponseItemAdjudication()
-        item_adjudication_valuated = ClaimResponseItemAdjudication()
+        def build_asked_adjudication(status, price):
+            category = cls.build_codeable_concept(status, text=cls._CLAIM_STATUS_DISPLAY[status])
+            adjudication = cls.__build_adjudication(item, rejected_reason, price, category, item.qty_provided, True)
+            return adjudication
 
-        price_asked = Money()
-        price_asked.currency = core.currency
-        price_asked.value = item.price_asked
-        price_adjusted = Money()
-        price_adjusted.currency = core.currency
-        price_adjusted.value = item.price_adjusted
-        price_approved = Money()
-        price_approved.currency = core.currency
-        price_approved.value = item.price_approved
-        price_valuated = Money()
-        price_valuated.currency = core.currency
-        price_valuated.value = item.price_valuated
-        value = None
+        def build_processed_adjudication(status, price):
+            category = cls.build_codeable_concept(status, text=cls._CLAIM_STATUS_DISPLAY[status])
+            if item.qty_approved is not None and item.qty_approved != 0.0:
+                quantity = item.qty_approved
+            else:
+                quantity = item.qty_provided
+            adjudication = cls.__build_adjudication(item, rejected_reason, price, category, quantity)
+            return adjudication
 
-        if rejected_reason == 0:
+        price_asked = cls.__build_item_price(item.price_asked)
+        adjudications = []
 
-            item_adjudication_asked.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
-            item_adjudication_asked.amount = price_asked
+        if rejected_reason == 0 and imis_claim.status != 1:
+            if imis_claim.status >= 2:
+                adjudications.append(build_asked_adjudication(2, price_asked))
 
-            item_adjudication_adjusted.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
-            if price_adjusted.value is not None and price_adjusted.value != 0.0:
-                item_adjudication_adjusted.amount = price_adjusted
+            if imis_claim.status >= 4:
+                price_approved = cls.__build_item_price(item.price_approved)
+                adjudications.append(build_processed_adjudication(4, price_approved))
 
-            item_adjudication_approved.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
-            if price_approved.value is not None and price_approved.value != 0.0:
-                item_adjudication_approved.amount = price_approved
-
-            item_adjudication_valuated.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
-            if price_valuated.value is not None and price_valuated.value != 0.0:
-                item_adjudication_valuated.amount = price_valuated
-
-            if imis_claim.status == 1:
-
-                item_adjudication_asked.category = \
-                    cls.build_codeable_concept(1, text="rejected")
-                item_adjudication_asked.value = item.qty_provided
-
-                return [item_adjudication_asked]
-
-            if imis_claim.status == 2:
-
-                item_adjudication_asked.category = \
-                    cls.build_codeable_concept(2, text="entered")
-                item_adjudication_asked.value = item.qty_provided
-
-                return [item_adjudication_asked]
-
-            if imis_claim.status == 4:
-
-                item_adjudication_asked.category = \
-                    cls.build_codeable_concept(2, text="entered")
-                item_adjudication_approved.category = \
-                    cls.build_codeable_concept(4, text="checked")
-                item_adjudication_asked.value = item.qty_provided
-                if item.qty_approved is not None and item.qty_approved != 0.0:
-                    value = item.qty_approved
-                else:
-                    value = item.qty_provided
-                item_adjudication_approved.value = value
-
-                return [item_adjudication_asked, item_adjudication_approved]
-
-            if imis_claim.status == 8:
-
-                item_adjudication_asked.category = \
-                    cls.build_codeable_concept(2, text="entered")
-                item_adjudication_approved.category = \
-                    cls.build_codeable_concept(4, text="checked")
-                item_adjudication_adjusted.category = \
-                    cls.build_codeable_concept(8, text="processed")
-                item_adjudication_asked.value = item.qty_provided
-                if item.qty_approved is not None and item.qty_approved != 0.0:
-                    value = item.qty_approved
-                else:
-                    value = item.qty_provided
-                item_adjudication_adjusted.value = value
-                item_adjudication_approved.value = value
-
-                return [item_adjudication_asked, item_adjudication_approved, item_adjudication_adjusted]
+            if imis_claim.status >= 8:
+                price_adjusted = cls.__build_item_price(item.price_adjusted)
+                adjudications.append(build_processed_adjudication(8, price_adjusted))
 
             if imis_claim.status == 16:
+                price_valuated = cls.__build_item_price(item.price_valuated)
+                adjudications.append(build_processed_adjudication(16, price_valuated))
+        else:
+            adjudications.append(build_asked_adjudication(1, price_asked))
 
-                item_adjudication_asked.category = \
-                    cls.build_codeable_concept(2, text="entered")
-                item_adjudication_approved.category = \
-                    cls.build_codeable_concept(4, text="checked")
-                item_adjudication_adjusted.category = \
-                    cls.build_codeable_concept(8, text="processed")
-                item_adjudication_valuated.category = \
-                    cls.build_codeable_concept(16, text="valuated")
-                item_adjudication_asked.value = item.qty_provided
-                if item.qty_approved is not None and item.qty_approved != 0.0:
-                    value = item.qty_approved
-                else:
-                    value = item.qty_provided
-                item_adjudication_adjusted.value = value
-                item_adjudication_approved.value = value
-                item_adjudication_valuated.value = value
-
-                return [item_adjudication_asked, item_adjudication_approved, item_adjudication_adjusted,
-                        item_adjudication_valuated]
-
-        if rejected_reason != 0:
-            item_adjudication_asked.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
-            item_adjudication_asked.amount = price_asked
-            item_adjudication_asked.category = \
-                cls.build_codeable_concept(1, text="rejected")
-            item_adjudication_asked.value = item.qty_provided
-
-            return [item_adjudication_asked]
+        return adjudications
 
     @classmethod
     def build_fhir_adjudication_reason(cls, item, rejected_reason):
