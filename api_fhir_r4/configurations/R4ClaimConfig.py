@@ -67,3 +67,14 @@ class R4ClaimConfig(ClaimConfiguration):
     @classmethod
     def get_fhir_claim_organization_code(cls):
         return cls.get_config().R4_fhir_claim_config.get('fhir_claim_organization_code', "openIMIS")  # has to be updated when 'Organization' is created
+
+    @classmethod
+    def get_fhir_claim_attachment_code(cls):
+        return cls.get_config().R4_fhir_claim_config.get('fhir_claim_attachment_code', "attachment")
+
+    @classmethod
+    def get_allowed_fhir_claim_attachment_mime_types_regex(cls):
+        return cls.get_config().R4_fhir_claim_config.get(
+            'fhir_claim_allowed_mime_types_regex',
+            '|'.join(['text\/.*', 'image\/png', 'image\/jpe?g', 'application\/msword', '.*doc.*'])
+        )
