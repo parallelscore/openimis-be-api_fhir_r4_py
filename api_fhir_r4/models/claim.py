@@ -33,7 +33,7 @@ class ClaimSupportingInfo(BackboneElement):
     valueBoolean = Property('valueBoolean', bool)
     valueString = Property('valueString', str)
     valueQuantity = Property('valueString', 'Quantity')
-    valueAttachment = Property('valueString', 'Attachment')
+    valueAttachment = Property('valueAttachment', 'Attachment')
     valueReference = Property('valueReference', 'Reference')  # referencing `Any`
     reason = Property('reason', 'CodeableConcept')
 

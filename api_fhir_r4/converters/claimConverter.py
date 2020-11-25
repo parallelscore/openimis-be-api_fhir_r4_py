@@ -1,5 +1,10 @@
-from claim import ClaimItemSubmit, ClaimServiceSubmit
-from claim.models import Claim, ClaimItem, ClaimService
+import base64
+import hashlib
+import re
+
+from claim import ClaimItemSubmit, ClaimServiceSubmit, ClaimConfig
+from claim.models import Claim, ClaimItem, ClaimService, ClaimAttachment
+from location.models import HealthFacility
 from medical.models import Diagnosis, Item, Service
 from insuree.models import InsureePolicy
 from policy.models import Policy
@@ -15,7 +20,8 @@ from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceC
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.coverageConventer import CoverageConventer
 from api_fhir_r4.models import Claim as FHIRClaim, ClaimItem as FHIRClaimItem, Period, ClaimDiagnosis, Money, \
-    ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Condition, Extension, Reference, CodeableConcept, ClaimInsurance
+    ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Condition, Extension, Reference, CodeableConcept, ClaimInsurance, \
+    Attachment
 from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
 
 
@@ -41,6 +47,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_priority(fhir_claim)
         cls.build_fhir_status(fhir_claim)
         cls.build_fhir_insurance(fhir_claim, imis_claim)
+        cls.build_fhir_attachments(fhir_claim, imis_claim)
         return fhir_claim
 
     @classmethod
@@ -58,6 +65,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_imis_visit_type(imis_claim, fhir_claim)
         cls.build_imis_supportingInfo(imis_claim, fhir_claim)
         cls.build_imis_submit_items_and_services(imis_claim, fhir_claim)
+        cls.build_imis_attachments(imis_claim, fhir_claim)
         #cls.build_imis_adjuster(imis_claim, fhir_claim, errors)
         cls.check_errors(errors)
         return imis_claim
@@ -110,7 +118,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_health_facility(cls, errors, fhir_claim, imis_claim):
         if fhir_claim.facility:
-            health_facility = LocationConverter.get_imis_obj_by_fhir_reference(fhir_claim.facility)
+            _, hfId = fhir_claim.facility.reference.split("/")
+            health_facility = DbManagerUtils.get_object_or_none(HealthFacility, uuid=hfId)
             if health_facility:
                 imis_claim.health_facility = health_facility
                 imis_claim.health_facility_code = health_facility.code
@@ -215,7 +224,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         diagnosis_type = None
         type_concept = cls.get_first_diagnosis_type(diagnosis)
         if type_concept:
-            diagnosis_type = type_concept
+            diagnosis_type = type_concept.text
         return diagnosis_type
 
     @classmethod
@@ -499,3 +508,88 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_insurance.focal = True
 
         fhir_claim.insurance = [fhir_insurance]
+
+    @classmethod
+    def build_imis_attachments(cls, imis_claim: Claim, fhir_claim: FHIRClaim):
+        supporting_info = fhir_claim.supportingInfo
+        if not hasattr(imis_claim, 'claim_attachments'):
+            imis_claim.claim_attachments = []
+
+        for next_attachment in supporting_info:
+            if next_attachment.category.text == R4ClaimConfig.get_fhir_claim_attachment_code():
+                claim_attachment = cls.build_attachment_from_value(next_attachment.valueAttachment)
+                imis_claim.claim_attachments.append(claim_attachment)
+
+    @classmethod
+    def build_fhir_attachments(cls, fhir_claim, imis_claim):
+        attachments = ClaimAttachment.objects.filter(claim=imis_claim)
+
+        if not fhir_claim.supportingInfo:
+            fhir_claim.supportingInfo = []
+
+        for attachment in attachments:
+            supporting_info_element = cls.build_attachment_supporting_info_element(attachment)
+            fhir_claim.supportingInfo.append(supporting_info_element)
+
+    @classmethod
+    def build_attachment_supporting_info_element(cls, imis_attachment):
+        supporting_info_element = ClaimSupportingInfo()
+
+        supporting_info_element.category = cls.build_attachment_supporting_info_category()
+        supporting_info_element.valueAttachment = cls.build_fhir_value_attachment(imis_attachment)
+        return supporting_info_element
+
+    @classmethod
+    def build_attachment_supporting_info_category(cls):
+        category_code = R4ClaimConfig.get_fhir_claim_attachment_code()
+        system = R4ClaimConfig.get_fhir_claim_attachment_system()
+        category = cls.build_codeable_concept(category_code, system, category_code)
+        category.coding[0].display = category_code.capitalize()
+        return category
+
+    @classmethod
+    def build_fhir_value_attachment(cls, imis_attachment):
+        attachment = Attachment()
+        attachment.creation = imis_attachment.date.isoformat()
+        attachment.data = cls.get_attachment_content(imis_attachment)
+        attachment.contentType = imis_attachment.mime
+        attachment.title = imis_attachment.filename
+        return attachment
+
+    @classmethod
+    def get_attachment_content(cls, imis_attachment):
+        file_root = ClaimConfig.claim_attachments_root_path
+
+        if file_root and imis_attachment.url:
+            with open('%s/%s' % (ClaimConfig.claim_attachments_root_path, imis_attachment.url), "r") as file:
+                return base64.b64encode(file.read())
+        elif not file_root and imis_attachment.document:
+            return imis_attachment.document
+        else:
+            return None
+
+    @classmethod
+    def build_attachment_from_value(cls, valueAttachment: Attachment):
+        allowed_mime_regex = R4ClaimConfig.get_allowed_fhir_claim_attachment_mime_types_regex()
+        mime_validation = re.compile(allowed_mime_regex, re.IGNORECASE)
+
+        if not mime_validation.match(valueAttachment.contentType):
+            raise ValueError(F'Mime type {valueAttachment.contentType} not allowed')
+
+        if valueAttachment.hash:
+            cls.validateHash(valueAttachment.hash, valueAttachment.data)
+
+        attachment_data = {
+            'title': valueAttachment.title,
+            'filename': valueAttachment.title,
+            'document': valueAttachment.data,
+            'mime': valueAttachment.contentType,
+            'date': TimeUtils.str_to_date(valueAttachment.creation)
+        }
+        return attachment_data
+
+    @classmethod
+    def validateHash(cls, expected_hash, data):
+        actual_hash = hashlib.sha1(data.encode('utf-8')).hexdigest()
+        if actual_hash.casefold() != expected_hash.casefold():
+            raise ValueError('Hash for data file is incorrect')

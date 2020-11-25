@@ -6,7 +6,6 @@ from api_fhir_r4.configurations import ModuleConfiguration
 logger = logging.getLogger(__name__)
 
 MODULE_NAME = "api_fhir_r4"
-
 DEFAULT_CFG = {
     "default_audit_user_id": 1,
     "gender_codes": {
@@ -81,7 +80,11 @@ DEFAULT_CFG = {
         "fhir_claim_item_status_rejected_code": "rejected",
         "fhir_claim_item_general_adjudication_code": "general",
         "fhir_claim_item_rejected_reason_adjudication_code": "rejected_reason",
-        "fhir_claim_organization_code": "openIMIS"
+        "fhir_claim_organization_code": "openIMIS",
+        "fhir_claim_attachment_code": "attachment",
+        "fhir_claim_information_category_system": "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+        "fhir_claim_allowed_mime_types_regex":
+            '|'.join(['text\/.*', 'image\/png', 'image\/jpe?g', 'application\/msword', '.*doc.*'])
     },
     "R4_fhir_coverage_eligibility_config": {
         "fhir_serializer": "PolicyCoverageEligibilityRequestSerializer",
@@ -127,6 +130,7 @@ DEFAULT_CFG = {
         "fhir_enroll_date_code": "EnrollDate"
     }
 }
+
 
 
 class ApiFhirConfig(AppConfig):
