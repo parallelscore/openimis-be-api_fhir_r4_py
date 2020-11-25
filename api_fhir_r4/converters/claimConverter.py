@@ -535,11 +535,17 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_attachment_supporting_info_element(cls, imis_attachment):
         supporting_info_element = ClaimSupportingInfo()
 
-        attachment_code = R4ClaimConfig.get_fhir_claim_attachment_code()
-        supporting_info_element.category = cls.build_simple_codeable_concept(attachment_code)
-
+        supporting_info_element.category = cls.build_attachment_supporting_info_category()
         supporting_info_element.valueAttachment = cls.build_fhir_value_attachment(imis_attachment)
         return supporting_info_element
+
+    @classmethod
+    def build_attachment_supporting_info_category(cls):
+        category_code = R4ClaimConfig.get_fhir_claim_attachment_code()
+        system = R4ClaimConfig.get_fhir_claim_attachment_system()
+        category = cls.build_codeable_concept(category_code, system, category_code)
+        category.coding[0].display = category_code.capitalize()
+        return category
 
     @classmethod
     def build_fhir_value_attachment(cls, imis_attachment):

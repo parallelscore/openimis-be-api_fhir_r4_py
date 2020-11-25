@@ -73,6 +73,11 @@ class R4ClaimConfig(ClaimConfiguration):
         return cls.get_config().R4_fhir_claim_config.get('fhir_claim_attachment_code', "attachment")
 
     @classmethod
+    def get_fhir_claim_attachment_system(cls):
+        return cls.get_config().R4_fhir_claim_config.get('fhir_claim_information_category_system',
+                                                         "http://terminology.hl7.org/CodeSystem/claiminformationcategory")
+
+    @classmethod
     def get_allowed_fhir_claim_attachment_mime_types_regex(cls):
         return cls.get_config().R4_fhir_claim_config.get(
             'fhir_claim_allowed_mime_types_regex',
