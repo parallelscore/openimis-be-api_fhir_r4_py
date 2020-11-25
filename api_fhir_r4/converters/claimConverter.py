@@ -27,12 +27,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_claim = FHIRClaim()
         cls.build_fhir_pk(fhir_claim, imis_claim.uuid)
         fhir_claim.created = imis_claim.date_claimed.isoformat()
-        if imis_claim.health_facility is None:
-            raise FHIRRequestProcessException(['Cannot construct a %s claim if HF is None' % (imis_claim.uuid) ])
-        fhir_claim.facility = HealthcareServiceConverter.build_fhir_resource_reference(imis_claim.health_facility,imis_claim.health_facility.code )
+        fhir_claim.facility = HealthcareServiceConverter.build_fhir_resource_reference(imis_claim.health_facility,imis_claim.health_facility.code)
         cls.build_fhir_identifiers(fhir_claim, imis_claim)
-        if imis_claim.insuree is  None:
-            raise FHIRRequestProcessException(['Cannot construct a %s claim if Insuree is None' % (imis_claim.uuid)] )
         fhir_claim.patient = PatientConverter.build_fhir_resource_reference(imis_claim.insuree, imis_claim.insuree.chf_id)
         cls.build_fhir_billable_period(fhir_claim, imis_claim)
         cls.build_fhir_diagnoses(fhir_claim, imis_claim)
