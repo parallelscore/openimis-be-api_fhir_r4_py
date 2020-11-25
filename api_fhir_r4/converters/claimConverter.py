@@ -34,7 +34,10 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_diagnoses(fhir_claim, imis_claim)
         cls.build_fhir_total(fhir_claim, imis_claim)
         if imis_claim.admin is not None:
-            fhir_claim.enterer = PractitionerConverter.build_fhir_resource_reference(imis_claim.admin)
+            fhir_claim.enterer = PractitionerConverter.build_fhir_resource_reference(imis_claim.admin, 'Practitioner')
+        else:
+            raise FHIRRequestProcessException(
+                [F'Failed to create FHIR instance for claim {imis_claim.uuid}: Claim Admin field not found'])
         cls.build_fhir_type(fhir_claim, imis_claim)
         cls.build_fhir_supportingInfo(fhir_claim, imis_claim)
         cls.build_fhir_items(fhir_claim, imis_claim)
