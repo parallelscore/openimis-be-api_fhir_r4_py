@@ -231,6 +231,18 @@ class ClaimConfiguration(BaseConfiguration):  # pragma: no cover
     def get_fhir_claim_organization_code(cls):
         raise NotImplementedError('`get_fhir_claim_organization_code()` must be implemented')
 
+    @classmethod
+    def get_fhir_claim_attachment_code(cls):
+        raise NotImplementedError('`get_fhir_claim_attachment_code()` must be implemented')
+
+    @classmethod
+    def get_fhir_claim_attachment_system(cls):
+        raise NotImplementedError('`get_fhir_claim_attachment_system()` must be implemented')
+
+    @classmethod
+    def get_allowed_fhir_claim_attachment_mime_types_regex(cls):
+        raise NotImplementedError('`get_allowed_fhir_claim_attachment_mime_types_regex()` must be implemented')
+
 
 class CoverageEligibilityConfiguration(BaseConfiguration):  # pragma: no cover
 
