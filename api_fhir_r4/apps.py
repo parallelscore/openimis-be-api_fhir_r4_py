@@ -46,7 +46,7 @@ DEFAULT_CFG = {
         "system": "http://hl7.org/fhir/v3/ServiceDeliveryLocationRoleType/vs.html",
         "fhir_code_for_hospital": "HOSP",
         "fhir_code_for_dispensary": "COMM",
-        "fhir_code_for_health_center": "OP",
+        "fhir_code_for_health_center": "OF",
     },
     "R4_fhir_location_physical_type": {
         "system": "http://terminology.hl7.org/CodeSystem/location-physical-type.html",
