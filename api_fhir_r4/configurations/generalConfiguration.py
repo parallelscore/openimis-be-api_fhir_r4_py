@@ -49,3 +49,7 @@ class GeneralConfiguration(BaseConfiguration):
     @classmethod
     def get_default_response_page_size(cls):
         return cls.get_config().default_response_page_size
+
+    @classmethod
+    def show_system(cls):
+        return 0

@@ -55,8 +55,8 @@ class LocationConfiguration(BaseConfiguration):  # pragma: no cover
         raise NotImplementedError('`build_configuration()` must be implemented.')
 
     @classmethod
-    def get_fhir_location_role_type_system(cls):
-        raise NotImplementedError('`get_fhir_location_role_type_system()` must be implemented.')
+    def get_fhir_location_site_type_system(cls):
+        raise NotImplementedError('`get_fhir_location_site_type_system()` must be implemented.')
 
     @classmethod
     def get_fhir_code_for_hospital(cls):

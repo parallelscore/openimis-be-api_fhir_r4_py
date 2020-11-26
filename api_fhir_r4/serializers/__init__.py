@@ -48,7 +48,9 @@ class BaseFHIRSerializer(serializers.Serializer):
         return interactive_user.id if interactive_user else technical_user.id_for_audit
 
 from api_fhir_r4.serializers.patientSerializer import PatientSerializer
+from api_fhir_r4.serializers.contractSerializer import ContractSerializer
 from api_fhir_r4.serializers.locationSerializer import LocationSerializer
+from api_fhir_r4.serializers.locationSiteSerializer import LocationSiteSerializer
 from api_fhir_r4.serializers.practitionerRoleSerializer import PractitionerRoleSerializer
 from api_fhir_r4.serializers.practitionerSerializer import PractitionerSerializer
 from api_fhir_r4.serializers.claimSerializer import ClaimSerializer
