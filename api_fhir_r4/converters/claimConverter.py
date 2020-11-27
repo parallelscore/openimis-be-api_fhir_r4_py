@@ -572,9 +572,9 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         file_root = ClaimConfig.claim_attachments_root_path
 
         if file_root and imis_attachment.url:
-            with open('%s/%s' % (ClaimConfig.claim_attachments_root_path, imis_attachment.url), "r") as file:
+            with open('%s/%s' % (ClaimConfig.claim_attachments_root_path, imis_attachment.url), "rb") as file:
                 return base64.b64encode(file.read())
-        elif not file_root and imis_attachment.document:
+        elif not imis_attachment.url and imis_attachment.document:
             return imis_attachment.document
         else:
             return None
