@@ -98,19 +98,3 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
     def __get_attachments(self, fhir_obj):
         attachment_category = R4ClaimConfig.get_fhir_claim_attachment_code()
         return [a.valueAttachment for a in fhir_obj.supportingInfo if a.category.text == attachment_category]
-
-    # def _add_contained_resources(self, imis_obj: Claim, fhir_obj: FHIRClaim):
-    #     for attribute, converter in self.contained_resources.items():
-    #         attr_value = imis_obj.__getattribute__(attribute)
-    #         if attr_value is not None:
-    #             try:
-    #                 fhir_value = converter().to_fhir_obj(attr_value)
-    #                 print("Attr: {} Attr val: {}".format(attribute, fhir_value))
-    #             except Exception as e:
-    #                 print("FAILED TO PROCESS: {}".format((attribute, attr_value)))
-    #     # Added resources: Patient, Condition, Medication, HealthcareService, Practitioner, ActivityDefinition.
-    #     pass
-    #
-    # # def __get_related_field_value(self, imis_obj, attribute):
-    # #     attr_value = imis_obj.__getattribute__(attribute)
-    # #     if isinstance(attr_value, MyModel.my_relation.__class__)
