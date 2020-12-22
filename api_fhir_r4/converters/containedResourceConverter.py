@@ -3,6 +3,7 @@ from typing import List, Tuple
 from django.db import models
 from collections.abc import Iterable
 
+from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.models import FHIRBaseObject
 
 
@@ -19,24 +20,23 @@ class ContainedResourceConverter:
         """
         Parameters
         ----------
-        :param imis_resource_name: Name of attribute, which value should be transformed
+        :param imis_resource_name: Name of attribute, which value should be transformed.
         :param resource_fhir_converter: FHIR Converter, it's used for mapping imis resource to fhir representation.
-        It must implement at least to_fhir_obj() method
+        It must implement at least to_fhir_obj() method.
         :param resource_extract_method: Optional argument. Function used for getting attribute value from IMIS Model.
-        It has two arguments, first is django model, second one is imis_resource_name.
-        Default function is imis_model.__getattribute__(imis_resource_name).
-        Return type can be model or iterable (e.g. list of attributes).
+        It has two arguments, first is django model, second one is imis_resource_name. Default function is
+        imis_model.__getattribute__(imis_resource_name). Return type can be model or iterable (e.g. list of attributes).
         """
         self.imis_resource_name = imis_resource_name
         self.extract_value = resource_extract_method or (lambda model, attribute: model.__getattribute__(attribute))
         self.converter = resource_fhir_converter()
 
     def convert_from_source(self, imis_obj: models.Model) -> List[FHIRBaseObject]:
-        """Convert IMIS Model attribute to FHIR Object
+        """Convert IMIS Model attribute to FHIR Object.
 
-        :param imis_obj: IMIS Object with attribute that have to be converted
-        :return: Attribute converted to FHIR object list.
-        If attribute is single object then it's still converted to list format.
+        :param imis_obj: IMIS Object with attribute that have to be converted.
+        :return: Attribute converted to FHIR object list. If attribute is single object then it's still converted to
+        list format.
         """
         resource = self.extract_value(imis_obj, self.imis_resource_name)
         if isinstance(resource, Iterable):
@@ -54,4 +54,5 @@ class ContainedResourceConverter:
                 fhir_value = self.converter.to_fhir_obj(imis_resource_value)
                 return fhir_value
             except Exception as e:
-                print("Failed to process: {}".format((self.imis_resource_name, imis_resource_value)))
+                raise FHIRException("Failed to process: {}, eexcpetion: {}"
+                                    .format((self.imis_resource_name, imis_resource_value), str(e)))
