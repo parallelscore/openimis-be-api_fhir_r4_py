@@ -162,6 +162,7 @@ class PractitionerViewSet(BaseFHIRView, viewsets.ModelViewSet):
         #return ClaimAdmin.get_queryset(None, self.request.user)
         return ClaimAdmin.filter_queryset(None)
 
+
 class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin,
                    mixins.CreateModelMixin, GenericViewSet):
     lookup_field = 'uuid'
@@ -177,6 +178,8 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
         refDate = request.GET.get('refDate')
         identifier = request.GET.get("identifier")
         patient = request.GET.get("patient")
+        contained = bool(request.GET.get("contained"))
+
         if identifier is not None:
             queryset = queryset.filter(identifier=identifier)
         else:
@@ -195,8 +198,14 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
                     .filter(indentifier = patient)\
                     .values("id")
                 queryset = queryset.filter(chf_id in indentifier.id)
-        serializer = ClaimSerializer(self.paginate_queryset(queryset), many=True)
+        serializer = ClaimSerializer(self.paginate_queryset(queryset), many=True, context={'contained': contained})
         return self.get_paginated_response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        contained = bool(request.GET.get("contained"))
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, context={'contained': contained})
+        return Response(serializer.data)
 
     def get_queryset(self):
         #return Claim.get_queryset(None, self.request.user)

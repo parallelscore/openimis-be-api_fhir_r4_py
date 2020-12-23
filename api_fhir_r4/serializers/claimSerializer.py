@@ -1,20 +1,42 @@
 from claim import ClaimSubmitService, ClaimSubmit, ClaimConfig
 from claim.gql_mutations import create_attachments
 from claim.models import Claim
+
+from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
+from api_fhir_r4.mixins import ContainedContentSerializerMixin
+from api_fhir_r4.models import Claim as FHIRClaim
 from django.http import HttpResponseForbidden
 from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
 
 from api_fhir_r4.configurations import R4ClaimConfig
-from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter
+from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, PatientConverter, \
+    ConditionConverter, MedicationConverter, HealthcareServiceConverter, PractitionerConverter, \
+    ActivityDefinitionConverter
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.models import FHIRBaseObject
 from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
-class ClaimSerializer(BaseFHIRSerializer):
+class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
 
     fhirConverter = ClaimConverter()
+
+    contained_resources = [
+        ContainedResourceConverter('insuree', PatientConverter),
+        ContainedResourceConverter('icd', ConditionConverter),
+        *[ContainedResourceConverter('icd_{}'.format(n), ConditionConverter) for n in range(1, 5)],
+        ContainedResourceConverter('health_facility', HealthcareServiceConverter),
+        ContainedResourceConverter('admin', PractitionerConverter),
+        ContainedResourceConverter('items', MedicationConverter,
+                                   lambda model, field: [
+                                       item.item for item in model.__getattribute__(field).all()
+                                   ]),
+        ContainedResourceConverter('services', ActivityDefinitionConverter,
+                                   lambda model, field: [
+                                       service.service for service in model.__getattribute__(field).all()
+                                   ]),
+    ]
 
     def create(self, validated_data):
         claim_submit = ClaimSubmit(date=validated_data.get('date_claimed'),
@@ -61,7 +83,11 @@ class ClaimSerializer(BaseFHIRSerializer):
 
         fhir_obj = self.fhirConverter.to_fhir_obj(obj)
         self.remove_attachment_data(fhir_obj)
-        return fhir_obj.toDict()
+
+        fhir_dict = fhir_obj.toDict()
+        if self.context.get('contained', False):
+            fhir_dict['contained'] = self._create_contained_obj_dict(obj)
+        return fhir_dict
 
     def remove_attachment_data(self, fhir_obj):
         if hasattr(self.parent, 'many') and self.parent.many is True:
