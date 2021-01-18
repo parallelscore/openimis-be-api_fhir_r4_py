@@ -327,7 +327,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
             if type == R4ClaimConfig.get_fhir_claim_item_code():
                 serviced = cls.get_imis_claim_item_by_code(code, imis_claim.id)
             elif type == R4ClaimConfig.get_fhir_claim_service_code():
-                serviced = cls.get_service_claim_item_by_code(code, imis_claim.id)
+                serviced = cls.get_imis_claim_service_by_code(code, imis_claim.id)
             else:
                 raise FHIRRequestProcessException(['Could not assign category {} for claim_item: {}'
                                                   .format(type, claim_item)])
@@ -385,7 +385,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         pass
 
     @classmethod
-    def get_service_claim_item_by_code(cls, code, imis_claim_id):
+    def get_imis_claim_service_by_code(cls, code, imis_claim_id):
         service_code_qs = Service.objects.filter(code=code)
         result = ClaimService.objects.filter(service_id__in=Subquery(service_code_qs.values('id')),
                                              claim_id=imis_claim_id)
