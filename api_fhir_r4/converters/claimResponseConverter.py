@@ -422,7 +422,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         extension = Extension()
         extension.valueReference = reference
         extension.url = service_type
-        extension.valueReference = MedicationConverter.build_fhir_resource_reference(serviced)
+        extension.valueReference = MedicationConverter.build_fhir_resource_reference(serviced, service_type)
         return extension
 
     @classmethod
