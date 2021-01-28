@@ -1,10 +1,14 @@
 from claim import ClaimSubmitService, ClaimSubmit, ClaimConfig
+from claim.gql_mutations import create_attachments
 from claim.models import Claim
 from django.http import HttpResponseForbidden
+from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
 
-from api_fhir_r4.converters import ClaimResponseConverter
+from api_fhir_r4.configurations import R4ClaimConfig
+from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter
 from api_fhir_r4.converters.claimConverter import ClaimConverter
+from api_fhir_r4.models import FHIRBaseObject
 from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
@@ -35,6 +39,8 @@ class ClaimSerializer(BaseFHIRSerializer):
         request = self.context.get("request")
         if request.user and request.user.has_perms(ClaimConfig.gql_mutation_create_claims_perms):
             ClaimSubmitService(request.user).submit(claim_submit)
+            self.create_claim_attachments(validated_data.get('code'),
+                                          attachments=validated_data.get('claim_attachments', []))
             return self.create_claim_response(validated_data.get('code'))
         else:
             return HttpResponseForbidden()
@@ -42,3 +48,27 @@ class ClaimSerializer(BaseFHIRSerializer):
     def create_claim_response(self, claim_code):
         claim = get_object_or_404(Claim, code=claim_code)
         return ClaimResponseConverter.to_fhir_obj(claim)
+
+    def create_claim_attachments(self, claim_code, attachments):
+        claim = get_object_or_404(Claim, code=claim_code)
+        create_attachments(claim.id, attachments)
+
+    def to_representation(self, obj):
+        if isinstance(obj, HttpResponseBase):
+            return OperationOutcomeConverter.to_fhir_obj(obj).toDict()
+        elif isinstance(obj, FHIRBaseObject):
+            return obj.toDict()
+
+        fhir_obj = self.fhirConverter.to_fhir_obj(obj)
+        self.remove_attachment_data(fhir_obj)
+        return fhir_obj.toDict()
+
+    def remove_attachment_data(self, fhir_obj):
+        if hasattr(self.parent, 'many') and self.parent.many is True:
+            attachments = self.__get_attachments(fhir_obj)
+            for next_attachment in attachments:
+                next_attachment.data = None
+
+    def __get_attachments(self, fhir_obj):
+        attachment_category = R4ClaimConfig.get_fhir_claim_attachment_code()
+        return [a.valueAttachment for a in fhir_obj.supportingInfo if a.category.text == attachment_category]

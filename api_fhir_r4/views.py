@@ -5,7 +5,8 @@ from api_fhir_r4.permissions import FHIRApiClaimPermissions, FHIRApiCoverageElig
     FHIRApiActivityDefinitionPermissions, FHIRApiHealthServicePermissions
 from claim.models import ClaimAdmin, Claim, Feedback, ClaimItem ,ClaimService
 from django.db.models import OuterRef, Exists
-from insuree.models import Insuree, InsureePolicy
+from insuree.models import Insuree, InsureePolicy,Family
+from policyholder.models import PolicyHolder
 from location.models import HealthFacility, Location
 from policy.models import Policy
 from medical.models import Item, Diagnosis, Service
@@ -13,6 +14,8 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import parser_classes,permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 import datetime
 from api_fhir_r4.paginations import FhirBundleResultsSetPagination
@@ -21,11 +24,19 @@ from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Con
 from api_fhir_r4.serializers import PatientSerializer, LocationSerializer, LocationSiteSerializer, PractitionerRoleSerializer, \
     PractitionerSerializer, ClaimSerializer, CoverageEligibilityRequestSerializer, \
     PolicyCoverageEligibilityRequestSerializer, ClaimResponseSerializer, CommunicationRequestSerializer, \
-    MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer ,ContractSerializer
+    MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer ,ContractSerializer,GroupSerializer,\
+    OrganisationSerializer
 from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
 from django.db.models import Q, Prefetch
-
+from rest_framework.decorators import api_view
 import datetime
+from rest_framework.parsers import JSONParser
+import requests
+from requests.exceptions import HTTPError
+from requests.auth import HTTPBasicAuth
+from django.views import View
+from policy.services import ByInsureeRequest, ByInsureeService, ByInsureeResponse
+
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return
@@ -74,17 +85,37 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
                     .filter(insuree_id=OuterRef("id"))\
                     .values("id")
                 queryset = queryset.annotate(has_claim_in_range=Exists(has_claim_in_range)).filter(has_claim_in_range=True)
-            
-        
+
         serializer = PatientSerializer(self.paginate_queryset(queryset), many=True)
         return self.get_paginated_response(serializer.data)
 
     
     def get_queryset(self):
         return Insuree.objects
-        
- 
-        
+    
+class GroupViewSet(BaseFHIRView, viewsets.ModelViewSet):
+    lookup_field = 'uuid'
+    serializer_class = GroupSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = GroupSerializer(self.paginate_queryset(queryset), many=True)
+        return self.get_paginated_response(serializer.data)
+
+    def get_queryset(self):
+        return Family.objects.all().order_by('validity_from')
+
+class OrganisationViewSet(BaseFHIRView, viewsets.ModelViewSet):
+    lookup_field = 'code'
+    serializer_class = OrganisationSerializer
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = OrganisationSerializer(self.paginate_queryset(queryset), many=True)
+        return self.get_paginated_response(serializer.data)
+    
+    def get_queryset(self):
+        return PolicyHolder.objects.all().order_by('date_created')
+    
 class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = LocationSerializer
@@ -98,7 +129,7 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
             queryset = queryset.filter(code=identifier)
         else:
             queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
-        if ( physicalType and physicalType == 'si'):
+        if (physicalType and physicalType == 'si'):
             self.serializer_class=LocationSiteSerializer
             serializer = LocationSiteSerializer(self.paginate_queryset(queryset), many=True)
         else:
@@ -120,14 +151,24 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
         else:
             return Location.objects.select_related('parent')
         
+   
+
 class PractitionerRoleViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = PractitionerRoleSerializer
     #permission_classes = (FHIRApiPractitionerPermissions,)
+
     def list(self, request, *args, **kwargs):
+        identifier = request.GET.get("identifier")
         queryset = self.get_queryset()
         if identifier:
             queryset = queryset.filter(code=identifier)
+        else:
+            queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from'
+                                                                          )
+        serializer = PractitionerRoleSerializer(self.paginate_queryset(queryset), many=True)
+        return self.get_paginated_response(serializer.data)
+
     def perform_destroy(self, instance):
         instance.health_facility_id = None
         instance.save()
@@ -195,7 +236,8 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
         return Claim.objects
 
 
-class ClaimResponseViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class ClaimResponseViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet,
+                           mixins.UpdateModelMixin):
     lookup_field = 'uuid'
     serializer_class = ClaimResponseSerializer
     permission_classes = (FHIRApiClaimPermissions,)
@@ -216,14 +258,40 @@ class CommunicationRequestViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixin
 class CoverageEligibilityRequestViewSet(BaseFHIRView, mixins.CreateModelMixin, GenericViewSet):
     queryset = Insuree.filter_queryset()
     serializer_class = eval(Config.get_serializer())
-    #serializer_class = CoverageEligibilityRequestSerializer
+    # PolicyCoverageEligibilityRequestSerializer
     permission_classes = (FHIRApiCoverageEligibilityRequestPermissions,)
-
     def get_queryset(self):
         return Insuree.get_queryset(None, self.request.user)
+    
+        
+class PatientEligibility(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self, request, format=None):
+        data=request.data
+        patient=data['patient']['reference'].rsplit('/',1)
+        try:
+            response = requests.post('http://localhost:5001/Eligibilty',json=data,auth=HTTPBasicAuth('test', 'test'))
+            response.raise_for_status()
+            # print(response.status_code)
+            # return Response(response.json())
+            if response.status_code == 200:
+                eligibility_request=ByInsureeRequest(chf_id=patient[1])
+                try:
+                    response = ByInsureeService(request.user).request(eligibility_request)
+                except Exception as e:
+                    pass  
+                return Response(PolicyCoverageEligibilityRequestSerializer(response).data)
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+            eligibility_request =ByInsureeRequest(chf_id=patient[1])
+            try:
+                response = ByInsureeService(request.user).request(eligibility_request)
+            except Exception as e:
+                pass  
+            return Response(PolicyCoverageEligibilityRequestSerializer(response).data)
 
-
-class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+        
+class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin,mixins.UpdateModelMixin,mixins.CreateModelMixin,GenericViewSet):
     lookup_field = 'uuid'
     serializer_class = CoverageSerializer
     permission_classes = (FHIRApiCoverageRequestPermissions,)

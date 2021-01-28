@@ -1,11 +1,12 @@
+from django.utils.translation import gettext
 from api_fhir_r4.configurations import R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ContractConverter,  ReferenceConverterMixin
 from api_fhir_r4.models import Coverage, Reference, Period, Contract, Money, Extension, ContractTermAssetValuedItem, \
     ContractTermOfferParty, CoverageClass, ContractTerm, ContractTermAsset, ContractTermOffer
-from product.models import ProductItem, ProductService
+from product.models import ProductItem, ProductService,Product
 from policy.models import Policy
-from api_fhir_r4.utils import DbManagerUtils
-
+from api_fhir_r4.utils import DbManagerUtils,TimeUtils
+from insuree.models import Family
 
 class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
@@ -18,9 +19,65 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_coverage_status(fhir_coverage, imis_policy)
         cls.build_coverage_contract(fhir_coverage, imis_policy)
         cls.build_coverage_class(fhir_coverage, imis_policy)
+        cls.build_coverage_value(fhir_coverage, imis_policy)
         cls.build_coverage_extension(fhir_coverage, imis_policy)
         return fhir_coverage
+    
+    @classmethod
+    def to_imis_obj(cls,fhir_coverage, audit_user_id):
+        imis_policy = Policy()
+        errors=[]
+        imis_policy.audit_user_id = audit_user_id
+        cls.build_imis_status(imis_policy,fhir_coverage,errors)
+        cls.build_imis_period(imis_policy,fhir_coverage,errors)
+        cls.build_imis_policyholder(imis_policy,fhir_coverage,errors)
+        cls.build_imis_class(imis_policy,fhir_coverage,errors)
+        cls.check_errors(errors)
+        return imis_policy
+    
+    @classmethod
+    def build_imis_product(cls,classes,imis_policy):
+        for product in classes:
+            coding = cls.get_first_coding_from_codeable_concept(product.type)
+            if coding.code  == R4CoverageConfig.get_product_code():
+                imis_policy.product = Product.objects.get(uuid=product.id)
+                imis_policy.value = product.value
+                      
+    @classmethod
+    def build_imis_status(cls, imis_policy,fhir_coverage,errors):
+        status = fhir_coverage.status
+        if not cls.valid_condition(status is None, gettext('Missing  `status` attribute'),errors):
+            if status =='active':
+                imis_policy.status =2
+            else:
+                imis_policy.status=1
 
+    @classmethod
+    def build_imis_class(cls, imis_policy,fhir_coverage,errors):
+        product = fhir_coverage.classes
+        if not cls.valid_condition(product is None, gettext('Missing  `class` attribute'),errors):
+            cls.build_imis_product(product,imis_policy)
+            
+    @classmethod
+    def build_imis_policyholder(cls,imis_policy,fhir_coverage,errors):
+        policyholder = fhir_coverage.policyHolder
+        if not cls.valid_condition(policyholder is None, gettext('Missing  `policy holder` attribute'),errors):
+            if not cls.valid_condition(policyholder.reference is None, gettext('Missing  `policyholder reference` attribute'),errors):
+                reference = policyholder.reference .split("/", 2)
+                obj=Family.objects.get(uuid=reference[1])
+                imis_policy.family = obj
+            
+    @classmethod
+    def build_imis_period(cls, imis_policy,fhir_coverage,errors):
+        period = fhir_coverage.period
+        if not cls.valid_condition(period is None, gettext('Missing  `period` attribute'),errors):
+            if not cls.valid_condition(period.start is None, gettext('Missing  `period start` attribute'),errors):
+                imis_policy.start_date = TimeUtils.str_to_date(period.start) 
+                imis_policy.enroll_date = TimeUtils.str_to_date(period.start) 
+                imis_policy.effective_date = TimeUtils.str_to_date(period.start) 
+            if not cls.valid_condition(period.end is None, gettext('Missing  `period end` attribute'),errors):
+                imis_policy.expiry_date = TimeUtils.str_to_date(period.end)
+            # imis_policy.status = fhir_coverage.status    
     @classmethod
     def get_reference_obj_id(cls, imis_policy):
         return imis_policy.uuid
@@ -64,6 +121,11 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_coverage_status(cls, fhir_coverage, imis_policy):
         code = imis_policy.status
         fhir_coverage.status = cls.__map_status(code)
+        return fhir_coverage
+
+    @classmethod
+    def build_coverage_value(cls, fhir_coverage, imis_policy):
+        fhir_coverage.value = imis_policy.value
         return fhir_coverage
 
     @classmethod
@@ -157,7 +219,6 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         item_code = R4CoverageConfig.get_item_code()
         product_items = ProductItem.objects.filter(product=product).all()
         product_services = ProductService.objects.filter(product=product).all()
-
         product_coverage[item_code] = [item.item.code for item in product_items]
         product_coverage[service_code] = [service.service.code for service in product_services]
         class_.type = product.name

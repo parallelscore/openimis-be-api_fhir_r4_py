@@ -125,7 +125,7 @@ class LocationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_part_of(cls, fhir_location, imis_location):
         partOf = None
-        if  imis_location.parent is not None:
+        if imis_location.parent is not None:
             fhir_location.partOf = LocationConverter.build_fhir_resource_reference(imis_location.parent,'Location',imis_location.parent.code)
 
     @classmethod

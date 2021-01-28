@@ -6,6 +6,7 @@ class CoverageClass(BackboneElement):
     type = Property('type', 'CodeableConcept', required=True)
     value = Property('value', str, required=True)
     name = Property('name', str)
+    id=Property('id', str)
 
 
 class CoverageCostToBeneficiaryException(BackboneElement):
@@ -37,6 +38,8 @@ class Coverage(DomainResource):
     payor = Property('payor', 'Reference', required=True, count_max='*')  # referencing `Patient` | `RelatedPerson` | `Organization`
     classes = Property('classes', 'CoverageClass', count_max='*')
     order = Property('order', int)
+    value = Property('value',int)
+    producty = Property('value',int)
     network = Property('network', str)
     costToBeneficiary = Property('costToBeneficiary', 'CoverageCostToBeneficiary', count_max='*')
     subrogation = Property('subrogation', bool)

@@ -205,8 +205,8 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_healthcare_service_speciality(cls, fhir_hcs, imis_hf):
         if imis_hf.sub_level is not None:
-            fhir_hcs.speciality = cls.build_codeable_concept(imis_hf.sub_level.code,
-                                                             text=imis_hf.sub_level.health_facility_sub_level)
+            fhir_hcs.speciality = [cls.build_codeable_concept(imis_hf.sub_level.code,
+                                                             text=imis_hf.sub_level.health_facility_sub_level)]
 
     @classmethod
     def build_imis_sub_level(cls, imis_hf, fhir_hcs, errors):
