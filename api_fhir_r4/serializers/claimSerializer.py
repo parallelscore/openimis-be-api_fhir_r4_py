@@ -1,10 +1,11 @@
 from claim import ClaimSubmitService, ClaimSubmit, ClaimConfig
 from claim.gql_mutations import create_attachments
 from claim.models import Claim
+from typing import List
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.mixins import ContainedContentSerializerMixin
-from api_fhir_r4.models import Claim as FHIRClaim
+from api_fhir_r4.models import Claim as FHIRClaim, Property
 from django.http import HttpResponseForbidden
 from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
@@ -37,6 +38,15 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
                                        service.service for service in model.__getattribute__(field).all()
                                    ]),
     ]
+
+    def fhir_object_reference_fields(self, fhir_obj: FHIRClaim) -> List[FHIRBaseObject]:
+        return [
+            fhir_obj.patient,
+            *[diagnosis.diagnosisReference for diagnosis in fhir_obj.diagnosis],
+            fhir_obj.facility,
+            fhir_obj.enterer,
+            *[item.extension[0].valueReference for item in fhir_obj.item]
+        ]
 
     def create(self, validated_data):
         claim_submit = ClaimSubmit(date=validated_data.get('date_claimed'),
@@ -83,6 +93,9 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
 
         fhir_obj = self.fhirConverter.to_fhir_obj(obj)
         self.remove_attachment_data(fhir_obj)
+
+        if self.context.get('contained', None):
+            self._add_contained_references(fhir_obj)
 
         fhir_dict = fhir_obj.toDict()
         if self.context.get('contained', False):
