@@ -179,6 +179,8 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_medication.extension.append(age)
         venue = cls.build_fhir_venue(imis_medication)
         fhir_medication.extension.append(venue)
+        level = cls.build_fhir_level(imis_medication)
+        fhir_medication.extension.append(level)
 
     @classmethod
     def build_fhir_gender(cls, imis_medication):
@@ -259,6 +261,22 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return extension
 
     @classmethod
+    def build_fhir_level(self, imis_medication):
+        # Values for this extension are fixed for medication
+        extension = Extension()
+        extension.url = 'useContextLevel'
+        extension.valueUsageContext = UsageContext()
+        extension.valueUsageContext.code = Coding()
+        extension.valueUsageContext.code.code = 'level'
+        extension.valueUsageContext.valueCodeableConcept = CodeableConcept()
+        coding = Coding()
+        coding.code = 'M'
+        coding.display = 'Medication'
+        extension.valueUsageContext.valueCodeableConcept.coding.append(coding)
+        extension.valueUsageContext.valueCodeableConcept.text = "Item Level"
+        return extension
+
+    @classmethod
     def build_fhir_male(cls, imis_medication):
         item_pat_cat = imis_medication.patient_category
         male = ""
@@ -329,4 +347,3 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if not cls.valid_condition(serv_care_type is None,
                                    gettext('Missing activity definition `serv care type` attribute'), errors):
             imis_medication.care_type = serv_care_type
-
