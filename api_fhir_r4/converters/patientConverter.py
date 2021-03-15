@@ -243,7 +243,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.valueBoolean = imis_insuree.head
 
             elif value == "family.uuid":
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/Group"
+                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/group"
                 reference = Reference()
                 identifier = Identifier()
                 identifier.type = cls.build_codeable_concept('UUID')
