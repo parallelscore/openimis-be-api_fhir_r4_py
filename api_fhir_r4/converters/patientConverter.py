@@ -7,7 +7,7 @@ from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, Refe
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.models import Patient, AdministrativeGender, ImisMaritalStatus, Extension, PatientLink, Attachment, \
-    Coding, FHIRDate
+    Coding, FHIRDate, Reference, Identifier, CodeableConcept
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
@@ -242,6 +242,18 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/isHead"
                 extension.valueBoolean = imis_insuree.head
 
+            elif value == "family.uuid":
+                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/Group"
+                reference = Reference()
+                identifier = Identifier()
+                identifier.type = cls.build_codeable_concept('UUID')
+                identifier.use = 'usual'
+                identifier.value = imis_insuree.family.uuid
+                reference.identifier = identifier
+                reference.reference = F"Group/{imis_insuree.family.uuid}"
+                reference.type = 'Group'
+                extension.valueReference = reference
+
             elif value == "validity_from":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331779/registrationDate"
                 if imis_insuree.validity_from is not None:
@@ -278,6 +290,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         if hasattr(imis_insuree, "family") and imis_insuree.family is not None and \
                 imis_insuree.family.location is not None:
             build_extension(fhir_patient, imis_insuree, "family.location.code")
+            build_extension(fhir_patient, imis_insuree, "family.uuid")
         if imis_insuree.education is not None:
             build_extension(fhir_patient, imis_insuree, "education.education")
         if imis_insuree.profession is not None:
