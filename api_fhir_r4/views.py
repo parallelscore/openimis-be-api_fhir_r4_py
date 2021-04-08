@@ -27,6 +27,7 @@ from django.db.models import Q, Prefetch
 
 import datetime
 
+
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return
@@ -75,7 +76,8 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
                     .filter(insuree_id=OuterRef("id"))\
                     .values("id")
                 queryset = queryset.annotate(has_claim_in_range=Exists(has_claim_in_range)).filter(has_claim_in_range=True)
-
+            
+        
         serializer = PatientSerializer(self.paginate_queryset(queryset), many=True)
         return self.get_paginated_response(serializer.data)
 
