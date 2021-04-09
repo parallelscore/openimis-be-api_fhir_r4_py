@@ -1,5 +1,6 @@
 import sys
 
+from api_fhir_r4.defaultConfig import DEFAULT_CFG
 
 class BaseConfiguration(object):  # pragma: no cover
 
@@ -11,6 +12,17 @@ class BaseConfiguration(object):  # pragma: no cover
     def get_config(cls):
         module_name = "api_fhir_r4"
         return sys.modules[module_name]
+
+    @classmethod
+    def get_config_attribute(cls, attribute, cfg=None):
+        conf = cls.get_config()
+        if conf and hasattr(conf, attribute):
+            return conf.__getattribute__(attribute)
+        else:
+            from core.models import ModuleConfiguration
+            cfg = cfg or ModuleConfiguration.get_or_default("api_fhir_r4", DEFAULT_CFG)
+            cls.build_configuration(cfg)
+            return conf.__getattribute__(attribute)
 
 
 class IdentifierConfiguration(BaseConfiguration):  # pragma: no cover

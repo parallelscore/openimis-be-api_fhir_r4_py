@@ -129,6 +129,8 @@ class BaseFHIRConverter(ABC):
         reference.type = type
         reference.reference = reference
         return reference
+
+
 from api_fhir_r4.converters.groupConverterMixin import GroupConverterMixin
 from api_fhir_r4.converters.organisationConverterMixin import OrganisationConverterMixin
 from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
@@ -146,7 +148,9 @@ from api_fhir_r4.converters.coverageEligibilityRequestConverter import CoverageE
 from api_fhir_r4.converters.policyCoverageEligibilityRequestConverter import PolicyCoverageEligibilityRequestConverter
 from api_fhir_r4.converters.communicationRequestConverter import CommunicationRequestConverter
 from api_fhir_r4.converters.claimResponseConverter import ClaimResponseConverter
+from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
+from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter

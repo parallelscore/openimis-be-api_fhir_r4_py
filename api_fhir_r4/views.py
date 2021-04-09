@@ -31,6 +31,8 @@ from django.db.models import Prefetch
 from rest_framework.decorators import api_view
 import datetime
 from rest_framework.parsers import JSONParser
+
+
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return
@@ -84,7 +86,8 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
     
     def get_queryset(self):
         return Insuree.objects
-    
+
+
 class GroupViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = GroupSerializer
@@ -99,6 +102,7 @@ class GroupViewSet(BaseFHIRView, viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
     def get_queryset(self):
         return Family.objects.all().order_by('validity_from')
+
 
 class OrganisationViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'id'
@@ -115,6 +119,7 @@ class OrganisationViewSet(BaseFHIRView, viewsets.ModelViewSet):
     def get_queryset(self):
         return PolicyHolder.objects.filter(is_deleted=False).order_by('date_created')
  
+
 class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = LocationSerializer
@@ -149,13 +154,13 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
             return HealthFacility.objects.select_related('location').select_related('sub_level').select_related('legal_form')
         else:
             return Location.objects.select_related('parent')
-        
-   
+
 
 class PractitionerRoleViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = PractitionerRoleSerializer
     permission_classes = (FHIRApiPractitionerPermissions,)
+
     def list(self, request, *args, **kwargs):
         identifier = request.GET.get("identifier")
         queryset = self.get_queryset()
@@ -163,6 +168,7 @@ class PractitionerRoleViewSet(BaseFHIRView, viewsets.ModelViewSet):
             queryset = queryset.filter(code=identifier)
         else:
             queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
+
         serializer = PractitionerRoleSerializer(self.paginate_queryset(queryset), many=True)
         return self.get_paginated_response(serializer.data)
 
@@ -192,6 +198,7 @@ class PractitionerViewSet(BaseFHIRView, viewsets.ModelViewSet):
         #return ClaimAdmin.get_queryset(None, self.request.user)
         return ClaimAdmin.filter_queryset(None)
 
+
 class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin,
                    mixins.CreateModelMixin, GenericViewSet):
     lookup_field = 'uuid'
@@ -207,6 +214,8 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
         refDate = request.GET.get('refDate')
         identifier = request.GET.get("identifier")
         patient = request.GET.get("patient")
+        contained = bool(request.GET.get("contained"))
+
         if identifier is not None:
             queryset = queryset.filter(identifier=identifier)
         else:
@@ -228,8 +237,14 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
                     .filter(indentifier = patient)\
                     .values("id")
                 queryset = queryset.filter(chf_id in indentifier.id)
-        serializer = ClaimSerializer(self.paginate_queryset(queryset), many=True)
+        serializer = ClaimSerializer(self.paginate_queryset(queryset), many=True, context={'contained': contained})
         return self.get_paginated_response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        contained = bool(request.GET.get("contained"))
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, context={'contained': contained})
+        return Response(serializer.data)
 
     def get_queryset(self):
         #return Claim.get_queryset(None, self.request.user)

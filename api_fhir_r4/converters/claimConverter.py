@@ -18,7 +18,7 @@ from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceC
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.coverageConverter import CoverageConverter
 from api_fhir_r4.models import Claim as FHIRClaim, ClaimItem as FHIRClaimItem, Period, ClaimDiagnosis, Money, \
-    ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Extension, Reference, ClaimInsurance, \
+    ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Condition, Extension, Reference, CodeableConcept, ClaimInsurance, \
     Attachment
 from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
 from api_fhir_r4.exceptions import FHIRRequestProcessException

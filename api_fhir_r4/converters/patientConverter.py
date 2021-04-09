@@ -7,7 +7,7 @@ from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, Refe
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.models import Patient, AdministrativeGender, ImisMaritalStatus, Extension, PatientLink, Attachment, \
-    Coding, FHIRDate
+    Coding, FHIRDate, Reference, Identifier, CodeableConcept
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
@@ -216,11 +216,15 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         gender = fhir_patient.gender
     
         if gender is not None:
-            try:
-                imis_insuree.gender = Gender.objects.get(pk=gender)
-            except:
-                imis_insuree.gender = Gender.objects.get(gender__iexact=gender)
-                
+            imis_gender_code = None
+            if gender == GeneralConfiguration.get_male_gender_code():
+                imis_gender_code = str(AdministrativeGender.MALE.value).upper()
+            elif gender == GeneralConfiguration.get_female_gender_code():
+                imis_gender_code = str(AdministrativeGender.FEMALE.value).upper()
+            elif gender == GeneralConfiguration.get_other_gender_code():
+                imis_gender_code = str(AdministrativeGender.OTHER.value).upper()
+            if imis_gender_code is not None:
+                imis_insuree.gender = Gender.objects.get(pk=imis_gender_code)
 
     @classmethod
     def build_fhir_marital_status(cls, fhir_patient, imis_insuree):
@@ -298,12 +302,25 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_fhir_extentions(cls, fhir_patient, imis_insuree):
         fhir_patient.extension = []
+
         def build_extension(fhir_patient, imis_insuree, value):
             extension = Extension()
             if value == "head":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/isHead"
                 extension.valueBoolean = imis_insuree.head
-
+                
+            elif value == "family.uuid":
+                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/group"
+                reference = Reference()
+                identifier = Identifier()
+                identifier.type = cls.build_codeable_concept('UUID')
+                identifier.use = 'usual'
+                identifier.value = imis_insuree.family.uuid
+                reference.identifier = identifier
+                reference.reference = F"Group/{imis_insuree.family.uuid}"
+                reference.type = 'Group'
+                extension.valueReference = reference
+                
             elif value == "validity_from":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331779/registrationDate"
                 if imis_insuree.validity_from is not None:
@@ -332,12 +349,15 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                         extension.valueCoding.display = imis_insuree.profession.profession
 
             fhir_patient.extension.append(extension)
+
         if imis_insuree.head is not None:
             build_extension(fhir_patient, imis_insuree, "head")
         if imis_insuree.validity_from is not None:
             build_extension(fhir_patient, imis_insuree, "validity_from")
-        if imis_insuree.family.location is not None:
+        if hasattr(imis_insuree, "family") and imis_insuree.family is not None and \
+                imis_insuree.family.location is not None:
             build_extension(fhir_patient, imis_insuree, "family.location.code")
+            build_extension(fhir_patient, imis_insuree, "family.uuid")
         if imis_insuree.education is not None:
             build_extension(fhir_patient, imis_insuree, "education.education")
         if imis_insuree.profession is not None:
@@ -353,13 +373,16 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_poverty_status_extension(cls, imis_insuree):
         extension = Extension()
         extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/1556643849/povertyStatus"
-        extension.valueBoolean = imis_insuree.family.poverty
+        if hasattr(imis_insuree, "family") and imis_insuree.family is not None:
+            if imis_insuree.family.poverty is not None:
+                extension.valueBoolean = imis_insuree.family.poverty
         return extension
 
     @classmethod
     def build_fhir_related_person(cls, fhir_patient, imis_insuree):
         fhir_link = PatientLink()
-        if imis_insuree.relationship is not None:
+        if imis_insuree.relationship is not None and imis_insuree.family is not None \
+            and imis_insuree.family.head_insuree is not None:
             fhir_link.other = PatientConverter.build_fhir_resource_reference(imis_insuree.family.head_insuree)
             fhir_link.type = imis_insuree.relationship.relation
             fhir_patient.link = [fhir_link]
@@ -377,7 +400,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_fhir_photo(cls, fhir_patient, imis_insuree):
         photo = Attachment()
-        if imis_insuree.photo is not None:
+        if imis_insuree.photo is not None and imis_insuree.photo.folder is not None and imis_insuree.photo.filename is not None :
             photo.creation = imis_insuree.photo.date.isoformat()
             url = imis_insuree.photo.folder+"\\"+ imis_insuree.photo.filename+"\\"
             photo.url = url

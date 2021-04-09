@@ -197,11 +197,13 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         age = cls.build_fhir_age(imis_activity_definition)
         workflow = cls.build_fhir_workflow(imis_activity_definition)
         venue = cls.build_fhir_venue(imis_activity_definition)
+        level = cls.build_fhir_level(imis_activity_definition)
 
         usage_context_gender = UsageContext()
         usage_context_age = UsageContext()
         usage_context_workflow = UsageContext()
         usage_context_venue = UsageContext()
+        usage_context_level = UsageContext()
 
         usage_context_gender.valueCodeableConcept = CodeableConcept()
         usage_context_gender.code = Coding()
@@ -223,12 +225,18 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         usage_context_venue.code.code = "useContextVenue"
         usage_context_venue.valueCodeableConcept = venue
 
+        usage_context_level.valueCodeableConcept = CodeableConcept()
+        usage_context_level.code = Coding()
+        usage_context_level.code.code = "useContextLevel"
+        usage_context_level.valueCodeableConcept = level
+
         if usage_context_workflow.valueCodeableConcept.coding[0].display == "":
-            return [usage_context_gender, usage_context_age, usage_context_venue]
+            return [usage_context_gender, usage_context_age, usage_context_venue, usage_context_level]
         elif usage_context_venue.valueCodeableConcept.coding[0].display == "":
-            return [usage_context_gender, usage_context_age, usage_context_workflow]
+            return [usage_context_gender, usage_context_age, usage_context_workflow, usage_context_level]
         else:
-            return [usage_context_gender, usage_context_age, usage_context_workflow, usage_context_venue]
+            return [usage_context_gender, usage_context_age, usage_context_workflow,
+                    usage_context_venue, usage_context_level]
 
     @classmethod
     def build_fhir_gender(cls, imis_activity_definition):
@@ -292,6 +300,28 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         coding_venue.display = display
         codeable_concept.coding.append(coding_venue)
         codeable_concept.text = "Clinical Venue"
+        return codeable_concept
+
+    @classmethod
+    def build_fhir_level(self, imis_activity_definition: Service):
+        # Values for this extension are fixed for medication
+        display = ""
+        if imis_activity_definition.level == 'S':
+            display = 'Simple Service'
+        elif imis_activity_definition.level == 'V':
+            display = 'Visit'
+        elif imis_activity_definition.level == 'D':
+            display = 'Day of stay'
+        elif imis_activity_definition.level == 'H':
+            display = 'Hospital case'
+
+        codeable_concept = CodeableConcept()
+        coding_level = Coding()
+        coding_level.code = imis_activity_definition.level
+        coding_level.display = display
+        codeable_concept.coding.append(coding_level)
+        codeable_concept.text = "Service Level"
+
         return codeable_concept
 
     @classmethod
