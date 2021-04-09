@@ -347,3 +347,4 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if not cls.valid_condition(serv_care_type is None,
                                    gettext('Missing activity definition `serv care type` attribute'), errors):
             imis_medication.care_type = serv_care_type
+
