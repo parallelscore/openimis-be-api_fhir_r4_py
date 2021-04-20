@@ -173,7 +173,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                                     imis_insuree.current_village = None
                 else:
                     try:
-                        imis_insuree.family = Family.objects.get(head_insuree__uuid=chf_id)
+                        imis_insuree.family = Family.objects.get(head_insuree__chf_id=chf_id)
                     except Exception as e:
                         raise e
     @classmethod
