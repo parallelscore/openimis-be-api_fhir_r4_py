@@ -11,12 +11,13 @@ from api_fhir_r4.models import Patient, AdministrativeGender, ImisMaritalStatus,
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
+
 class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_insuree):
+    def to_fhir_obj(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_patient = Patient()
-        cls.build_fhir_pk(fhir_patient, imis_insuree.uuid)
+        cls.build_fhir_pk(fhir_patient, imis_insuree, reference_type)
         cls.build_human_names(fhir_patient, imis_insuree)
         cls.build_fhir_identifiers(fhir_patient, imis_insuree)
         cls.build_fhir_birth_date(fhir_patient, imis_insuree)
@@ -24,9 +25,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_marital_status(fhir_patient, imis_insuree)
         cls.build_fhir_telecom(fhir_patient, imis_insuree)
         cls.build_fhir_addresses(fhir_patient, imis_insuree)
-        cls.build_fhir_extentions(fhir_patient, imis_insuree)
+        cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
         cls.build_poverty_status(fhir_patient, imis_insuree)
-        cls.build_fhir_related_person(fhir_patient, imis_insuree)
+        cls.build_fhir_related_person(fhir_patient, imis_insuree, reference_type)
         cls.build_fhir_photo(fhir_patient, imis_insuree)
         cls.build_fhir_general_practitioner(fhir_patient, imis_insuree)
         return fhir_patient
@@ -51,8 +52,20 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         return imis_insuree
 
     @classmethod
-    def get_reference_obj_id(cls, imis_insuree):
-        return imis_insuree.uuid
+    def get_fhir_code_identifier_type(cls):
+        return R4IdentifierConfig.get_fhir_chfid_type_code()
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_patient: Insuree):
+        return imis_patient.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_patient: Insuree):
+        return imis_patient.id
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_patient: Insuree):
+        return imis_patient.chf_id
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -88,10 +101,21 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_fhir_identifiers(cls, fhir_patient, imis_insuree):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_insuree)
-        cls.build_fhir_chfid_identifier(identifiers, imis_insuree)
+        cls.build_all_identifiers(identifiers, imis_insuree)
         cls.build_fhir_passport_identifier(identifiers, imis_insuree)
         fhir_patient.identifier = identifiers
+
+    @classmethod
+    def build_fhir_code_identifier(cls, identifiers, imis_object: Insuree):
+        # Patient don't have code so chfid is used instead as code identifier
+        if hasattr(imis_object, 'chf_id'):
+            identifiers.append(cls.__build_chfid_identifier(imis_object.chf_id))
+
+    @classmethod
+    def __build_chfid_identifier(cls, chfid):
+        return cls.build_fhir_identifier(chfid,
+                                         R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                         R4IdentifierConfig.get_fhir_chfid_type_code())
 
     @classmethod
     def build_imis_identifiers(cls, imis_insuree, fhir_patient):
@@ -233,7 +257,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                     imis_insuree.geolocation = address.text
 
     @classmethod
-    def build_fhir_extentions(cls, fhir_patient, imis_insuree):
+    def build_fhir_extentions(cls, fhir_patient, imis_insuree, reference_type):
         fhir_patient.extension = []
 
         def build_extension(fhir_patient, imis_insuree, value):
@@ -246,11 +270,12 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/group"
                 reference = Reference()
                 identifier = Identifier()
-                identifier.type = cls.build_codeable_concept('UUID')
                 identifier.use = 'usual'
-                identifier.value = imis_insuree.family.uuid
+                identifier.type = PatientConverter._family_reference_identifier_type(reference_type)
+                identifier.value = PatientConverter\
+                    ._family_reference_identifier_value(imis_insuree.family, reference_type)
                 reference.identifier = identifier
-                reference.reference = F"Group/{imis_insuree.family.uuid}"
+                reference.reference = F"Group/{identifier.value}"
                 reference.type = 'Group'
                 extension.valueReference = reference
 
@@ -263,7 +288,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960495619/locationCode"
                 if hasattr(imis_insuree, "family") and imis_insuree.family is not None:
                     if imis_insuree.family.location is not None:
-                        extension.valueReference = LocationConverter.build_fhir_resource_reference(imis_insuree.family.location)
+                        extension.valueReference = LocationConverter\
+                            .build_fhir_resource_reference(imis_insuree.family.location, reference_type=reference_type)
 
             elif value == "education.education":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331788/educationCode"
@@ -312,11 +338,12 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         return extension
 
     @classmethod
-    def build_fhir_related_person(cls, fhir_patient, imis_insuree):
+    def build_fhir_related_person(cls, fhir_patient, imis_insuree, reference_type):
         fhir_link = PatientLink()
         if imis_insuree.relationship is not None and imis_insuree.family is not None \
             and imis_insuree.family.head_insuree is not None:
-            fhir_link.other = PatientConverter.build_fhir_resource_reference(imis_insuree.family.head_insuree)
+            fhir_link.other = PatientConverter\
+                .build_fhir_resource_reference(imis_insuree.family.head_insuree, reference_type=reference_type)
             fhir_link.type = imis_insuree.relationship.relation
             fhir_patient.link = [fhir_link]
 
@@ -358,3 +385,25 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         if imis_insuree.health_facility is not None:
             fhir_patient.generalPractitioner = [HealthcareServiceConverter.\
                 build_fhir_resource_reference(imis_insuree.health_facility,'Practitioner')]
+
+    @classmethod
+    def _family_reference_identifier_type(cls, reference_type):
+        if reference_type == ReferenceConverterMixin.UUID_REFERENCE_TYPE:
+            return cls.build_codeable_concept(R4IdentifierConfig.get_fhir_uuid_type_code())
+        elif reference_type == ReferenceConverterMixin.DB_ID_REFERENCE_TYPE:
+            return cls.build_codeable_concept(R4IdentifierConfig.get_fhir_id_type_code())
+        elif reference_type == ReferenceConverterMixin.CODE_REFERENCE_TYPE:
+            # Family don't have code assigned, uuid is used instead
+            return cls.build_codeable_concept(R4IdentifierConfig.get_fhir_uuid_type_code())
+        pass
+
+    @classmethod
+    def _family_reference_identifier_value(cls, family, reference_type):
+        if reference_type == ReferenceConverterMixin.UUID_REFERENCE_TYPE:
+            return family.uuid
+        elif reference_type == ReferenceConverterMixin.DB_ID_REFERENCE_TYPE:
+            return family.id
+        elif reference_type == ReferenceConverterMixin.CODE_REFERENCE_TYPE:
+            # Family don't have code assigned, uuid is used instead
+            return family.uuid
+        raise NotImplementedError(F"Reference type {reference_type} not implemented for family")

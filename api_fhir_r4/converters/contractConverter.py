@@ -11,26 +11,31 @@ from api_fhir_r4.utils import DbManagerUtils
 class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_policy):
+    def to_fhir_obj(cls, imis_policy, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_contract = Contract()
         cls.build_contract_identifier(fhir_contract, imis_policy)
         contractTerm = ContractTerm()
         
         contractTermAsset = ContractTermAsset()
-        cls.build_contract_asset_context(contractTermAsset, imis_policy)
+        cls.build_contract_asset_context(contractTermAsset, imis_policy, reference_type)
         cls.build_contract_valued_item(contractTermAsset, imis_policy)
-        cls.build_contract_asset_type_reference(contractTermAsset, imis_policy)
+        cls.build_contract_asset_type_reference(contractTermAsset, imis_policy, reference_type)
         cls.build_contract_asset_use_period(contractTermAsset, imis_policy)
         contractTerm.asset = [contractTermAsset]
         fhir_contract.term = [contractTerm]
         cls.build_contract_status(fhir_contract, imis_policy)
-        cls.build_contract_signer(fhir_contract, imis_policy)
+        cls.build_contract_signer(fhir_contract, imis_policy, reference_type)
         cls.build_contract_state(fhir_contract, imis_policy)
         return fhir_contract
 
     @classmethod
-    def get_reference_obj_id(cls, imis_policy):
+    def get_reference_obj_uuid(cls, imis_policy: Policy):
         return imis_policy.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_policy: Policy):
+        return imis_policy.id
+
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -44,11 +49,17 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_contract_identifier(cls, fhir_contract, imis_policy):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_policy)
+        cls.build_all_identifiers(identifiers, imis_policy)
         fhir_contract.identifier = identifiers
         return fhir_contract
 
- 
+    @classmethod
+    def build_all_identifiers(cls, identifiers, imis_object):
+        # Coverage have only uuid coverage
+        cls.build_fhir_uuid_identifier(identifiers, imis_object)
+        cls.build_fhir_id_identifier(identifiers, imis_object)
+        return identifiers
+
     @classmethod
     def build_contract_valued_item(cls, contract_asset, imis_policy):
         valued_item = ContractTermAssetValuedItem()
@@ -78,7 +89,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return contract_asset
 
     @classmethod
-    def build_contract_asset_context(cls, contract_term_asset, imis_policy):
+    def build_contract_asset_context(cls, contract_term_asset, imis_policy, reference_type):
         insureePolicies = imis_policy.insuree_policies.all()
         for insureePolicy in insureePolicies:
             if insureePolicy.insuree.head is True:
@@ -89,7 +100,11 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
             assetContext = ContractTermAssetContext()
             assetContext.code = [party_role]
             display = insureePolicy.insuree.uuid + ":" + imis_policy.family.location.code # used for the DHIS integration
-            assetContext.reference = cls.build_fhir_resource_reference(insureePolicy.insuree, "Patient",display)
+            assetContext.reference = cls.build_fhir_resource_reference(
+                insureePolicy.insuree,
+                "Patient",
+                display,
+                reference_type=reference_type)
             if contract_term_asset.context is None:
                 contract_term_asset.context = [assetContext]
             else:
@@ -121,15 +136,17 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return contract
 
     @classmethod
-    def build_contract_asset_type_reference(cls, contract_asset, imis_policy):
-        typeReference = cls.build_fhir_resource_reference(imis_policy.product, "InsurancePlan", imis_policy.product.code )
+    def build_contract_asset_type_reference(cls, contract_asset, imis_policy, reference_type):
+        typeReference = cls.build_fhir_resource_reference(
+            imis_policy.product, "InsurancePlan", imis_policy.product.code, reference_type=reference_type)
         contract_asset.typeReference = [typeReference]
         return contract_asset
 
     @classmethod
-    def build_contract_signer(cls, contract, imis_policy):
+    def build_contract_signer(cls, contract, imis_policy, reference_type):
         if imis_policy.officer is not None:
-            reference = cls.build_fhir_resource_reference(imis_policy.officer, "Practitioner")
+            reference = cls.build_fhir_resource_reference(
+                imis_policy.officer, "Practitioner", reference_type=reference_type)
             signer = ContractSigner()
             signer.party = reference
             eo_type = cls.build_simple_codeable_concept(R4CoverageConfig.get_signer_eo_type_code())
@@ -140,7 +157,8 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 contract.signer.append(signer)
         if imis_policy.family is not None:
             if imis_policy.family.head_insuree is not None:
-                reference = cls.build_fhir_resource_reference(imis_policy.family.head_insuree, "Patient")
+                reference = cls.build_fhir_resource_reference(
+                    imis_policy.family.head_insuree, "Patient", reference_type=reference_type)
                 signer = ContractSigner()
                 signer.party = reference
                 eo_type = cls.build_simple_codeable_concept(R4CoverageConfig.get_signer_head_type_code())

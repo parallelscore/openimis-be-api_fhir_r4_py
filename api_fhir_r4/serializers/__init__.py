@@ -3,19 +3,19 @@ from django.http.response import HttpResponseBase
 
 from api_fhir_r4.configurations import GeneralConfiguration
 from rest_framework import serializers
-from api_fhir_r4.converters import BaseFHIRConverter, OperationOutcomeConverter
+from api_fhir_r4.converters import BaseFHIRConverter, OperationOutcomeConverter, ReferenceConverterMixin
 from api_fhir_r4.models import FHIRBaseObject
 
 
 class BaseFHIRSerializer(serializers.Serializer):
     fhirConverter = BaseFHIRConverter()
 
-    def to_representation(self, obj):
+    def to_representation(self, obj, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         if isinstance(obj, HttpResponseBase):
             return OperationOutcomeConverter.to_fhir_obj(obj).toDict()
         elif isinstance(obj, FHIRBaseObject):
             return obj.toDict()
-        return self.fhirConverter.to_fhir_obj(obj).toDict()
+        return self.fhirConverter.to_fhir_obj(obj, reference_type).toDict()
 
     def to_internal_value(self, data):
         audit_user_id = self.get_audit_user_id()

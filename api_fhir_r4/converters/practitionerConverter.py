@@ -10,9 +10,9 @@ from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_claim_admin):
+    def to_fhir_obj(cls, imis_claim_admin, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_practitioner = Practitioner()
-        cls.build_fhir_pk(fhir_practitioner, imis_claim_admin.uuid)
+        cls.build_fhir_pk(fhir_practitioner, imis_claim_admin, reference_type)
         cls.build_fhir_identifiers(fhir_practitioner, imis_claim_admin)
         cls.build_human_names(fhir_practitioner, imis_claim_admin)
         cls.build_fhir_birth_date(fhir_practitioner, imis_claim_admin)
@@ -31,8 +31,20 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
         return imis_claim_admin
 
     @classmethod
-    def get_reference_obj_id(cls, imis_claim_admin):
-        return imis_claim_admin.uuid
+    def get_fhir_code_identifier_type(cls):
+        return R4IdentifierConfig.get_fhir_claim_admin_code_type()
+
+    @classmethod
+    def get_reference_obj_uuid(cls, claim_admin: ClaimAdmin):
+        return claim_admin.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, claim_admin: ClaimAdmin):
+        return claim_admin.id
+
+    @classmethod
+    def get_reference_obj_code(cls, claim_admin: ClaimAdmin):
+        return claim_admin.code
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -53,8 +65,7 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
     @classmethod
     def build_fhir_identifiers(cls, fhir_practitioner, imis_claim_admin):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_claim_admin)
-        cls.build_fhir_code_identifier(identifiers, imis_claim_admin)
+        cls.build_all_identifiers(identifiers, imis_claim_admin)
         fhir_practitioner.identifier = identifiers
 
     @classmethod

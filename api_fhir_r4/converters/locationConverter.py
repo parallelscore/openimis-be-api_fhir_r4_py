@@ -13,14 +13,14 @@ from api_fhir_r4.paginations import FhirBundleResultsSetPagination
 class LocationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_location):
+    def to_fhir_obj(cls, imis_location, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_location = FHIRLocation()
         cls.build_fhir_physical_type(fhir_location, imis_location)
-        cls.build_fhir_pk(fhir_location, imis_location.uuid)
+        cls.build_fhir_pk(fhir_location, imis_location, reference_type)
         cls.build_fhir_location_identifier(fhir_location, imis_location)
         cls.build_fhir_location_name(fhir_location, imis_location)
         cls.build_fhir_type(fhir_location, imis_location)
-        cls.build_fhir_part_of(fhir_location, imis_location)
+        cls.build_fhir_part_of(fhir_location, imis_location, reference_type)
         cls.mode = 'instance'
         return fhir_location
 
@@ -36,8 +36,21 @@ class LocationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return imis_location
 
     @classmethod
-    def get_reference_obj_id(cls, imis_location):
+    def get_fhir_code_identifier_type(cls):
+        return R4IdentifierConfig.get_fhir_location_code_type()
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_location: Location):
         return imis_location.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_location: Location):
+        return imis_location.id
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_location: Location):
+        return imis_location.code
+
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -51,8 +64,7 @@ class LocationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_location_identifier(cls, fhir_location, imis_location):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_location)
-        cls.build_fhir_location_code_identifier(identifiers, imis_location)
+        cls.build_all_identifiers(identifiers, imis_location)
         fhir_location.identifier = identifiers
 
     @classmethod
@@ -123,10 +135,11 @@ class LocationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.valid_condition(imis_location.type is None, gettext('Missing location type'), errors)
 
     @classmethod
-    def build_fhir_part_of(cls, fhir_location, imis_location):
+    def build_fhir_part_of(cls, fhir_location, imis_location, reference_type):
         partOf = None
         if imis_location.parent is not None:
-            fhir_location.partOf = LocationConverter.build_fhir_resource_reference(imis_location.parent,'Location',imis_location.parent.code)
+            fhir_location.partOf = LocationConverter.build_fhir_resource_reference(
+                imis_location.parent, 'Location', imis_location.parent.code, reference_type=reference_type)
 
     @classmethod
     def build_imis_parent_location_id(cls, imis_location, fhir_location, errors):
