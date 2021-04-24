@@ -1,7 +1,7 @@
 from claim import ClaimSubmitService, ClaimSubmit, ClaimConfig
 from claim.gql_mutations import create_attachments
 from claim.models import Claim
-from typing import List
+from typing import List, Union
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.mixins import ContainedContentSerializerMixin
@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from api_fhir_r4.configurations import R4ClaimConfig
 from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, PatientConverter, \
     ConditionConverter, MedicationConverter, HealthcareServiceConverter, PractitionerConverter, \
-    ActivityDefinitionConverter, ReferenceConverterMixin
+    ActivityDefinitionConverter, ReferenceConverterMixin as r
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.models import FHIRBaseObject
 from api_fhir_r4.serializers import BaseFHIRSerializer
@@ -21,8 +21,6 @@ from api_fhir_r4.serializers import BaseFHIRSerializer
 
 class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
     fhirConverter = ClaimConverter()
-
-    CONTAINED_REFERENCE_TYPE = ReferenceConverterMixin.UUID_REFERENCE_TYPE
 
     contained_resources = [
         ContainedResourceConverter('insuree', PatientConverter),
@@ -88,13 +86,13 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
         claim = get_object_or_404(Claim, code=claim_code)
         create_attachments(claim.id, attachments)
 
-    def to_representation(self, obj, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+    def to_representation(self, obj):
         if isinstance(obj, HttpResponseBase):
             return OperationOutcomeConverter.to_fhir_obj(obj).toDict()
         elif isinstance(obj, FHIRBaseObject):
             return obj.toDict()
 
-        fhir_obj = self.fhirConverter.to_fhir_obj(obj, reference_type)
+        fhir_obj = self.fhirConverter.to_fhir_obj(obj, self._reference_type)
         self.remove_attachment_data(fhir_obj)
 
         if self.context.get('contained', None):
@@ -110,6 +108,19 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
             attachments = self.__get_attachments(fhir_obj)
             for next_attachment in attachments:
                 next_attachment.data = None
+
+    @property
+    def reference_type(self):
+        return super().reference_type
+
+    @reference_type.setter
+    def reference_type(self, reference_type: Union[r.UUID_REFERENCE_TYPE,
+                                                   r.CODE_REFERENCE_TYPE,
+                                                   r.DB_ID_REFERENCE_TYPE]):
+        if reference_type != self._reference_type:
+            self._reference_type = reference_type
+            for contained in self.contained_resources:
+                contained.reference_type = reference_type
 
     def __get_attachments(self, fhir_obj):
         attachment_category = R4ClaimConfig.get_fhir_claim_attachment_code()

@@ -1,3 +1,5 @@
+from typing import Union
+
 from core.models import User, TechnicalUser
 from django.http.response import HttpResponseBase
 
@@ -10,12 +12,16 @@ from api_fhir_r4.models import FHIRBaseObject
 class BaseFHIRSerializer(serializers.Serializer):
     fhirConverter = BaseFHIRConverter()
 
-    def to_representation(self, obj, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._reference_type = kwargs.get('reference_type', ReferenceConverterMixin.UUID_REFERENCE_TYPE)
+
+    def to_representation(self, obj):
         if isinstance(obj, HttpResponseBase):
             return OperationOutcomeConverter.to_fhir_obj(obj).toDict()
         elif isinstance(obj, FHIRBaseObject):
             return obj.toDict()
-        return self.fhirConverter.to_fhir_obj(obj, reference_type).toDict()
+        return self.fhirConverter.to_fhir_obj(obj, self.reference_type).toDict()
 
     def to_internal_value(self, data):
         audit_user_id = self.get_audit_user_id()
@@ -41,11 +47,26 @@ class BaseFHIRSerializer(serializers.Serializer):
         else:
             return self.__get_technical_audit_user(audit_user_id)
 
+    @property
+    def reference_type(self):
+        return self._reference_type
+
+    @reference_type.getter
+    def reference_type(self):
+        return self._reference_type
+
+    @reference_type.setter
+    def reference_type(self, reference_type: Union[ReferenceConverterMixin.UUID_REFERENCE_TYPE,
+                                                   ReferenceConverterMixin.CODE_REFERENCE_TYPE,
+                                                   ReferenceConverterMixin.DB_ID_REFERENCE_TYPE]):
+        self._reference_type = reference_type
+
     def __get_technical_audit_user(self, technical_user_uuid):
         technical_user = TechnicalUser.objects.get(id=technical_user_uuid)
         core_user = User.objects.get(t_user=technical_user_uuid)
         interactive_user = core_user.i_user
         return interactive_user.id if interactive_user else technical_user.id_for_audit
+
 
 from api_fhir_r4.serializers.patientSerializer import PatientSerializer
 from api_fhir_r4.serializers.contractSerializer import ContractSerializer

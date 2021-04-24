@@ -1,10 +1,7 @@
-from rest_framework import mixins
-from django.db.models import Manager
 from typing import List
 
-from api_fhir_r4.converters import ReferenceConverterMixin
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
-from api_fhir_r4.models import Resource, FHIRBaseObject
+from api_fhir_r4.models import FHIRBaseObject
 
 
 class ContainedContentSerializerMixin:
@@ -17,7 +14,6 @@ class ContainedContentSerializerMixin:
 
     #  Used for determining what reference type will be used used in contained value,
     # if None then value from ContainedResourceConverter is used
-    CONTAINED_REFERENCE_TYPE = None
 
     @property
     def contained_resources(self) -> List[ContainedResourceConverter]:
@@ -38,18 +34,8 @@ class ContainedContentSerializerMixin:
     def _get_converted_resources(self, obj):
         converted_values = []
         for resource in self.contained_resources:
-            actual_reference_type = resource.reference_type
-            try:
-                if self.CONTAINED_REFERENCE_TYPE:
-                    # If reference type is given temporarily change reference type of contained object
-                    resource.reference_type = self.CONTAINED_REFERENCE_TYPE
-
-                resource_fhir_repr = resource.convert_from_source(obj)
-                converted_values.append((resource, resource_fhir_repr))
-            finally:
-                # Ensure reference type
-                resource.reference_type = actual_reference_type
-
+            resource_fhir_repr = resource.convert_from_source(obj)
+            converted_values.append((resource, resource_fhir_repr))
         return converted_values
 
     def to_representation(self, obj):
