@@ -7,7 +7,7 @@ from medical.models import Item, Service, Diagnosis
 import core
 
 from api_fhir_r4.configurations import R4ClaimConfig
-from api_fhir_r4.converters import BaseFHIRConverter, CommunicationRequestConverter
+from api_fhir_r4.converters import BaseFHIRConverter, CommunicationRequestConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
@@ -24,25 +24,26 @@ from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
 class ClaimResponseConverter(BaseFHIRConverter):
 
     @classmethod
-    def to_fhir_obj(cls, imis_claim):
+    def to_fhir_obj(cls, imis_claim, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_claim_response = ClaimResponse()
         fhir_claim_response.created = TimeUtils.date().isoformat()
-        fhir_claim_response.request = ClaimConverter.build_fhir_resource_reference(imis_claim)
-        cls.build_fhir_pk(fhir_claim_response, imis_claim.uuid)
+        fhir_claim_response.request = ClaimConverter\
+            .build_fhir_resource_reference(imis_claim, reference_type=reference_type)
+        cls.build_fhir_pk(fhir_claim_response, imis_claim, reference_type)
         ClaimConverter.build_fhir_identifiers(fhir_claim_response, imis_claim)
         cls.build_fhir_outcome(fhir_claim_response, imis_claim)
         cls.build_fhir_errors(fhir_claim_response, imis_claim)
-        cls.build_fhir_items(fhir_claim_response, imis_claim)
-        cls.build_patient_reference(fhir_claim_response, imis_claim)
+        cls.build_fhir_items(fhir_claim_response, imis_claim, reference_type)
+        cls.build_patient_reference(fhir_claim_response, imis_claim, reference_type)
         cls.build_fhir_total(fhir_claim_response, imis_claim)
-        cls.build_fhir_communication_request_reference(fhir_claim_response, imis_claim)
+        cls.build_fhir_communication_request_reference(fhir_claim_response, imis_claim, reference_type)
         cls.build_fhir_type(fhir_claim_response, imis_claim)
         cls.build_fhir_status(fhir_claim_response, imis_claim)
         cls.build_fhir_use(fhir_claim_response)
         cls.build_fhir_insurer(fhir_claim_response, imis_claim)
-        cls.build_fhir_requestor(fhir_claim_response, imis_claim)
+        cls.build_fhir_requestor(fhir_claim_response, imis_claim, reference_type)
         cls.build_fhir_billable_period(fhir_claim_response, imis_claim)
-        cls.build_fhir_diagnoses(fhir_claim_response, imis_claim)
+        cls.build_fhir_diagnoses(fhir_claim_response, imis_claim, reference_type)
         cls.build_fhir_adjustment(fhir_claim_response, imis_claim)
         return fhir_claim_response
                
@@ -62,6 +63,18 @@ class ClaimResponseConverter(BaseFHIRConverter):
         cls.build_imis_diagnoses(imis_claim, fhir_claim_response)
         cls.build_imis_adjustment(imis_claim, fhir_claim_response)
         return imis_claim
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_claim):
+        return imis_claim.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_claim):
+        return imis_claim.id
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_claim):
+        return imis_claim.code
 
     @classmethod
     def build_fhir_outcome(cls, fhir_claim_response, imis_claim):
@@ -122,10 +135,11 @@ class ClaimResponseConverter(BaseFHIRConverter):
             imis_claim.rejection_reason = int(rejection_reason_str.code)
 
     @classmethod
-    def build_fhir_request_reference(cls, fhir_claim_response, imis_claim):
+    def build_fhir_request_reference(cls, fhir_claim_response, imis_claim, reference_type):
         feedback = cls.get_imis_claim_feedback(imis_claim)
         if feedback:
-            reference = CommunicationRequestConverter.build_fhir_resource_reference(feedback)
+            reference = CommunicationRequestConverter\
+                .build_fhir_resource_reference(feedback, reference_type=reference_type)
             fhir_claim_response.communicationRequest = [reference]
 
     @classmethod
@@ -137,8 +151,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
         return feedback
 
     @classmethod
-    def build_patient_reference(cls, fhir_claim_response, imis_claim):
-        fhir_claim_response.patient = PatientConverter.build_fhir_resource_reference(imis_claim.insuree)
+    def build_patient_reference(cls, fhir_claim_response, imis_claim, reference_type):
+        fhir_claim_response.patient = PatientConverter\
+            .build_fhir_resource_reference(imis_claim.insuree, reference_type=reference_type)
 
     @classmethod
     def build_fhir_total(cls, fhir_claim_response, imis_claim):
@@ -260,10 +275,11 @@ class ClaimResponseConverter(BaseFHIRConverter):
         return fhir_total
 
     @classmethod
-    def build_fhir_communication_request_reference(cls, fhir_claim_response, imis_claim):
+    def build_fhir_communication_request_reference(cls, fhir_claim_response, imis_claim, reference_type):
         try:
             if imis_claim.feedback is not None:
-                request = CommunicationRequestConverter.build_fhir_resource_reference(imis_claim.feedback)
+                request = CommunicationRequestConverter\
+                    .build_fhir_resource_reference(imis_claim.feedback, reference_type=reference_type)
                 fhir_claim_response.communicationRequest = [request]
         except Feedback.DoesNotExist:
             pass
@@ -319,8 +335,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
         fhir_claim_response.insurer.reference = "Organization/" + R4ClaimConfig.get_fhir_claim_organization_code()
 
     @classmethod
-    def build_fhir_items(cls, fhir_claim_response, imis_claim):
-        for claim_item in cls.generate_fhir_claim_items(imis_claim):
+    def build_fhir_items(cls, fhir_claim_response, imis_claim, reference_type):
+        for claim_item in cls.generate_fhir_claim_items(imis_claim, reference_type):
             type = claim_item.category.text
             code = claim_item.productOrService.text
 
@@ -332,7 +348,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
                 raise FHIRRequestProcessException(['Could not assign category {} for claim_item: {}'
                                                   .format(type, claim_item)])
 
-            cls._build_response_items(fhir_claim_response, claim_item, serviced, type, serviced.rejection_reason, imis_claim)
+            cls._build_response_items(fhir_claim_response, claim_item, serviced, type,
+                                      serviced.rejection_reason, imis_claim, reference_type)
 
     @classmethod
     def build_imis_items(cls, imis_claim: Claim, fhir_claim_response: ClaimResponse):
@@ -343,13 +360,15 @@ class ClaimResponseConverter(BaseFHIRConverter):
             cls._build_imis_claim_item(imis_claim, fhir_claim_response, item)  # same for item and service
 
     @classmethod
-    def _build_response_items(cls, fhir_claim_response, claim_item, imis_service, type, rejected_reason, imis_claim):
-        cls.build_fhir_item(fhir_claim_response, claim_item, imis_service, type, rejected_reason, imis_claim)
+    def _build_response_items(cls, fhir_claim_response, claim_item, imis_service,
+                              type, rejected_reason, imis_claim, reference_type):
+        cls.build_fhir_item(fhir_claim_response, claim_item, imis_service,
+                            type, rejected_reason, imis_claim, reference_type)
 
     @classmethod
-    def generate_fhir_claim_items(cls, imis_claim):
+    def generate_fhir_claim_items(cls, imis_claim, reference_type):
         claim = FHIRClaim()
-        ClaimConverter.build_fhir_items(claim, imis_claim)
+        ClaimConverter.build_fhir_items(claim, imis_claim, reference_type)
         return claim.item
 
     @classmethod
@@ -392,7 +411,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         return result[0] if len(result) > 0 else None
 
     @classmethod
-    def build_fhir_item(cls, fhir_claim_response, claim_item, item, type, rejected_reason, imis_claim):
+    def build_fhir_item(cls, fhir_claim_response, claim_item, item, type, rejected_reason, imis_claim, reference_type):
         claim_response_item = ClaimResponseItem()
         claim_response_item.itemSequence = claim_item.sequence
 
@@ -408,7 +427,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         else:
             raise FHIRRequestProcessException(F"Unknown type of serviced product: {type}")
 
-        serviced_extension = cls.build_serviced_extension(serviced_item, service_type)
+        serviced_extension = cls.build_serviced_extension(serviced_item, service_type, reference_type)
         claim_response_item.extension.append(serviced_extension)
 
         note = cls.build_process_note(fhir_claim_response, item.price_origin)
@@ -417,12 +436,13 @@ class ClaimResponseConverter(BaseFHIRConverter):
         fhir_claim_response.item.append(claim_response_item)
 
     @classmethod
-    def build_serviced_extension(cls, serviced, service_type):
+    def build_serviced_extension(cls, serviced, service_type, reference_type):
         reference = Reference()
         extension = Extension()
         extension.valueReference = reference
         extension.url = service_type
-        extension.valueReference = MedicationConverter.build_fhir_resource_reference(serviced, service_type)
+        extension.valueReference = MedicationConverter\
+            .build_fhir_resource_reference(serviced, service_type, reference_type=reference_type)
         return extension
 
     @classmethod
@@ -561,10 +581,10 @@ class ClaimResponseConverter(BaseFHIRConverter):
         return result
 
     @classmethod
-    def build_fhir_requestor(cls, fhir_claim_response, imis_claim):
+    def build_fhir_requestor(cls, fhir_claim_response, imis_claim, reference_type):
         if imis_claim.health_facility is not None:
-            fhir_claim_response.requestor = HealthcareServiceConverter.build_fhir_resource_reference(
-                imis_claim.health_facility)
+            fhir_claim_response.requestor = HealthcareServiceConverter\
+                .build_fhir_resource_reference(imis_claim.health_facility, reference_type=reference_type)
 
     @classmethod
     def build_imis_requestor(cls, imis_claim, fhir_claim_response):
@@ -595,17 +615,17 @@ class ClaimResponseConverter(BaseFHIRConverter):
             imis_claim.date_to = datetime.date.fromisoformat(iso_end_date)
 
     @classmethod
-    def build_fhir_diagnoses(cls, fhir_claim_response, imis_claim):
+    def build_fhir_diagnoses(cls, fhir_claim_response, imis_claim, reference_type):
         diagnoses = fhir_claim_response.extension
-        cls.build_fhir_diagnosis(diagnoses, imis_claim.icd, ImisClaimIcdTypes.ICD_0.value)
+        cls.build_fhir_diagnosis(diagnoses, imis_claim.icd, ImisClaimIcdTypes.ICD_0.value, reference_type)
         if imis_claim.icd_1:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_1, ImisClaimIcdTypes.ICD_1.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_1, ImisClaimIcdTypes.ICD_1.value, reference_type)
         if imis_claim.icd_2:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_2, ImisClaimIcdTypes.ICD_2.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_2, ImisClaimIcdTypes.ICD_2.value, reference_type)
         if imis_claim.icd_3:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_3, ImisClaimIcdTypes.ICD_3.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_3, ImisClaimIcdTypes.ICD_3.value, reference_type)
         if imis_claim.icd_4:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_4, ImisClaimIcdTypes.ICD_4.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_4, ImisClaimIcdTypes.ICD_4.value, reference_type)
 
     @classmethod
     def build_imis_diagnoses(cls, imis_claim, fhir_claim_response):
@@ -628,10 +648,11 @@ class ClaimResponseConverter(BaseFHIRConverter):
         assign_diagnosis_from_ext(ImisClaimIcdTypes.ICD_4.value, 'icd_4')
 
     @classmethod
-    def build_fhir_diagnosis(cls, diagnoses, icd_code, icd_type):
+    def build_fhir_diagnosis(cls, diagnoses, icd_code, icd_type, reference_type):
         extension = Extension()
         extension.url = icd_type
-        extension.valueReference = ConditionConverter.build_fhir_resource_reference(icd_code)
+        extension.valueReference = ConditionConverter\
+            .build_fhir_resource_reference(icd_code, reference_type=reference_type)
         diagnoses.append(extension)
 
     @classmethod

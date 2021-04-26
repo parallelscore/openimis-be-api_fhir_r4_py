@@ -3,6 +3,7 @@ from typing import List, Tuple
 from django.db import models
 from collections.abc import Iterable
 
+from api_fhir_r4.converters import ReferenceConverterMixin
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.models import FHIRBaseObject
 
@@ -16,7 +17,8 @@ class ContainedResourceConverter:
         Convert IMIS Model attribute to FHIR Object
     """
 
-    def __init__(self, imis_resource_name, resource_fhir_converter, resource_extract_method=None):
+    def __init__(self, imis_resource_name, resource_fhir_converter, resource_extract_method=None,
+                 reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         """
         Parameters
         ----------
@@ -26,10 +28,12 @@ class ContainedResourceConverter:
         :param resource_extract_method: Optional argument. Function used for getting attribute value from IMIS Model.
         It has two arguments, first is django model, second one is imis_resource_name. Default function is
         imis_model.__getattribute__(imis_resource_name). Return type can be model or iterable (e.g. list of attributes).
+        :param reference_type: Optional argument. Determine what object value will be used as reference and id.
         """
         self.imis_resource_name = imis_resource_name
         self.extract_value = resource_extract_method or (lambda model, attribute: model.__getattribute__(attribute))
         self.converter = resource_fhir_converter()
+        self.reference_type = reference_type
 
     def convert_from_source(self, imis_obj: models.Model) -> List[FHIRBaseObject]:
         """Convert IMIS Model attribute to FHIR Object.
@@ -51,8 +55,8 @@ class ContainedResourceConverter:
     def _convert_single_resource(self, imis_resource_value: object) -> FHIRBaseObject:
         if imis_resource_value is not None:
             try:
-                fhir_value = self.converter.to_fhir_obj(imis_resource_value)
+                fhir_value = self.converter.to_fhir_obj(imis_resource_value, self.reference_type)
                 return fhir_value
             except Exception as e:
-                raise FHIRException("Failed to process: {}, eexcpetion: {}"
+                raise FHIRException("Failed to process: {}, exception: {}"
                                     .format((self.imis_resource_name, imis_resource_value), str(e)))

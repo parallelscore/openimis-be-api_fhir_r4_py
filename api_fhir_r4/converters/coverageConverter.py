@@ -10,20 +10,28 @@ from api_fhir_r4.utils import DbManagerUtils
 class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_policy):
+    def to_fhir_obj(cls, imis_policy, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_coverage = Coverage()
         cls.build_coverage_identifier(fhir_coverage, imis_policy)
         cls.build_coverage_policy_holder(fhir_coverage, imis_policy)
         cls.build_coverage_period(fhir_coverage, imis_policy)
         cls.build_coverage_status(fhir_coverage, imis_policy)
-        cls.build_coverage_contract(fhir_coverage, imis_policy)
+        cls.build_coverage_contract(fhir_coverage, imis_policy, reference_type)
         cls.build_coverage_class(fhir_coverage, imis_policy)
         cls.build_coverage_extension(fhir_coverage, imis_policy)
         return fhir_coverage
 
     @classmethod
-    def get_reference_obj_id(cls, imis_policy):
+    def get_reference_obj_uuid(cls, imis_policy: Policy):
         return imis_policy.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_policy: Policy):
+        return imis_policy.id
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_policy: Policy):
+        return imis_policy.code
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -37,9 +45,16 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_coverage_identifier(cls, fhir_coverage, imis_policy):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_policy)
+        cls.build_all_identifiers(identifiers, imis_policy)
         fhir_coverage.identifier = identifiers
         return fhir_coverage
+
+    @classmethod
+    def build_all_identifiers(cls, identifiers, imis_object):
+        # Coverage don't have code
+        cls.build_fhir_uuid_identifier(identifiers, imis_object)
+        cls.build_fhir_id_identifier(identifiers, imis_object)
+        return identifiers
 
     @classmethod
     def build_coverage_policy_holder(cls, fhir_coverage, imis_policy):
@@ -67,8 +82,8 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return fhir_coverage
 
     @classmethod
-    def build_coverage_contract(cls, fhir_coverage, imis_coverage):
-        reference = ContractConverter.build_fhir_resource_reference(imis_coverage)
+    def build_coverage_contract(cls, fhir_coverage, imis_coverage, reference_type):
+        reference = ContractConverter.build_fhir_resource_reference(imis_coverage, reference_type=reference_type)
         fhir_coverage.contract.append(reference)
         return fhir_coverage
 
@@ -90,10 +105,11 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return contract
 
     @classmethod
-    def build_contract_party(cls, contract, imis_coverage):
+    def build_contract_party(cls, contract, imis_coverage, reference_type):
         if imis_coverage.officer is not None:
             party = ContractTermOfferParty()
-            reference = PractitionerConverter.build_fhir_resource_reference(imis_coverage.officer)
+            reference = PractitionerConverter\
+                .build_fhir_resource_reference(imis_coverage.officer, reference_type=reference_type)
             party.reference.append(reference)
             if contract.term is None:
                 contract.term.append[ContractTerm()]

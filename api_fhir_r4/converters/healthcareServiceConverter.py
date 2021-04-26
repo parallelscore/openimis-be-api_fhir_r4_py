@@ -13,19 +13,19 @@ from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_hf):
+    def to_fhir_obj(cls, imis_hf, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_hcs = FHIRHealthcareService()
-        cls.build_fhir_pk(fhir_hcs, imis_hf.uuid)
+        cls.build_fhir_pk(fhir_hcs, imis_hf, reference_type)
         cls.build_fhir_healthcare_service_identifier(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_name(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_category(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_extra_details(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_telecom(fhir_hcs, imis_hf)
-        cls.build_fhir_location_reference(fhir_hcs, imis_hf)
+        cls.build_fhir_location_reference(fhir_hcs, imis_hf, reference_type=reference_type)
         cls.build_fhir_healthcare_service_program(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_speciality(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_type(fhir_hcs, imis_hf)
-        cls.build_fhir_healthcare_service_coverage_area(fhir_hcs, imis_hf)
+        cls.build_fhir_healthcare_service_coverage_area(fhir_hcs, imis_hf, reference_type=reference_type)
         return fhir_hcs
 
     @classmethod
@@ -45,8 +45,20 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return imis_hf
 
     @classmethod
-    def get_reference_obj_id(cls, imis_hf):
+    def get_fhir_code_identifier_type(cls):
+        return R4IdentifierConfig.get_fhir_facility_id_type()
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_hf: HealthFacility):
         return imis_hf.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_hf: HealthFacility):
+        return imis_hf.id
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_hf: HealthFacility):
+        return imis_hf.code
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -71,8 +83,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_healthcare_service_identifier(cls, fhir_location, imis_hf):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_hf)
-        cls.build_fhir_hf_code_identifier(identifiers, imis_hf)
+        cls.build_all_identifiers(identifiers, imis_hf)
         fhir_location.identifier = identifiers
 
     @classmethod
@@ -185,9 +196,10 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
                     imis_hf.email = contact_point.value
 
     @classmethod
-    def build_fhir_location_reference(cls, fhir_hcs, imis_hf):
+    def build_fhir_location_reference(cls, fhir_hcs, imis_hf, reference_type):
         if imis_hf.location is not None:
-            fhir_hcs.location = [LocationConverter.build_fhir_resource_reference(imis_hf.location)]
+            fhir_hcs.location = [
+                LocationConverter.build_fhir_resource_reference(imis_hf.location, reference_type=reference_type)]
 
     @classmethod
     def build_fhir_healthcare_service_program(cls, fhir_hcs, imis_hf):
@@ -252,11 +264,12 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
             cls.valid_condition(imis_hf.care_type is None, gettext('Missing hf care type'), errors)
 
     @classmethod
-    def build_fhir_healthcare_service_coverage_area(cls, fhir_hcs, imis_hf):
+    def build_fhir_healthcare_service_coverage_area(cls, fhir_hcs, imis_hf, reference_type):
         imis_hf_catchments = HealthFacilityCatchment.objects\
             .filter(health_facility=imis_hf) \
             .select_related("location")\
             .values("location")
         for catchment in imis_hf_catchments:
             location = Location.objects.filter(id=catchment["location"])
-            fhir_hcs.coverageArea.append(LocationConverter.build_fhir_resource_reference(location[0]))
+            fhir_hcs.coverageArea.append(
+                LocationConverter.build_fhir_resource_reference(location[0], reference_type=reference_type))

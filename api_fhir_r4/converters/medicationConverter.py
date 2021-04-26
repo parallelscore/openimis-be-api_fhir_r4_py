@@ -10,9 +10,9 @@ import core
 class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_medication):
+    def to_fhir_obj(cls, imis_medication, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_medication = FHIRMedication()
-        cls.build_fhir_pk(fhir_medication, imis_medication.uuid)
+        cls.build_fhir_pk(fhir_medication, imis_medication, reference_type)
         cls.build_fhir_identifiers(fhir_medication, imis_medication)
         cls.build_fhir_package_form(fhir_medication, imis_medication)
         #cls.build_fhir_package_amount(fhir_medication, imis_medication)
@@ -35,8 +35,20 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return imis_medication
 
     @classmethod
-    def get_reference_obj_id(cls, imis_medication):
+    def get_fhir_code_identifier_type(cls):
+        return R4IdentifierConfig.get_fhir_item_code_type()
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_medication: Item):
         return imis_medication.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_medication: Item):
+        return imis_medication.id
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_medication: Item):
+        return imis_medication.code
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -50,11 +62,7 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_identifiers(cls, fhir_medication, imis_medication):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_medication)
-        item_code = cls.build_fhir_identifier(imis_medication.code,
-                                              R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                              R4IdentifierConfig.get_fhir_item_code_type())
-        identifiers.append(item_code)
+        cls.build_all_identifiers(identifiers, imis_medication)
         fhir_medication.identifier = identifiers
 
     @classmethod

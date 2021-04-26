@@ -27,8 +27,8 @@ class PolicyCoverageEligibilityRequestConverter(BaseFHIRConverter):
         result = CoverageEligibilityResponseInsurance()
         #cls.build_fhir_insurance_contract(result, response)
         cls.build_fhir_money_item(result, Config.get_fhir_balance_code(),
-                                     response.ceiling,
-                                     response.ded)
+                                  response.ceiling,
+                                  response.ded)
         fhir_response.insurance.append(result)
 
     '''

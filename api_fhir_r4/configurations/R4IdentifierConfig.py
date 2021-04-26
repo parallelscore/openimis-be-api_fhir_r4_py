@@ -17,6 +17,10 @@ class R4IdentifierConfig(IdentifierConfiguration):
         return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_db_id_type', "ACSN")
 
     @classmethod
+    def get_fhir_id_type_code(cls):
+        return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_db_id_type', "ACSN")
+
+    @classmethod
     def get_fhir_chfid_type_code(cls):
         return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_chfid_type', "SB")
 

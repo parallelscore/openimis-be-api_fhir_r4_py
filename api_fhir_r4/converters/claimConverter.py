@@ -25,36 +25,32 @@ from api_fhir_r4.models import Claim as FHIRClaim, ClaimItem as FHIRClaimItem, P
 from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 
+
 class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_claim):
+    def to_fhir_obj(cls, imis_claim, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_claim = FHIRClaim()
-        cls.build_fhir_pk(fhir_claim, imis_claim.uuid)
-        fhir_claim.created = imis_claim.date_claimed.isoformat()
-        if imis_claim.health_facility is None:
-            raise FHIRRequestProcessException(['Cannot construct a %s claim if HF is None' % (imis_claim.uuid) ])
-        fhir_claim.facility = HealthcareServiceConverter.build_fhir_resource_reference(imis_claim.health_facility,'Location', imis_claim.health_facility.code )
+
+        cls.build_fhir_pk(fhir_claim, imis_claim, reference_type)
         cls.build_fhir_identifiers(fhir_claim, imis_claim)
-        if imis_claim.insuree is  None:
-            raise FHIRRequestProcessException(['Cannot construct a %s claim if Insuree is None' % (imis_claim.uuid)] )
-        fhir_claim.patient = PatientConverter.build_fhir_resource_reference(imis_claim.insuree, 'Patient', imis_claim.insuree.chf_id)
+
+        fhir_claim.created = imis_claim.date_claimed.isoformat()
+        fhir_claim.facility = cls._build_facility_reference(imis_claim, reference_type)
+        fhir_claim.patient = cls._build_patient_reference(imis_claim, reference_type)
+        fhir_claim.enterer = cls._build_practitioner_reference(imis_claim, reference_type)
+
         cls.build_fhir_billable_period(fhir_claim, imis_claim)
-        cls.build_fhir_diagnoses(fhir_claim, imis_claim)
+        cls.build_fhir_diagnoses(fhir_claim, imis_claim, reference_type)
         cls.build_fhir_total(fhir_claim, imis_claim)
-        if imis_claim.admin is not None:
-            fhir_claim.enterer = PractitionerConverter.build_fhir_resource_reference(imis_claim.admin, 'Practitioner')
-        else:
-            raise FHIRRequestProcessException(
-                [F'Failed to create FHIR instance for claim {imis_claim.uuid}: Claim Admin field not found'])
         cls.build_fhir_type(fhir_claim, imis_claim)
         cls.build_fhir_supportingInfo(fhir_claim, imis_claim)
-        cls.build_fhir_items(fhir_claim, imis_claim)
-        cls.build_fhir_provider(fhir_claim, imis_claim)
+        cls.build_fhir_items(fhir_claim, imis_claim, reference_type)
+        cls.build_fhir_provider(fhir_claim, imis_claim, reference_type)
         cls.build_fhir_use(fhir_claim)
         cls.build_fhir_priority(fhir_claim)
         cls.build_fhir_status(fhir_claim)
-        cls.build_fhir_insurance(fhir_claim, imis_claim)
+        cls.build_fhir_insurance(fhir_claim, imis_claim, reference_type)
         cls.build_fhir_attachments(fhir_claim, imis_claim)
         return fhir_claim
 
@@ -79,7 +75,15 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return imis_claim
 
     @classmethod
+    def get_fhir_code_identifier_type(cls):
+        return R4IdentifierConfig.get_fhir_claim_code_type()
+
+    @classmethod
     def get_reference_obj_id(cls, imis_claim):
+        return imis_claim.id
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_claim):
         return imis_claim.uuid
 
     @classmethod
@@ -100,11 +104,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_identifiers(cls, fhir_claim, imis_claim):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_claim)
-        claim_code = cls.build_fhir_identifier(imis_claim.code,
-                                               R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                               R4IdentifierConfig.get_fhir_claim_code_type())
-        identifiers.append(claim_code)
+        cls.build_all_identifiers(identifiers, imis_claim)
         fhir_claim.identifier = identifiers
 
     @classmethod
@@ -180,29 +180,30 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     """
 
     @classmethod
-    def build_fhir_diagnoses(cls, fhir_claim, imis_claim):
+    def build_fhir_diagnoses(cls, fhir_claim, imis_claim, reference_type):
         diagnoses = []
-        cls.build_fhir_diagnosis(diagnoses, imis_claim.icd, ImisClaimIcdTypes.ICD_0.value)
+        cls.build_fhir_diagnosis(diagnoses, imis_claim.icd, ImisClaimIcdTypes.ICD_0.value, reference_type)
         if imis_claim.icd_1 is not None:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_1, ImisClaimIcdTypes.ICD_1.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_1, ImisClaimIcdTypes.ICD_1.value, reference_type)
         if imis_claim.icd_2 is not None:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_2, ImisClaimIcdTypes.ICD_2.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_2, ImisClaimIcdTypes.ICD_2.value, reference_type)
         if imis_claim.icd_3 is not None:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_3, ImisClaimIcdTypes.ICD_3.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_3, ImisClaimIcdTypes.ICD_3.value, reference_type)
         if imis_claim.icd_4 is not None:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_4, ImisClaimIcdTypes.ICD_4.value)
+            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_4, ImisClaimIcdTypes.ICD_4.value, reference_type)
 
         fhir_claim.diagnosis = diagnoses
 
     @classmethod
-    def build_fhir_diagnosis(cls, diagnoses, icd_code, icd_type):
+    def build_fhir_diagnosis(cls, diagnoses, icd_code, icd_type, reference_type):
         if icd_code is None:
             raise FHIRRequestProcessException(['ICD code cannot be null'])
         if icd_type is None:
             raise FHIRRequestProcessException(['ICD Type cannot be null'])
         claim_diagnosis = ClaimDiagnosis()
         claim_diagnosis.sequence = FhirUtils.get_next_array_sequential_id(diagnoses)
-        claim_diagnosis.diagnosisReference = ConditionConverter.build_fhir_resource_reference(icd_code)
+        claim_diagnosis.diagnosisReference = ConditionConverter\
+            .build_fhir_resource_reference(icd_code, reference_type=reference_type)
         claim_diagnosis.type = [cls.build_codeable_concept(icd_type)]
         diagnoses.append(claim_diagnosis)
 
@@ -342,16 +343,16 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return result
 
     @classmethod
-    def build_fhir_items(cls, fhir_claim, imis_claim):
-        cls.build_items_for_imis_item(fhir_claim, imis_claim)
-        cls.build_items_for_imis_services(fhir_claim, imis_claim)
+    def build_fhir_items(cls, fhir_claim, imis_claim, reference_type):
+        cls.build_items_for_imis_item(fhir_claim, imis_claim, reference_type)
+        cls.build_items_for_imis_services(fhir_claim, imis_claim, reference_type)
 
     @classmethod
-    def build_items_for_imis_item(cls, fhir_claim, imis_claim):
-        for item in imis_claim.items.all():
+    def build_items_for_imis_item(cls, fhir_claim, imis_claim, reference_type):
+        for item in imis_claim.items.filter(validity_to=None).all():
             if item:
                 type = R4ClaimConfig.get_fhir_claim_item_code()
-                cls.build_fhir_item(fhir_claim, item.item.code, type, item)
+                cls.build_fhir_item(fhir_claim, item.item.code, type, item, reference_type)
 
     @classmethod
     def get_imis_items_for_claim(cls, imis_claim):
@@ -361,7 +362,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return items
 
     @classmethod
-    def build_fhir_item(cls, fhir_claim, code, item_type, item):
+    def build_fhir_item(cls, fhir_claim, code, item_type, item, reference_type):
         fhir_item = FHIRClaimItem()
         fhir_item.sequence = FhirUtils.get_next_array_sequential_id(fhir_claim.item)
         unit_price = Money()
@@ -382,21 +383,21 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         extension = Extension()
 
         if fhir_item.category.text == "item":
-            medication = cls.build_medication_extension(extension)
+            medication = cls.build_medication_extension(extension, item, reference_type)
             fhir_item.extension.append(medication)
 
         elif fhir_item.category.text == "service":
-            activity_definition = cls.build_activity_definition_extension(extension)
+            activity_definition = cls.build_activity_definition_extension(extension, item, reference_type)
             fhir_item.extension.append(activity_definition)
 
         fhir_claim.item.append(fhir_item)
 
     @classmethod
-    def build_items_for_imis_services(cls, fhir_claim, imis_claim):
-        for service in imis_claim.services.all():
+    def build_items_for_imis_services(cls, fhir_claim, imis_claim, reference_type):
+        for service in imis_claim.services.filter(validity_to=None).all():
             if service:
                 type = R4ClaimConfig.get_fhir_claim_service_code()
-                cls.build_fhir_item(fhir_claim, service.service.code, type, service)
+                cls.build_fhir_item(fhir_claim, service.service.code, type, service, reference_type)
 
     @classmethod
     def get_imis_services_for_claim(cls, imis_claim):
@@ -406,29 +407,25 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return services
 
     @classmethod
-    def build_medication_extension(cls, extension):
-        #extension = Extension()
-        imis_item = ClaimItem()
+    def build_medication_extension(cls, extension, item, reference_type):
         reference = Reference()
         extension.valueReference = reference
         extension.url = "Medication"
-        imis_item.item = Item()
-        if imis_item.item is None:
+        if item.item is None:
             raise FHIRRequestProcessException(['Cannot construct medication on  None (Item) '] )
-        extension.valueReference = MedicationConverter.build_fhir_resource_reference(imis_item.item)
+        extension.valueReference = MedicationConverter\
+            .build_fhir_resource_reference(item.item, reference_type=reference_type)
         return extension
 
     @classmethod
-    def build_activity_definition_extension(cls, extension):
-        #extension = Extension()
-        imis_service = ClaimService()
+    def build_activity_definition_extension(cls, extension, service, reference_type):
         reference = Reference()
         extension.valueReference = reference
         extension.url = "ActivityDefinition"
-        imis_service.service = Service()
-        if imis_service.service is None:
+        if service.service is None:
             raise FHIRRequestProcessException(['Cannot construct activity on None (service) '] )
-        extension.valueReference = ActivityDefinitionConverter.build_fhir_resource_reference(imis_service.service)
+        extension.valueReference = ActivityDefinitionConverter\
+            .build_fhir_resource_reference(service.service, reference_type=reference_type)
         return extension
 
     @classmethod
@@ -482,10 +479,10 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return price_asked
 
     @classmethod
-    def build_fhir_provider(cls, fhir_claim, imis_claim):
-        #fhir_claim.provider = imis_claim.adjuster
+    def build_fhir_provider(cls, fhir_claim, imis_claim, reference_type):
         if imis_claim.admin is not None:
-            fhir_claim.provider = PractitionerRoleConverter.build_fhir_resource_reference(imis_claim.admin)
+            fhir_claim.provider = PractitionerRoleConverter\
+                .build_fhir_resource_reference(imis_claim.admin, reference_type=reference_type)
 
     @classmethod
     def build_imis_adjuster(cls, imis_claim, fhir_claim, errors):
@@ -507,13 +504,14 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_claim.status = "active"
 
     @classmethod
-    def build_fhir_insurance(cls, fhir_claim, imis_claim):
+    def build_fhir_insurance(cls, fhir_claim, imis_claim, reference_type):
         fhir_insurance = ClaimInsurance()
         imis_insuree_policy  = imis_claim.insuree.insuree_policies.all()
         # fixme get latest policy, not the one active at the claim
         for pol in imis_insuree_policy:
             policy = pol.policy
-            fhir_insurance.coverage = CoverageConverter.build_fhir_resource_reference(policy)
+            fhir_insurance.coverage = CoverageConverter\
+                .build_fhir_resource_reference(policy, reference_type=reference_type)
 
         if fhir_insurance.coverage is None:
             fhir_insurance.coverage = Reference()
@@ -608,3 +606,39 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         actual_hash = hashlib.sha1(data.encode('utf-8')).hexdigest()
         if actual_hash.casefold() != expected_hash.casefold():
             raise ValueError('Hash for data file is incorrect')
+
+    @classmethod
+    def _build_facility_reference(cls, imis_claim, reference_type):
+        if imis_claim.health_facility is None:
+            raise FHIRRequestProcessException([
+                'Cannot construct a %s claim if HF is None' % imis_claim.uuid
+            ])
+        return HealthcareServiceConverter\
+            .build_fhir_resource_reference(imis_claim.health_facility,
+                                           type='Location',
+                                           display=imis_claim.health_facility.code,
+                                           reference_type=reference_type)
+
+    @classmethod
+    def _build_patient_reference(cls, imis_claim, reference_type):
+        if imis_claim.insuree is None:
+            raise FHIRRequestProcessException([
+                'Cannot construct a %s claim if Insuree is None' % imis_claim.uuid
+            ])
+        return PatientConverter\
+            .build_fhir_resource_reference(imis_claim.insuree,
+                                           type='Patient',
+                                           display=imis_claim.insuree.chf_id,
+                                           reference_type=reference_type)
+
+    @classmethod
+    def _build_practitioner_reference(cls, imis_claim, reference_type):
+        if imis_claim.admin is None:
+            raise FHIRRequestProcessException([
+                F'Failed to create FHIR instance for claim {imis_claim.uuid}: Claim Admin field not found'
+            ])
+        else:
+            return PractitionerConverter\
+                .build_fhir_resource_reference(imis_claim.admin,
+                                               type='Practitioner',
+                                               reference_type=reference_type)

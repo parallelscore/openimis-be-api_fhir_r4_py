@@ -1,4 +1,7 @@
 from abc import ABC
+from typing import Union
+
+from django.db.models import Model
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.exceptions import FHIRRequestProcessException
@@ -9,7 +12,7 @@ from api_fhir_r4.configurations import GeneralConfiguration
 class BaseFHIRConverter(ABC):
 
     @classmethod
-    def to_fhir_obj(cls, obj):
+    def to_fhir_obj(cls, obj, reference_type):
         raise NotImplementedError('`toFhirObj()` must be implemented.')  # pragma: no cover
 
     @classmethod
@@ -17,8 +20,23 @@ class BaseFHIRConverter(ABC):
         raise NotImplementedError('`toImisObj()` must be implemented.')  # pragma: no cover
 
     @classmethod
-    def build_fhir_pk(cls, fhir_obj, resource_id):
+    def get_fhir_code_identifier_type(cls):
+        raise NotImplementedError('get_fhir_code_identifier_type() must be implemented')
+
+    @classmethod
+    def _build_simple_pk(cls, fhir_obj, resource_id):
         fhir_obj.id = resource_id
+
+    @classmethod
+    def build_fhir_pk(cls, fhir_obj, resource: Union[str, Model], reference_type: str = None):
+        if not reference_type:
+            cls._build_simple_pk(fhir_obj, resource)
+        if reference_type == ReferenceConverterMixin.UUID_REFERENCE_TYPE:
+            fhir_obj.id = resource.uuid
+        elif reference_type == ReferenceConverterMixin.DB_ID_REFERENCE_TYPE:
+            fhir_obj.id = str(resource.id)
+        elif reference_type == ReferenceConverterMixin.CODE_REFERENCE_TYPE:
+            fhir_obj.id = resource.code
 
     @classmethod
     def valid_condition(cls, condition, error_message, errors=None):
@@ -63,20 +81,44 @@ class BaseFHIRConverter(ABC):
         return result
 
     @classmethod
-    def build_fhir_uuid_identifier(cls, identifiers, imis_object):
-        if hasattr(imis_object,'uuid') and imis_object.uuid is not None:
-            identifier = cls.build_fhir_identifier(imis_object.uuid,
-                                                   R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                   R4IdentifierConfig.get_fhir_uuid_type_code())
-            identifiers.append(identifier)
-        elif hasattr(imis_object,'id') and imis_object.id is not None:
-            identifier = cls.build_fhir_identifier(imis_object.id,
-                                                   R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                   R4IdentifierConfig.get_fhir_uuid_type_code())
-            identifiers.append(identifier)
-        else:
-            raise FHIRRequestProcessException(['Cannot construct an identifier, the object has no uuid nor id: {}'])
+    def build_all_identifiers(cls, identifiers, imis_object):
+        cls.build_fhir_uuid_identifier(identifiers, imis_object)
+        cls.build_fhir_code_identifier(identifiers, imis_object)
+        cls.build_fhir_id_identifier(identifiers, imis_object)
+        return identifiers
 
+    @classmethod
+    def build_fhir_uuid_identifier(cls, identifiers, imis_object):
+        if hasattr(imis_object, 'uuid'):
+            identifiers.append(cls.__build_uuid_identifier(imis_object.uuid))
+
+    @classmethod
+    def build_fhir_id_identifier(cls, identifiers, imis_object):
+        if hasattr(imis_object, 'id'):
+            identifiers.append(cls.__build_id_identifier(str(imis_object.id)))
+
+    @classmethod
+    def build_fhir_code_identifier(cls, identifiers, imis_object):
+        if hasattr(imis_object, 'code'):
+            identifiers.append(cls.__build_code_identifier(imis_object.code))
+
+    @classmethod
+    def __build_uuid_identifier(cls, uuid):
+        return cls.build_fhir_identifier(uuid,
+                                         R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                         R4IdentifierConfig.get_fhir_uuid_type_code())
+
+    @classmethod
+    def __build_id_identifier(cls, db_id):
+        return cls.build_fhir_identifier(db_id,
+                                         R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                         R4IdentifierConfig.get_fhir_id_type_code())
+
+    @classmethod
+    def __build_code_identifier(cls, code):
+        return cls.build_fhir_identifier(code,
+                                         R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                         cls.get_fhir_code_identifier_type())
 
     @classmethod
     def build_fhir_identifier(cls, value, type_system, type_code):

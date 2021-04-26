@@ -1,9 +1,7 @@
-from rest_framework import mixins
-from django.db.models import Manager
 from typing import List
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
-from api_fhir_r4.models import Resource, FHIRBaseObject
+from api_fhir_r4.models import FHIRBaseObject
 
 
 class ContainedContentSerializerMixin:
@@ -13,6 +11,9 @@ class ContainedContentSerializerMixin:
     listed contained_resources. The contained values are added only if the 'contained'
     value in the serializer context is set to True.
     """
+
+    #  Used for determining what reference type will be used used in contained value,
+    # if None then value from ContainedResourceConverter is used
 
     @property
     def contained_resources(self) -> List[ContainedResourceConverter]:

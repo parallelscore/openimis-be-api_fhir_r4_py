@@ -9,9 +9,10 @@ import core
 class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_activity_definition):
+    def to_fhir_obj(cls, imis_activity_definition, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_activity_definition = ActivityDefinition()
-        cls.build_fhir_pk(fhir_activity_definition, imis_activity_definition.uuid)
+
+        cls.build_fhir_pk(fhir_activity_definition, imis_activity_definition, reference_type)
         cls.build_fhir_identifiers(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_status(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_date(fhir_activity_definition, imis_activity_definition)
@@ -22,6 +23,10 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_activity_definition_extension(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_frequency_extension(fhir_activity_definition, imis_activity_definition)
         return fhir_activity_definition
+
+    @classmethod
+    def get_fhir_code_identifier_type(cls):
+        return R4IdentifierConfig.get_fhir_service_code_type()
 
     @classmethod
     def to_imis_obj(cls, fhir_activity_definition, audit_user_id):
@@ -39,8 +44,16 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return imis_activity_definition
 
     @classmethod
-    def get_reference_obj_id(cls, imis_activity_definition):
+    def get_reference_obj_uuid(cls, imis_activity_definition: Service):
         return imis_activity_definition.uuid
+
+    @classmethod
+    def get_reference_obj_id(cls, imis_activity_definition: Service):
+        return imis_activity_definition.id
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_activity_definition: Service):
+        return imis_activity_definition.code
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -54,11 +67,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_identifiers(cls, fhir_activity_definition, imis_activity_definition):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_activity_definition)
-        serv_code = cls.build_fhir_identifier(imis_activity_definition.code,
-                                              R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                              R4IdentifierConfig.get_fhir_service_code_type())
-        identifiers.append(serv_code)
+        cls.build_all_identifiers(identifiers, imis_activity_definition)
         fhir_activity_definition.identifier = identifiers
 
     @classmethod
