@@ -316,7 +316,7 @@ class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.Li
         return Policy.objects
         #return Policy.get_queryset(None, self.request.user)
 
-class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin,mixins.CreateModelMixin, GenericViewSet):
     lookup_field = 'uuid'
     serializer_class = ContractSerializer
     permission_classes = (FHIRApiCoverageRequestPermissions,)
