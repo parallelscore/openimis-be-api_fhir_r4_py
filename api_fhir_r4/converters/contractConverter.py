@@ -10,9 +10,7 @@ from insuree.models import Family
 from core.models import Officer
 from api_fhir_r4.utils import DbManagerUtils,TimeUtils
 
-
 class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
-
     @classmethod
     def to_fhir_obj(cls, imis_policy):
         fhir_contract = Contract()
@@ -206,9 +204,28 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_status(cls, fhir_contract, imis_policy,errors):
         if fhir_contract.status:
-            imis_policy.status = fhir_contract.status
+            if fhir_contract.status == R4CoverageConfig.get_status_idle_code():
+                imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_idle_code(),imis_policy)
+            elif fhir_contract.status == R4CoverageConfig.get_status_active_code():
+                imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_active_code(),imis_policy)
+            elif fhir_contract.status == R4CoverageConfig.get_status_suspended_code():
+                 imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_suspended_code(),imis_policy)
+            elif fhir_contract.status == R4CoverageConfig.get_status_expired_code():
+                 imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_expired_code(),imis_policy)
+            else:
+                pass    
         else:
             cls.valid_condition(fhir_contract.status is None, gettext('Missing  `status` attribute'),errors)
+
+    @classmethod
+    def imis_map_status(cls,code,imis_policy):
+        status={
+            R4CoverageConfig.get_status_idle_code():imis_policy.STATUS_IDLE,
+            R4CoverageConfig.get_status_active_code():imis_policy.STATUS_ACTIVE,
+            R4CoverageConfig.get_status_suspended_code():imis_policy.STATUS_SUSPENDED,
+            R4CoverageConfig.get_status_expired_code():imis_policy.STATUS_EXPIRED,
+        }
+        return status[code]
 
     @classmethod
     def build_imis_signer(cls,fhir_contract, imis_policy,errors):
@@ -288,16 +305,24 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                         
         else:
             cls.valid_condition(not fhir_contract, gettext('Missing  `term` attribute'),errors)
-            
-                
+                        
     @classmethod
     def build_imis_state(cls,fhir_contract, imis_policy,errors):
         if fhir_contract.legalState:
             if fhir_contract.legalState.text:
-                if fhir_contract.legalState.text == 'N' or fhir_contract.legalState == 'R':
-                    imis_policy.stage = fhir_contract.legalState.text
+                if fhir_contract.legalState.text == R4CoverageConfig.get_status_offered_code():
+                    imis_policy.stage = cls.imis_map_stage(R4CoverageConfig.get_status_offered_code(),imis_policy)
+                elif fhir_contract.legalState.text == R4CoverageConfig.get_status_renewed_code():
+                    imis_policy.stage = cls.imis_map_stage(R4CoverageConfig.get_status_renewed_code(),imis_policy)
                 else:
-                    cls.valid_condition(True, gettext('Missing  `invalid legalState` attribute'),errors)
-                    
+                    pass       
         else:
             cls.valid_condition(fhir_contract.legalState is None, gettext('Missing  `legalState` attribute'),errors)
+    
+    @classmethod
+    def imis_map_stage(cls,code,imis_policy):
+        codes = {
+            R4CoverageConfig.get_status_offered_code():imis_policy.STAGE_NEW,
+            R4CoverageConfig.get_status_active_code():imis_policy.STAGE_RENEWED
+        }
+        return codes[code]

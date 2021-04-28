@@ -39,7 +39,7 @@ class Coverage(DomainResource):
     classes = Property('classes', 'CoverageClass', count_max='*')
     order = Property('order', int)
     value = Property('value',int)
-    producty = Property('value',int)
+    product = Property('value',int)
     network = Property('network', str)
     costToBeneficiary = Property('costToBeneficiary', 'CoverageCostToBeneficiary', count_max='*')
     subrogation = Property('subrogation', bool)
