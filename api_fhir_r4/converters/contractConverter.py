@@ -18,7 +18,6 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         contractTerm = ContractTerm()
         contractTermAsset = ContractTermAsset()
         cls.build_contract_asset_context(contractTermAsset, imis_policy)
-        cls.build_contract_valued_item(contractTermAsset, imis_policy)
         cls.build_contract_valued_item_entity(contractTermAsset, imis_policy)
         cls.build_contract_asset_use_period(contractTermAsset, imis_policy)
         contractTerm.asset = [contractTermAsset]
@@ -63,14 +62,6 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return fhir_contract
 
  
-    @classmethod
-    def build_contract_valued_item(cls, contract_asset, imis_policy):
-        valued_item = ContractTermAssetValuedItem()
-        policy_value = Money()
-        policy_value.value = imis_policy.value
-        valued_item.net = policy_value
-        contract_asset.valuedItem.append(valued_item)
-        return contract_asset
 
     @classmethod
     def build_contract_asset_use_period(cls, contract_asset, imis_policy):
@@ -143,6 +134,9 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         valued_item = ContractTermAssetValuedItem()
         typeReference = cls.build_fhir_resource_reference(imis_policy.product, "InsuranceProduct", imis_policy.product.code )
         valued_item.entityReference=typeReference
+        policy_value = Money()
+        policy_value.value = imis_policy.value
+        valued_item.net = policy_value
         contract_asset.valuedItem.append(valued_item)
         return contract_asset
 
