@@ -12,8 +12,8 @@ from api_fhir_r4.models import FHIRBaseObject
 class BaseFHIRSerializer(serializers.Serializer):
     fhirConverter = BaseFHIRConverter()
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._reference_type = kwargs.get('reference_type', ReferenceConverterMixin.UUID_REFERENCE_TYPE)
 
     def to_representation(self, obj):
