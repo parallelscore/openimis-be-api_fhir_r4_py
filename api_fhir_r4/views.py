@@ -55,7 +55,7 @@ class LoginView(viewsets.ViewSet):
                     # set the user to context
                     request.user = user
                     # take the payload base on user data - using same mechanism as
-                    # in graphql_jwt with generating payload. Also generate refresh token
+                    # in graphql_jwt with generating payload.
                     payload = jwt_payload(user=user)
                     # encode token based on payload
                     token = jwt_encode_user_key(payload=payload, context=request)
