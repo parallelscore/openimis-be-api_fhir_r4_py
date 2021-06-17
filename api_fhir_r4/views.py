@@ -13,6 +13,7 @@ from medical.models import Item, Diagnosis, Service
 from rest_framework import exceptions, viewsets, mixins, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 import datetime
@@ -24,15 +25,11 @@ from api_fhir_r4.serializers import PatientSerializer, LocationSerializer, Locat
     PolicyCoverageEligibilityRequestSerializer, ClaimResponseSerializer, CommunicationRequestSerializer, \
     MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer ,ContractSerializer
 from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
-from rest_framework.permissions import AllowAny
 from django.db.models import Q, Prefetch
-
-from openIMIS.oijwt import *
 from graphql_jwt.utils import jwt_payload
+from openIMIS.oijwt import *
 
 import datetime
-import json
-import hashlib
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -45,7 +42,7 @@ class LoginView(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        # check if we have both data in payload
+        # check if we have both required data in request payload
         if 'username' in data and 'password' in data:
             username = data['username']
             password = data['password']
@@ -55,11 +52,13 @@ class LoginView(viewsets.ViewSet):
                 # validate provided password from payload
                 user = users.first()
                 if user.check_password(password):
+                    # set the user to context
                     request.user = user
                     # take the payload base on user data - using same mechanism as
-                    # in
+                    # in graphql_jwt with generating payload
                     payload = jwt_payload(user=user)
                     expire = f"{payload['exp']}"
+                    # encode token based on payload
                     token = jwt_encode_user_key(payload=payload, context=request)
                     if token:
                         # return ok
