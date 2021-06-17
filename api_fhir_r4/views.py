@@ -55,16 +55,15 @@ class LoginView(viewsets.ViewSet):
                     # set the user to context
                     request.user = user
                     # take the payload base on user data - using same mechanism as
-                    # in graphql_jwt with generating payload
+                    # in graphql_jwt with generating payload. Also generate refresh token
                     payload = jwt_payload(user=user)
-                    expire = f"{payload['exp']}"
                     # encode token based on payload
                     token = jwt_encode_user_key(payload=payload, context=request)
                     if token:
                         # return ok
                         response = {
-                            "access_token": token,
-                            "expires_on": expire
+                            "token": token,
+                            "exp": payload['exp'],
                         }
                         return Response(data=response, status=200)
             # return unauthorized
