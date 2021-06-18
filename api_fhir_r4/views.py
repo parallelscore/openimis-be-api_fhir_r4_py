@@ -4,14 +4,16 @@ from api_fhir_r4.permissions import FHIRApiClaimPermissions, FHIRApiCoverageElig
     FHIRApiHFPermissions, FHIRApiInsureePermissions, FHIRApiMedicationPermissions, FHIRApiConditionPermissions, \
     FHIRApiActivityDefinitionPermissions, FHIRApiHealthServicePermissions
 from claim.models import ClaimAdmin, Claim, Feedback, ClaimItem ,ClaimService
+from core.models import User
 from django.db.models import OuterRef, Exists
 from insuree.models import Insuree, InsureePolicy
 from location.models import HealthFacility, Location
 from policy.models import Policy
 from medical.models import Item, Diagnosis, Service
-from rest_framework import viewsets, mixins, status
+from rest_framework import exceptions, viewsets, mixins, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 import datetime
@@ -24,6 +26,8 @@ from api_fhir_r4.serializers import PatientSerializer, LocationSerializer, Locat
     MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer ,ContractSerializer
 from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
 from django.db.models import Q, Prefetch
+from graphql_jwt.utils import jwt_payload
+from openIMIS.oijwt import *
 
 import datetime
 
@@ -31,6 +35,42 @@ import datetime
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return
+
+
+class LoginView(viewsets.ViewSet):
+    permission_classes = (AllowAny,)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        # check if we have both required data in request payload
+        if 'username' in data and 'password' in data:
+            username = data['username']
+            password = data['password']
+            users = User.objects.filter(username=username)
+            # check if user with such username exists
+            if len(list(users)) == 1:
+                # validate provided password from payload
+                user = users.first()
+                if user.check_password(password):
+                    # set the user to context
+                    request.user = user
+                    # take the payload base on user data - using same mechanism as
+                    # in graphql_jwt with generating payload.
+                    payload = jwt_payload(user=user)
+                    # encode token based on payload
+                    token = jwt_encode_user_key(payload=payload, context=request)
+                    if token:
+                        # return ok
+                        response = {
+                            "token": token,
+                            "exp": payload['exp'],
+                        }
+                        return Response(data=response, status=200)
+            # return unauthorized
+            return Response(status=401)
+        else:
+            # return bad request
+            return Response(status=400)
 
 
 class BaseFHIRView(APIView):
