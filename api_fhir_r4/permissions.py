@@ -28,7 +28,6 @@ class FHIRApiPermissions(DjangoModelPermissions):
         return self.perms_map[method]
 
 
-
 class FHIRApiClaimPermissions(FHIRApiPermissions):
     permissions_get = ClaimConfig.gql_query_claims_perms
     permissions_post = ClaimConfig.gql_mutation_create_claims_perms
