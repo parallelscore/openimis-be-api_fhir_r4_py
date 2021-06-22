@@ -50,7 +50,6 @@ class ClaimResponseConverter(BaseFHIRConverter):
     @classmethod
     def to_imis_obj(cls, fhir_claim_response, audit_user_id):
         errors = []
-        # mis_claim = Claim()
         imis_claim = cls.get_imis_claim_from_response(fhir_claim_response)
         cls.build_imis_outcome(imis_claim, fhir_claim_response)
         cls.build_imis_errors(imis_claim, fhir_claim_response)
@@ -448,7 +447,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
     @classmethod
     def __build_item_price(cls, item_price):
         price = Money()
-        price.currency = core.currency
+        if hasattr(core,'currency'):
+            price.currency = core.currency
         price.value = item_price
         return price
 

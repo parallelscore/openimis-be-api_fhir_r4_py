@@ -94,7 +94,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
 
         fhir_obj = self.fhirConverter.to_fhir_obj(obj, self._reference_type)
         self.remove_attachment_data(fhir_obj)
-
+        
         if self.context.get('contained', None):
             self._add_contained_references(fhir_obj)
 

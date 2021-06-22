@@ -134,8 +134,7 @@ class BaseFHIRConverter(ABC):
         value = None
         for identifier in identifiers or []:
             first_coding = cls.get_first_coding_from_codeable_concept(identifier.type)
-            if first_coding.system == R4IdentifierConfig.get_fhir_identifier_type_system() \
-                and first_coding.code == lookup_code:
+            if first_coding.code == lookup_code:
                 value = identifier.value
                 break
         return value
@@ -158,6 +157,13 @@ class BaseFHIRConverter(ABC):
         return current_address
     
     @classmethod
+    def build_fhir_address(cls, value, use, type):
+        current_address = Address()
+        current_address.text = value
+        current_address.use = use
+        current_address.type = type
+        return current_address
+    @classmethod
     def build_fhir_reference(cls, identifier, display, type, reference):
         reference = Reference()
         reference.identifier = identifier
@@ -167,10 +173,14 @@ class BaseFHIRConverter(ABC):
         return reference
 
 
+from api_fhir_r4.converters.groupConverterMixin import GroupConverterMixin
+from api_fhir_r4.converters.organisationConverterMixin import OrganisationConverterMixin
 from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
 from api_fhir_r4.converters.referenceConverterMixin import ReferenceConverterMixin
 from api_fhir_r4.converters.contractConverter import ContractConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
+from api_fhir_r4.converters.groupConverter import GroupConverter
+from api_fhir_r4.converters.organisationConverter import OrganisationConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.converters.locationSiteConverter import LocationSiteConverter
 from api_fhir_r4.converters.operationOutcomeConverter import OperationOutcomeConverter

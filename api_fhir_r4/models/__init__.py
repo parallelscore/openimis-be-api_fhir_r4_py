@@ -48,7 +48,6 @@ class PropertyMixin(object):
 
 
 class PropertyList(list, PropertyMixin):
-
     def __init__(self, definition, *args, **kwargs):
         super(PropertyList, self).__init__(*args, **kwargs)
         self.definition = definition
@@ -261,12 +260,16 @@ from api_fhir_r4.models.fhirdate import FHIRDate
 from api_fhir_r4.models.humanName import HumanName, NameUse
 from api_fhir_r4.models.identifier import Identifier, IdentifierUse
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus, ImisClaimIcdTypes, ImisLocationType, ImisHfLevel
-from api_fhir_r4.models.location import LocationPosition, LocationMode, Location, LocationStatus, \
+from api_fhir_r4.models.location import LocationPosition, LocationMode,Location, LocationStatus, \
     LocationHoursOfOperation
 from api_fhir_r4.models.meta import Meta
 from api_fhir_r4.models.money import Money
 from api_fhir_r4.models.narrative import Narrative
 from api_fhir_r4.models.patient import Patient, PatientCommunication, PatientContact, PatientLink
+from api_fhir_r4.models.group import Group,Characteristic,GroupLocation
+from api_fhir_r4.models.member import Member
+from api_fhir_r4.models.bankAccount import BankAccount
+from api_fhir_r4.models.organisation import Organisation,OrganisationContact
 from api_fhir_r4.models.period import Period
 from api_fhir_r4.models.range import Range
 from api_fhir_r4.models.ratio import Ratio

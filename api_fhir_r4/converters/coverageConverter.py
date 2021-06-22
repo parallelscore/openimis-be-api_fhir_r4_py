@@ -1,11 +1,12 @@
+from django.utils.translation import gettext
 from api_fhir_r4.configurations import R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ContractConverter,  ReferenceConverterMixin
-from api_fhir_r4.models import Coverage, Reference, Period, Contract, Money, Extension, ContractTermAssetValuedItem, \
+from api_fhir_r4.models import Coverage, Reference, Period,Money, Extension, ContractTermAssetValuedItem, \
     ContractTermOfferParty, CoverageClass, ContractTerm, ContractTermAsset, ContractTermOffer
-from product.models import ProductItem, ProductService
+from product.models import ProductItem, ProductService, Product
 from policy.models import Policy
-from api_fhir_r4.utils import DbManagerUtils
-
+from api_fhir_r4.utils import DbManagerUtils, TimeUtils
+from insuree.models import Family
 
 class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
@@ -18,9 +19,10 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_coverage_status(fhir_coverage, imis_policy)
         cls.build_coverage_contract(fhir_coverage, imis_policy, reference_type)
         cls.build_coverage_class(fhir_coverage, imis_policy)
+        cls.build_coverage_value(fhir_coverage, imis_policy)
         cls.build_coverage_extension(fhir_coverage, imis_policy)
         return fhir_coverage
-
+ 
     @classmethod
     def get_reference_obj_uuid(cls, imis_policy: Policy):
         return imis_policy.uuid
@@ -36,11 +38,6 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def get_fhir_resource_type(cls):
         return Coverage
-
-    @classmethod
-    def get_imis_obj_by_fhir_reference(cls, reference, errors=None):
-        imis_policy_code = cls.get_resource_id_from_reference(reference)
-        return DbManagerUtils.get_object_or_none(Policy, code=imis_policy_code)
 
     @classmethod
     def build_coverage_identifier(cls, fhir_coverage, imis_policy):
@@ -85,6 +82,11 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_coverage_contract(cls, fhir_coverage, imis_coverage, reference_type):
         reference = ContractConverter.build_fhir_resource_reference(imis_coverage, reference_type=reference_type)
         fhir_coverage.contract.append(reference)
+        return fhir_coverage
+
+    @classmethod
+    def build_coverage_value(cls, fhir_coverage, imis_policy):
+        fhir_coverage.value = imis_policy.value
         return fhir_coverage
 
     @classmethod
@@ -173,7 +175,6 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         item_code = R4CoverageConfig.get_item_code()
         product_items = ProductItem.objects.filter(product=product).all()
         product_services = ProductService.objects.filter(product=product).all()
-
         product_coverage[item_code] = [item.item.code for item in product_items]
         product_coverage[service_code] = [service.service.code for service in product_services]
         class_.type = product.name

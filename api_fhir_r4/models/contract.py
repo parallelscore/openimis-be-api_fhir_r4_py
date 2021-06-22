@@ -152,8 +152,7 @@ class ContractContentDefinition(BackboneElement):
 
 
 class ContractSigner(BackboneElement):
-
-    type = Property('type', 'Coding', required=True)
+    type = Property('type', 'CodeableConcept', required=True)
     party = Property('party', 'Reference', required=True)  # referencing 'Organization', 'Patient', ...
     signature = Property('signature', 'Signature', required=True, count_max='*')
 
