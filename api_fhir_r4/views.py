@@ -82,7 +82,7 @@ class BaseFHIRView(APIView):
 class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = PatientSerializer
-    #permission_classes = (FHIRApiInsureePermissions,)
+    permission_classes = (FHIRApiInsureePermissions,)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset().select_related('gender').select_related('photo').select_related('family__location')
@@ -123,13 +123,13 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
 
     
     def get_queryset(self):
-        return Insuree.objects
+        return Insuree.get_queryset(None, self.request.user)
         
 
 class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = LocationSerializer
-    #permission_classes = (FHIRApiHFPermissions,)
+    permission_classes = (FHIRApiHFPermissions,)
 
     def list(self, request, *args, **kwargs):
         identifier = request.GET.get("identifier")
@@ -155,17 +155,17 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
         return response
 
     def get_queryset(self, physicalType = 'area'):
-        #return Location.get_queryset(None, self.request.user)
         if physicalType == 'si':
-            return HealthFacility.objects.select_related('location').select_related('sub_level').select_related('legal_form')
+            hf_queryset = HealthFacility.get_queryset(None, self.request.user)
+            return hf_queryset.select_related('location').select_related('sub_level').select_related('legal_form')
         else:
-            return Location.objects.select_related('parent')
+            return Location.get_queryset(None, self.request.user)
 
 
 class PractitionerRoleViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = PractitionerRoleSerializer
-    #permission_classes = (FHIRApiPractitionerPermissions,)
+    permission_classes = (FHIRApiPractitionerPermissions,)
 
     def list(self, request, *args, **kwargs):
         identifier = request.GET.get("identifier")
@@ -183,8 +183,7 @@ class PractitionerRoleViewSet(BaseFHIRView, viewsets.ModelViewSet):
         instance.save()
 
     def get_queryset(self):
-        #return ClaimAdmin.get_queryset(None, self.request.user)
-        return ClaimAdmin.objects.all()
+        return ClaimAdmin.get_queryset(None, self.request.user)
 
 
 class PractitionerViewSet(BaseFHIRView, viewsets.ModelViewSet):
@@ -201,15 +200,14 @@ class PractitionerViewSet(BaseFHIRView, viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
     def get_queryset(self):
-        #return ClaimAdmin.get_queryset(None, self.request.user)
-        return ClaimAdmin.filter_queryset(None)
+        return ClaimAdmin.get_queryset(None, self.request.user)
 
 
 class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin,
                    mixins.CreateModelMixin, GenericViewSet):
     lookup_field = 'uuid'
     serializer_class = ClaimSerializer
-    #permission_classes = (FHIRApiClaimPermissions,)
+    permission_classes = (FHIRApiClaimPermissions,)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset().select_related('insuree').select_related('health_facility').select_related('icd')\
@@ -250,8 +248,7 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
         return Response(serializer.data)
 
     def get_queryset(self):
-        #return Claim.get_queryset(None, self.request.user)
-        return Claim.objects
+        return Claim.get_queryset(None, self.request.user)
 
 
 class ClaimResponseViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet,
@@ -318,8 +315,7 @@ class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.Li
 
 
     def get_queryset(self):
-        return Policy.objects
-        #return Policy.get_queryset(None, self.request.user)
+        return Policy.get_queryset(None, self.request.user)
 
 class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     lookup_field = 'uuid'
@@ -390,8 +386,7 @@ class ActivityDefinitionViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.
 class HealthcareServiceViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     lookup_field = 'uuid'
     serializer_class = HealthcareServiceSerializer
-    #permission_classes = (FHIRApiHealthServicePermissions,)
+    permission_classes = (FHIRApiHealthServicePermissions,)
 
     def get_queryset(self):
-        #return HealthFacility.get_queryset(None, self.request.user)
         return HealthFacility.get_queryset(None, self.request.user)
