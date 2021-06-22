@@ -354,7 +354,7 @@ class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelM
 
 
     def get_queryset(self):
-        return Policy.objects
+        return Policy.get_queryset(None, self.request.user)
 
 class MedicationViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     lookup_field = 'uuid'
