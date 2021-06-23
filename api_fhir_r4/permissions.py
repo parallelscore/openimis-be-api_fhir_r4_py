@@ -78,9 +78,9 @@ class FHIRApiHFPermissions(FHIRApiPermissions):
 
 class FHIRApiInsureePermissions(FHIRApiPermissions):
     permissions_get = InsureeConfig.gql_query_insurees_perms
-    permissions_post = []
-    permissions_put = []
-    permissions_patch = []
+    permissions_post = InsureeConfig.gql_mutation_create_insurees_perms
+    permissions_put = InsureeConfig.gql_mutation_update_insurees_perms
+    permissions_patch = InsureeConfig.gql_mutation_update_insurees_perms
     permissions_delete = []
 
 

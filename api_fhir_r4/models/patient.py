@@ -44,3 +44,5 @@ class Patient(DomainResource):
     generalPractitioner = Property('generalPractitioner', 'Reference', count_max='*')  # referencing `Organization, Practitioner`
     managingOrganization = Property('managingOrganization', 'Reference')  # referencing `Organization`
     link = Property('link', 'PatientLink', count_max='*')
+    poverty= Property('poverty', bool)
+

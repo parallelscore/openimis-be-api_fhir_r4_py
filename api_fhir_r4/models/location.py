@@ -19,7 +19,6 @@ class LocationHoursOfOperation(BackboneElement):
 
 
 class Location(DomainResource):
-
     identifier = Property('identifier', 'Identifier', count_max='*')
     status = Property('status', str)  # LocationStatus
     operationalStatus = Property('operationalStatus', 'Coding')
