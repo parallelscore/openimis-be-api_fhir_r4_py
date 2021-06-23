@@ -2,6 +2,7 @@ from claim.apps import ClaimConfig
 from insuree.apps import InsureeConfig
 from location.apps import LocationConfig
 from policy.apps import PolicyConfig
+from policyholder.apps import PolicyholderConfig
 from medical.apps import MedicalConfig
 from rest_framework import exceptions
 from rest_framework.permissions import DjangoModelPermissions
@@ -81,7 +82,7 @@ class FHIRApiInsureePermissions(FHIRApiPermissions):
     permissions_post = InsureeConfig.gql_mutation_create_insurees_perms
     permissions_put = InsureeConfig.gql_mutation_update_insurees_perms
     permissions_patch = InsureeConfig.gql_mutation_update_insurees_perms
-    permissions_delete = []
+    permissions_delete = InsureeConfig.gql_mutation_delete_insurees_perms
 
 
 class FHIRApiMedicationPermissions(FHIRApiPermissions):
@@ -114,3 +115,19 @@ class FHIRApiHealthServicePermissions(FHIRApiPermissions):
     permissions_put = []
     permissions_patch = []
     permissions_delete = []
+
+
+class FHIRApiGroupPermissions(FHIRApiPermissions):
+    permissions_get = InsureeConfig.gql_query_families_perms
+    permissions_post = InsureeConfig.gql_mutation_create_families_perms
+    permissions_put = InsureeConfig.gql_mutation_update_families_perms
+    permissions_patch = InsureeConfig.gql_mutation_update_families_perms
+    permissions_delete = InsureeConfig.gql_mutation_delete_families_perms
+
+
+class FHIRApiOrganizationPermissions(FHIRApiPermissions):
+    permissions_get = PolicyholderConfig.gql_query_policyholder_perms
+    permissions_post = PolicyholderConfig.gql_mutation_create_policyholder_perms
+    permissions_put = PolicyholderConfig.gql_mutation_update_policyholder_perms
+    permissions_patch = PolicyholderConfig.gql_mutation_update_policyholder_perms
+    permissions_delete = PolicyholderConfig.gql_mutation_delete_policyholder_perms

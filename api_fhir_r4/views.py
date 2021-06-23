@@ -2,7 +2,8 @@ from api_fhir_r4.converters import OperationOutcomeConverter
 from api_fhir_r4.permissions import FHIRApiClaimPermissions, FHIRApiCoverageEligibilityRequestPermissions, \
     FHIRApiCoverageRequestPermissions, FHIRApiCommunicationRequestPermissions, FHIRApiPractitionerPermissions, \
     FHIRApiHFPermissions, FHIRApiInsureePermissions, FHIRApiMedicationPermissions, FHIRApiConditionPermissions, \
-    FHIRApiActivityDefinitionPermissions, FHIRApiHealthServicePermissions
+    FHIRApiActivityDefinitionPermissions, FHIRApiHealthServicePermissions, FHIRApiGroupPermissions, \
+    FHIRApiOrganizationPermissions
 from claim.models import ClaimAdmin, Claim, Feedback, ClaimItem ,ClaimService
 from core.models import User
 from django.db.models import OuterRef, Exists
@@ -133,12 +134,13 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
 class GroupViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'uuid'
     serializer_class = GroupSerializer
+    permission_classes = (FHIRApiGroupPermissions,)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         identifier = request.GET.get("identifier") 
         if identifier:
-            queryset = self.get_queryset(head_insuree_id__chf_id=identifier)
+            queryset = queryset.filter(head_insuree_id__chf_id=identifier)
         else:
             queryset = queryset.filter(validity_to__isnull=True)
         serializer = GroupSerializer(self.paginate_queryset(queryset), many=True)
@@ -151,6 +153,7 @@ class GroupViewSet(BaseFHIRView, viewsets.ModelViewSet):
 class OrganisationViewSet(BaseFHIRView, viewsets.ModelViewSet):
     lookup_field = 'id'
     serializer_class = OrganisationSerializer
+    permission_classes = (FHIRApiOrganizationPermissions,)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
