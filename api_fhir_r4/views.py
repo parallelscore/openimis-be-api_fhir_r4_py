@@ -33,7 +33,7 @@ from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
 
 from django.db.models import Q, Prefetch
 from graphql_jwt.utils import jwt_payload
-from openIMIS.oijwt import *
+from core.jwt import *
 from django.db.models import Prefetch
 from rest_framework.decorators import api_view
 import datetime
