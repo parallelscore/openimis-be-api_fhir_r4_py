@@ -264,7 +264,7 @@ class ClaimViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixi
         contained = bool(request.GET.get("contained"))
 
         if identifier is not None:
-            queryset = queryset.filter(identifier=identifier)
+            queryset = queryset.filter(Q(code=identifier) | Q(id=identifier) | Q(uuid=identifier))
         else:
             queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
             if refDate is not None:
