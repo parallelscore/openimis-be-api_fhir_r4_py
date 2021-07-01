@@ -49,7 +49,6 @@ class LoginAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, APITestCase
         pass
 
     def __create_user_interactive_core(self):
-        User.objects.create_user(username=self._TEST_USER_NAME, password=self._TEST_USER_PASSWORD)
         i_user, i_user_created = create_or_update_interactive_user(
             user_id=None, data=self._TEST_DATA_USER, audit_user_id=999, connected=False)
         create_or_update_core_user(
