@@ -4,7 +4,7 @@ from api_fhir_r4.permissions import FHIRApiClaimPermissions, FHIRApiCoverageElig
     FHIRApiHFPermissions, FHIRApiInsureePermissions, FHIRApiMedicationPermissions, FHIRApiConditionPermissions, \
     FHIRApiActivityDefinitionPermissions, FHIRApiHealthServicePermissions, FHIRApiGroupPermissions, \
     FHIRApiOrganizationPermissions
-from claim.models import ClaimAdmin, Claim, Feedback, ClaimItem ,ClaimService
+from claim.models import ClaimAdmin, Claim, Feedback, ClaimItem, ClaimService
 from core.models import User
 from django.db.models import OuterRef, Exists
 from insuree.models import Insuree, InsureePolicy,Family
@@ -27,7 +27,7 @@ from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Con
 from api_fhir_r4.serializers import PatientSerializer, LocationSerializer, LocationSiteSerializer, PractitionerRoleSerializer, \
     PractitionerSerializer, ClaimSerializer, CoverageEligibilityRequestSerializer, \
     PolicyCoverageEligibilityRequestSerializer, ClaimResponseSerializer, CommunicationRequestSerializer, \
-    MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer ,ContractSerializer,GroupSerializer,\
+    MedicationSerializer, ConditionSerializer, ActivityDefinitionSerializer, HealthcareServiceSerializer, ContractSerializer, GroupSerializer,\
     OrganisationSerializer
 from api_fhir_r4.serializers.coverageSerializer import CoverageSerializer
 
