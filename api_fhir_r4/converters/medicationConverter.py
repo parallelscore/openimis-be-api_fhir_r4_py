@@ -11,7 +11,7 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_medication, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_medication = FHIRMedication()
+        fhir_medication = FHIRMedication.construct()
         cls.build_fhir_pk(fhir_medication, imis_medication, reference_type)
         cls.build_fhir_identifiers(fhir_medication, imis_medication)
         cls.build_fhir_package_form(fhir_medication, imis_medication)

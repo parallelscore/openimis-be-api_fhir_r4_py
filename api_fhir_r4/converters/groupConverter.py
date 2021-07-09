@@ -5,7 +5,7 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration,
 from api_fhir_r4.converters import BaseFHIRConverter,GroupConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models import  AdministrativeGender, ImisMaritalStatus, Extension,Coding, FHIRDate,Group,Member
+from api_fhir_r4.models import  AdministrativeGender, ImisMaritalStatus, Extension,Coding, FHIRDate,Group,GroupMember
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 from api_fhir_r4.exceptions import FHIRException
@@ -22,7 +22,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         cls.build_fhir_type(fhir_family,imis_family)
         cls.build_fhir_name(fhir_family,imis_family)
         cls.build_fhir_location(fhir_family,imis_family)
-        cls.build_fhir_addresses(fhir_family,imis_family)
+        cls.build_fhir_addresses(fhir_family, imis_family)
         cls.build_fhir_member(fhir_family,imis_family)
         return fhir_family
 

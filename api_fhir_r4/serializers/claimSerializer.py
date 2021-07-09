@@ -5,7 +5,8 @@ from typing import List, Union
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.mixins import ContainedContentSerializerMixin
-from api_fhir_r4.models import Claim as FHIRClaim, Property
+# TODO change reagardin Properties
+from api_fhir_r4.models import Claim as FHIRClaim#, Property
 from django.http import HttpResponseForbidden
 from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
@@ -15,7 +16,8 @@ from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConve
     ConditionConverter, MedicationConverter, HealthcareServiceConverter, PractitionerConverter, \
     ActivityDefinitionConverter, ReferenceConverterMixin as r
 from api_fhir_r4.converters.claimConverter import ClaimConverter
-from api_fhir_r4.models import FHIRBaseObject
+#from api_fhir_r4.models import FHIRBaseObject
+from api_fhir_r4.models import FHIRAbstractModel
 from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
@@ -40,7 +42,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
                                    ]),
     ]
 
-    def fhir_object_reference_fields(self, fhir_obj: FHIRClaim) -> List[FHIRBaseObject]:
+    def fhir_object_reference_fields(self, fhir_obj: FHIRClaim) -> List[FHIRAbstractModel]:
         return [
             fhir_obj.patient,
             *[diagnosis.diagnosisReference for diagnosis in fhir_obj.diagnosis],

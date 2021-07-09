@@ -1,3 +1,4 @@
+"""
 from django.utils.translation import gettext
 from api_fhir_r4.converters import BaseFHIRConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
@@ -11,4 +12,4 @@ class OrganisationConverterMixin(object):
         account['bank'] = data.bank
         account['no']  = data.no
         return account
-    
+"""

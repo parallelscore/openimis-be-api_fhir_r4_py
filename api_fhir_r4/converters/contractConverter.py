@@ -14,10 +14,10 @@ from api_fhir_r4.utils import DbManagerUtils,TimeUtils
 class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def to_fhir_obj(cls, imis_policy, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_contract = Contract()
+        fhir_contract = Contract.construct()
         cls.build_contract_identifier(fhir_contract, imis_policy)
-        contractTerm = ContractTerm()
-        contractTermAsset = ContractTermAsset()
+        contractTerm = ContractTerm.construct()
+        contractTermAsset = ContractTermAsset.construct()
         cls.build_contract_asset_context(contractTermAsset, imis_policy, reference_type)
         cls.build_contract_asset_type_reference(contractTermAsset, imis_policy, reference_type)
         cls.build_contract_valued_item_entity(contractTermAsset, imis_policy)
@@ -150,7 +150,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_contract_valued_item_entity(cls, contract_asset, imis_policy):
-        valued_item = ContractTermAssetValuedItem()
+        valued_item = ContractTermAssetValuedItem.construct()
         typeReference = cls.build_fhir_resource_reference(imis_policy.product, "InsuranceProduct", imis_policy.product.code )
         valued_item.entityReference=typeReference
         policy_value = Money()
@@ -171,7 +171,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if imis_policy.officer is not None:
             reference = cls.build_fhir_resource_reference(
                 imis_policy.officer, "Practitioner", reference_type=reference_type)
-            signer = ContractSigner()
+            signer = ContractSigner.construct()
             signer.party = reference
             eo_type = cls.build_simple_codeable_concept(R4CoverageConfig.get_signer_eo_type_code())
             signer.type = eo_type
@@ -183,7 +183,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
             if imis_policy.family.head_insuree is not None:
                 reference = cls.build_fhir_resource_reference(
                     imis_policy.family.head_insuree, "Patient", reference_type=reference_type)
-                signer = ContractSigner()
+                signer = ContractSigner.construct()
                 signer.party = reference
                 eo_type = cls.build_simple_codeable_concept(R4CoverageConfig.get_signer_head_type_code())
                 signer.type = eo_type

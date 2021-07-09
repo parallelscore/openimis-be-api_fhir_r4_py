@@ -1,3 +1,4 @@
+"""
 from api_fhir_r4.models import DomainResource, Property
 
 
@@ -14,3 +15,4 @@ class Endpoint(DomainResource):
     payloadMimeType = Property('payloadMimeType', str, count_max='*')
     address = Property('address', str, required=True)
     header = Property('header', str, count_max='*')
+"""

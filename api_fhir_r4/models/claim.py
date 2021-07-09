@@ -1,3 +1,4 @@
+"""
 from api_fhir_r4.models import DomainResource, Property, BackboneElement
 
 
@@ -165,3 +166,5 @@ class Claim(DomainResource):
     accident = Property('accident', 'ClaimAccident')
     item = Property('item', 'ClaimItem', count_max='*')
     total = Property('total', 'Money')
+
+"""

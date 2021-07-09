@@ -2,19 +2,20 @@ from django.utils.translation import gettext
 from policyholder.models import PolicyHolder
 from location.models import Location
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration
-from api_fhir_r4.converters import BaseFHIRConverter,ReferenceConverterMixin,OrganisationConverterMixin
+from api_fhir_r4.converters import BaseFHIRConverter,ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.models import Extension, Attachment, \
-    Coding, FHIRDate,ContactPoint,Organisation
+    Coding, FHIRDate,ContactPoint
+from api_fhir_r4.models import Organization, OrganizationContact
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
-class OrganisationConverter(BaseFHIRConverter,OrganisationConverterMixin):
+class OrganisationConverter(BaseFHIRConverter):
     
     @classmethod
     def to_fhir_obj(cls, imis_organisation, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_organisation = Organisation()
+        fhir_organisation = Organization()
         cls.build_fhir_pk(fhir_organisation, imis_organisation.id)
         cls.build_fhir_location(fhir_organisation, imis_organisation)
         cls.build_fhir_name(fhir_organisation, imis_organisation)
@@ -27,7 +28,7 @@ class OrganisationConverter(BaseFHIRConverter,OrganisationConverterMixin):
         cls.build_fhir_code(fhir_organisation, imis_organisation)
         cls.build_fhir_addresses(fhir_organisation,imis_organisation)
         cls.build_fhir_accountancy_account(fhir_organisation,imis_organisation)
-        cls.build_fhir_bank_account(fhir_organisation,imis_organisation)
+        #cls.build_fhir_bank_account(fhir_organisation,imis_organisation)
         return fhir_organisation
 
     @classmethod
@@ -64,7 +65,7 @@ class OrganisationConverter(BaseFHIRConverter,OrganisationConverterMixin):
 
     @classmethod
     def get_fhir_resource_type(cls):
-        return Organisation
+        return Organization
 
     @classmethod
     def get_imis_obj_by_fhir_reference(cls, reference, errors=None):

@@ -12,7 +12,7 @@ class LocationSiteConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_hf, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_location = FHIRLocation()
+        fhir_location = FHIRLocation.construct()
         cls.build_fhir_physical_type(fhir_location, imis_hf)
         cls.build_fhir_pk(fhir_location, imis_hf, reference_type)
         cls.build_fhir_location_identifier(fhir_location, imis_hf)
@@ -25,6 +25,7 @@ class LocationSiteConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def to_imis_obj(cls, fhir_location, audit_user_id):
         errors = []
+        fhir_location = FHIRLocation(**fhir_location)
         imis_hf = HealthFacility() 
         cls.build_imis_hf_identiftier(imis_hf, fhir_location, errors)
         cls.build_imis_hf_name(imis_hf, fhir_location, errors)
@@ -117,7 +118,7 @@ class LocationSiteConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_imis_hf_level(cls, imis_hf, fhir_location, errors):
-        code = fhir_location.code
+        code = fhir_location.type[0].coding[0].code
         if code == R4LocationConfig.get_fhir_code_for_hospital():
             imis_hf.level = ImisHfLevel.HOSPITAL.value
         elif code == R4LocationConfig.get_fhir_code_for_dispensary():
@@ -138,7 +139,13 @@ class LocationSiteConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_imis_parent_location_id(cls, imis_hf, fhir_location, errors):
-        parent_id = fhir_location.partOf
-        if not cls.valid_condition(parent_id is None,
-                                   gettext('Missing location `parent id` attribute'), errors):
-            imis_hf.location = parent_id
+        if fhir_location.partOf:
+            parent_id = fhir_location.partOf
+            if not cls.valid_condition(parent_id is None,
+                                       gettext('Missing location `parent id` attribute'), errors):
+                # get the imis location object, check if exists
+                uuid_location = parent_id.identifier.value
+                hf_location = Location.objects.filter(uuid=uuid_location)
+                if hf_location:
+                    hf_location = hf_location.first()
+                    imis_hf.location = hf_location

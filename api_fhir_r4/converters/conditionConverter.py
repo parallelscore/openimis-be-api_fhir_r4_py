@@ -1,7 +1,6 @@
 from medical.models import Diagnosis
 from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.models.condition import Condition as FHIRCondition
-from api_fhir_r4.models import Reference
+from api_fhir_r4.models import Reference, Condition as FHIRCondition
 from django.utils.translation import gettext
 from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 
@@ -10,7 +9,7 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_condition, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_condition = FHIRCondition()
+        fhir_condition = FHIRCondition.construct()
         cls.build_fhir_pk(fhir_condition, imis_condition, reference_type)
         cls.build_fhir_identifiers(fhir_condition, imis_condition)
         cls.build_fhir_codes(fhir_condition, imis_condition)
@@ -21,6 +20,7 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def to_imis_obj(cls, fhir_condition, audit_user_id):
         errors = []
+        fhir_condition = FHIRCondition(**fhir_condition)
         imis_condition = Diagnosis()
         cls.build_imis_identifier(imis_condition, fhir_condition, errors)
         cls.build_imis_validity_from(imis_condition, fhir_condition, errors)
@@ -116,6 +116,6 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_subject(cls, fhir_condition):
-        reference = Reference()
+        reference = Reference.construct()
         reference.type = "Patient"
         fhir_condition.subject = reference

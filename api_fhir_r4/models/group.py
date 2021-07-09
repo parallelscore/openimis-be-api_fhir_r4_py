@@ -1,3 +1,4 @@
+"""
 from api_fhir_r4.models import BackboneElement, DomainResource, Property,Element
 
 
@@ -30,3 +31,4 @@ class Group(DomainResource):
     characteristic = Property('characteristic','Characteristic',count_max='*')
     address = Property('address', 'Address', count_max='*')
     location = Property('location','GroupLocation')
+"""

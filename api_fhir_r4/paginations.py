@@ -1,13 +1,13 @@
 
 from api_fhir_r4.configurations import GeneralConfiguration
-from api_fhir_r4.models import Bundle, BundleEntry, BundleType, BundleLink
-from api_fhir_r4.models.bundle import BundleLinkRelation
+from api_fhir_r4.models import Bundle, BundleEntry, BundleLink, BundleType, BundleLinkRelation
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.pagination import BasePagination
 from rest_framework.response import Response
 from django.core.cache import caches
 import hashlib
+import urllib
 
 
 class FhirBundleResultsSetPagination(PageNumberPagination):
@@ -17,10 +17,10 @@ class FhirBundleResultsSetPagination(PageNumberPagination):
     page_size_query_param = '_count'
 
     def get_paginated_response(self, data):
-        return Response(self.build_bundle_set(data).toDict())
+        return Response(self.build_bundle_set(data).dict())
 
     def build_bundle_set(self, data):
-        bundle = Bundle()
+        bundle = Bundle.construct()
         bundle.type = BundleType.SEARCHSET.value
         bundle.total = self.page.paginator.count
         self.build_bundle_links(bundle)
@@ -38,17 +38,23 @@ class FhirBundleResultsSetPagination(PageNumberPagination):
 
 
     def build_bundle_link(self, bundle, relation, url):
-        self_link = BundleLink()
-        self_link.relation = relation
-        self_link.url = url
-        bundle.link.append(self_link)
+        self_link = {}
+        self_link['url'] = urllib.parse.quote_plus(url)
+        self_link['relation'] = relation
+        bundle_link = BundleLink(**self_link)
+        if type(bundle.link) is not list:
+           bundle.link = [bundle_link]
+        else:
+           bundle.link.append(bundle_link)
 
     def build_bundle_entry(self, bundle, data):
+        bundle.entry = []
         for obj in data:
-            entry = BundleEntry()
-            entry.fullUrl = self.build_full_url_for_resource(obj)
-            entry.resource = obj
-            bundle.entry.append(entry)
+            entry = {}
+            entry['fullUrl'] = self.build_full_url_for_resource(obj)
+            entry['resource'] = obj
+            bundle_entry = BundleEntry(**entry)
+            bundle.entry.append(bundle_entry)
 
     def build_full_url_for_resource(self, fhir_object):
         url = None

@@ -9,17 +9,19 @@ from api_fhir_r4.serializers import BaseFHIRSerializer
 
 class PatientSerializer(BaseFHIRSerializer):
     fhirConverter = PatientConverter()
+
     def create(self, validated_data):
         chf_id = validated_data.get('chf_id')
         if Insuree.objects.filter(chf_id=chf_id).count() > 0:
             raise FHIRException('Exists patient with following chfid `{}`'.format(chf_id))
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
-        obj=Insuree.objects.create(**copied_data)
+        obj = Insuree.objects.create(**copied_data)
         if copied_data['head']:
             obj.family=Family.objects.create(head_insuree=obj,audit_user_id=copied_data['audit_user_id'])
         obj.save()
         return obj
+
     def update(self, instance, validated_data):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.other_names = validated_data.get('other_names', instance.other_names)

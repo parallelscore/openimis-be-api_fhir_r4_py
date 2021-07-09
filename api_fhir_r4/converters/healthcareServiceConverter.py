@@ -14,7 +14,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_hf, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_hcs = FHIRHealthcareService()
+        fhir_hcs = FHIRHealthcareService.construct()
         cls.build_fhir_pk(fhir_hcs, imis_hf, reference_type)
         cls.build_fhir_healthcare_service_identifier(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_name(fhir_hcs, imis_hf)

@@ -10,7 +10,7 @@ class CommunicationRequestConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_feedback, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_communication_request = CommunicationRequest()
+        fhir_communication_request = CommunicationRequest.construct()
         fhir_communication_request.status = RequestStatus.UNKNOWN.value
         cls.build_fhir_occurrence_datetime(fhir_communication_request, imis_feedback)
         cls.build_fhir_pk(fhir_communication_request, imis_feedback, reference_type)

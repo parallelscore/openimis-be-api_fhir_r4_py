@@ -16,7 +16,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def to_fhir_obj(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_patient = Patient()
+        fhir_patient = Patient.construct()
         cls.build_fhir_pk(fhir_patient, imis_insuree, reference_type)
         cls.build_human_names(fhir_patient, imis_insuree)
         cls.build_fhir_identifiers(fhir_patient, imis_insuree)
@@ -35,6 +35,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def to_imis_obj(cls, fhir_patient, audit_user_id):
         errors = []
+        fhir_patient = Patient(**fhir_patient)
         imis_insuree = cls.createDefaultInsuree(audit_user_id)
         cls.build_imis_names(imis_insuree, fhir_patient, errors)
         cls.build_imis_identifiers(imis_insuree, fhir_patient)
@@ -176,7 +177,12 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_birth_date(cls, fhir_patient, imis_insuree):
-        fhir_patient.birthDate = imis_insuree.dob.isoformat()
+        from core import datetime
+        # check if datetime object
+        if isinstance(imis_insuree.dob, datetime.datetime):
+            fhir_patient.birthDate = str(imis_insuree.dob.date().isoformat())
+        else:
+            fhir_patient.birthDate = str(imis_insuree.dob.isoformat())
         
     @classmethod
     def build_imis_family(cls, imis_insuree, fhir_patient,errors):
@@ -327,7 +333,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         fhir_patient.extension = []
 
         def build_extension(fhir_patient, imis_insuree, value):
-            extension = Extension()
+            extension = Extension.construct()
             if value == "head":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/isHead"
                 extension.valueBoolean = imis_insuree.head
@@ -396,7 +402,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_poverty_status_extension(cls, imis_insuree):
-        extension = Extension()
+        extension = Extension.construct()
         extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/1556643849/povertyStatus"
         if hasattr(imis_insuree, "family") and imis_insuree.family is not None:
             if imis_insuree.family.poverty is not None:
@@ -405,7 +411,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_related_person(cls, fhir_patient, imis_insuree, reference_type):
-        fhir_link = PatientLink()
+        fhir_link = PatientLink.construct()
         if imis_insuree.relationship is not None and imis_insuree.family is not None \
             and imis_insuree.family.head_insuree is not None:
             fhir_link.other = PatientConverter\
@@ -415,9 +421,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_imis_related_person(cls, imis_insuree, errors):
-        fhir_link = PatientLink()
+        fhir_link = PatientLink.construct()
         relation = fhir_link.type
-        head = fhir_link.other
+        #head = fhir_link.other
         # if not cls.valid_condition(head is None, gettext('Missing patient `head` attribute'), errors):
         #     imis_insuree.family.head_insuree = head
         # if not cls.valid_condition(relation is None, gettext('Missing patient `relation` attribute'), errors):
@@ -425,7 +431,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_photo(cls, fhir_patient, imis_insuree):
-        photo = Attachment()
+        photo = Attachment.construct()
         if imis_insuree.photo is not None and imis_insuree.photo.folder is not None and imis_insuree.photo.filename is not None :
             photo.creation = imis_insuree.photo.date.isoformat()
             url = imis_insuree.photo.folder+"\\"+ imis_insuree.photo.filename+"\\"
