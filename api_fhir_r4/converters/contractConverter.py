@@ -153,7 +153,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         valued_item = ContractTermAssetValuedItem.construct()
         typeReference = cls.build_fhir_resource_reference(imis_policy.product, "InsuranceProduct", imis_policy.product.code )
         valued_item.entityReference=typeReference
-        policy_value = Money()
+        policy_value = Money.construct()
         policy_value.value = imis_policy.value
         valued_item.net = policy_value
         contract_asset.valuedItem.append(valued_item)
