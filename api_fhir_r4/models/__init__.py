@@ -169,7 +169,36 @@ class CoverageClassV2(CoverageClass):
     )
 
 
+class ContractSignerV2(ContractSigner):
+    party: fhirtypes.ReferenceType = Field(
+        None,
+        alias="party",
+        title="Contract Signatory Party",
+        description="Party which is a signator to this Contract.",
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=[
+            "Organization",
+            "Patient",
+            "Practitioner",
+            "PractitionerRole",
+            "RelatedPerson",
+        ],
+    )
+
+    type: fhirtypes.CodingType = Field(
+        None,
+        alias="type",
+        title="Contract Signatory Role",
+        description="Role of this Contract signer, e.g. notary, grantee.",
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+
 from api_fhir_r4.models import OperationOutcomeV2
 from api_fhir_r4.models import UsageContextV2
 from api_fhir_r4.models import CoverageV2
 from api_fhir_r4.models import CoverageClassV2
+from api_fhir_r4.models import ContractSignerV2
