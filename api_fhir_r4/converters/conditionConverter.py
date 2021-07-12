@@ -45,9 +45,6 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_reference_identifier(cls, obj, reference_type):
         # Regardless of reference type diagnosis identifier is string format is used
-        #id_to_return  = obj.id
-        #if type(id_to_return) is not str:
-        #    id_to_return = str(id_to_return)
         identifiers = []
         return cls.build_fhir_id_identifier(identifiers, obj)
 
