@@ -282,6 +282,50 @@ class ClaimInsuranceV2(ClaimInsurance):
     )
 
 
+class ClaimResponseV2(ClaimResponse):
+    insurer: fhirtypes.ReferenceType = Field(
+        None,
+        alias="insurer",
+        title="Party responsible for reimbursement",
+        description=(
+            "The party responsible for authorization, adjudication and "
+            "reimbursement."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Organization"],
+    )
+
+    patient: fhirtypes.ReferenceType = Field(
+        None,
+        alias="patient",
+        title="The recipient of the products and services",
+        description=(
+            "The party to whom the professional services and/or products have been "
+            "supplied or are being considered and for whom actual for facast "
+            "reimbursement is sought."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Patient"],
+    )
+
+    type: fhirtypes.CodeableConceptType = Field(
+        None,
+        alias="type",
+        title="More granular claim type",
+        description=(
+            "A finer grained suite of claim type codes which may convey additional "
+            "information such as Inpatient vs Outpatient and/or a specialty "
+            "service."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+
 from api_fhir_r4.models import OperationOutcomeV2
 from api_fhir_r4.models import UsageContextV2
 from api_fhir_r4.models import CoverageV2
@@ -289,3 +333,4 @@ from api_fhir_r4.models import CoverageClassV2
 from api_fhir_r4.models import ContractSignerV2
 from api_fhir_r4.models import ClaimV2
 from api_fhir_r4.models import ClaimInsuranceV2
+from api_fhir_r4.models import ClaimResponseV2
