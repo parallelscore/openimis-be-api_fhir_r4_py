@@ -117,7 +117,10 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_human_names(cls, fhir_patient, imis_insuree):
         name = cls.build_fhir_names_for_person(imis_insuree)
-        fhir_patient.name = [name]
+        if type(fhir_patient.name) is not list:
+            fhir_patient.name = [name]
+        else:
+            fhir_patient.name.append(name)
 
     @classmethod
     def build_imis_names(cls, imis_insuree, fhir_patient, errors):
@@ -311,11 +314,17 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         if imis_insuree.current_address is not None:
             current_address = cls.build_fhir_address(imis_insuree.current_address, AddressUse.HOME.value,
                                                      AddressType.PHYSICAL.value)
-            addresses.append(current_address)
+            if type(addresses) is not list:
+                addresses = [current_address]
+            else:
+                addresses.append(current_address)
         if imis_insuree.geolocation is not None:
             geolocation = cls.build_fhir_address(imis_insuree.geolocation, AddressUse.HOME.value,
                                                  AddressType.BOTH.value)
-            addresses.append(geolocation)
+            if type(addresses) is not list:
+                addresses = [geolocation]
+            else:
+                addresses.append(geolocation)
         fhir_patient.address = addresses
 
     @classmethod
@@ -340,8 +349,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 
             elif value == "family.uuid":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/group"
-                reference = Reference()
-                identifier = Identifier()
+                reference = Reference.construct()
+                identifier = Identifier.construct()
                 identifier.use = 'usual'
                 identifier.type = PatientConverter._family_reference_identifier_type(reference_type)
                 identifier.value = PatientConverter\
@@ -366,7 +375,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
             elif value == "education.education":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331788/educationCode"
                 if hasattr(imis_insuree, "education") and imis_insuree.education is not None:
-                    extension.valueCoding = Coding()
+                    extension.valueCoding = Coding.construct()
                     if imis_insuree.education is not None:
                         extension.valueCoding.code = str(imis_insuree.education.id)
                         extension.valueCoding.display = imis_insuree.education.education
@@ -374,12 +383,16 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
             else:
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960135203/professionCode"
                 if hasattr(imis_insuree, "profession") and imis_insuree.profession is not None:
-                    extension.valueCoding = Coding()
+                    extension.valueCoding = Coding.construct()
                     if imis_insuree.profession is not None:
                         extension.valueCoding.code = str(imis_insuree.profession.id)
                         extension.valueCoding.display = imis_insuree.profession.profession
 
-            fhir_patient.extension.append(extension)
+            if type(fhir_patient.extension) is not list:
+                fhir_patient.extension = [extension]
+            else:
+                fhir_patient.extension.append(extension)
+
 
         if imis_insuree.head is not None:
             build_extension(fhir_patient, imis_insuree, "head")
@@ -398,7 +411,10 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_poverty_status(cls, fhir_patient, imis_insuree):
         poverty_status = cls.build_poverty_status_extension(imis_insuree)
         if poverty_status.valueBoolean is not None:
-            fhir_patient.extension.append(poverty_status)
+            if type(fhir_patient.extension) is not list:
+                fhir_patient.extension = [poverty_status]
+            else:
+                fhir_patient.extension.append(poverty_status)
 
     @classmethod
     def build_poverty_status_extension(cls, imis_insuree):
@@ -417,7 +433,10 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
             fhir_link.other = PatientConverter\
                 .build_fhir_resource_reference(imis_insuree.family.head_insuree, reference_type=reference_type)
             fhir_link.type = imis_insuree.relationship.relation
-            fhir_patient.link = [fhir_link]
+            if type(fhir_patient.link) is not list:
+                fhir_patient.link = [fhir_link]
+            else:
+                fhir_patient.link.append(fhir_link)
 
     @classmethod
     def build_imis_related_person(cls, imis_insuree, errors):
@@ -433,11 +452,14 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_fhir_photo(cls, fhir_patient, imis_insuree):
         photo = Attachment.construct()
-        if imis_insuree.photo is not None and imis_insuree.photo.folder is not None and imis_insuree.photo.filename is not None :
+        if imis_insuree.photo is not None and imis_insuree.photo.folder is not None and imis_insuree.photo.filename is not None:
             photo.creation = imis_insuree.photo.date.isoformat()
             url = imis_insuree.photo.folder+"\\"+ imis_insuree.photo.filename+"\\"
             photo.url = url
-            fhir_patient.photo = [photo]
+            if type(fhir_patient.photo) is not list:
+                fhir_patient.photo = [photo]
+            else:
+                fhir_patient.photo.append(photo)
 
     @classmethod
     def build_imis_photo(cls, imis_insuree, fhir_patient, errors):
