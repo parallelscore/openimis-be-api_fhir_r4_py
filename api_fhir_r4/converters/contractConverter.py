@@ -34,6 +34,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def to_imis_obj(cls,fhir_contract, audit_user_id):
         errors = []
+        fhir_contract = Contract(**fhir_contract)
         imis_policy = Policy()
         imis_policy.audit_user_id = audit_user_id
         cls.build_imis_period(imis_policy, fhir_contract.term, errors)

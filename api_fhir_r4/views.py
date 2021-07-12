@@ -117,7 +117,7 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
                     #datetime.datetime(int(year), int(month), int(day))
                 except ValueError:
                     result = OperationOutcomeConverter.build_for_400_bad_request("claimDateFrom should be in dd-mm-yyyy format")
-                    return Response(result.toDict(), status.HTTP_400_BAD_REQUEST)
+                    return Response(result.dict(), status.HTTP_400_BAD_REQUEST)
                 has_claim_in_range = Claim.objects\
                     .filter(date_claimed__gte=claim_parse_dated)\
                     .filter(insuree_id=OuterRef("id"))\

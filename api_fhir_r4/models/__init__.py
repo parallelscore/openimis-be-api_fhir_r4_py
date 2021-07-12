@@ -197,8 +197,95 @@ class ContractSignerV2(ContractSigner):
     )
 
 
+class ClaimV2(Claim):
+    insurance: typing.List[fhirtypes.ClaimInsuranceType] = Field(
+        None,
+        alias="insurance",
+        title="Patient insurance information",
+        description=(
+            "Financial instruments for reimbursement for the health care products "
+            "and services specified on the claim."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+    patient: fhirtypes.ReferenceType = Field(
+        None,
+        alias="patient",
+        title="The recipient of the products and services",
+        description=(
+            "The party to whom the professional services and/or products have been "
+            "supplied or are being considered and for whom actual or forecast "
+            "reimbursement is sought."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Patient"],
+    )
+
+    priority: fhirtypes.CodeableConceptType = Field(
+        None,
+        alias="priority",
+        title="Desired processing ugency",
+        description=(
+            "The provider-required urgency of processing the request. Typical "
+            "values include: stat, routine deferred."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+    provider: fhirtypes.ReferenceType = Field(
+        None,
+        alias="provider",
+        title="Party responsible for the claim",
+        description=(
+            "The provider which is responsible for the claim, predetermination or "
+            "preauthorization."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Practitioner", "PractitionerRole", "Organization"],
+    )
+
+    type: fhirtypes.CodeableConceptType = Field(
+        None,
+        alias="type",
+        title="Category or discipline",
+        description=(
+            "The category of claim, e.g. oral, pharmacy, vision, institutional, "
+            "professional."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+
+class ClaimInsuranceV2(ClaimInsurance):
+    coverage: fhirtypes.ReferenceType = Field(
+        None,
+        alias="coverage",
+        title="Insurance information",
+        description=(
+            "Reference to the insurance card level information contained in the "
+            "Coverage resource. The coverage issuing insurer will use these details"
+            " to locate the patient's actual coverage within the insurer's "
+            "information system."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Coverage"],
+    )
+
+
 from api_fhir_r4.models import OperationOutcomeV2
 from api_fhir_r4.models import UsageContextV2
 from api_fhir_r4.models import CoverageV2
 from api_fhir_r4.models import CoverageClassV2
 from api_fhir_r4.models import ContractSignerV2
+from api_fhir_r4.models import ClaimV2
+from api_fhir_r4.models import ClaimInsuranceV2

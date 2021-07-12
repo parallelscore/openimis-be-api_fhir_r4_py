@@ -90,9 +90,9 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
 
     def to_representation(self, obj):
         if isinstance(obj, HttpResponseBase):
-            return OperationOutcomeConverter.to_fhir_obj(obj).toDict()
-        elif isinstance(obj, FHIRBaseObject):
-            return obj.toDict()
+            return OperationOutcomeConverter.to_fhir_obj(obj).dict()
+        elif isinstance(obj, FHIRAbstractModel):
+            return obj.dict()
 
         fhir_obj = self.fhirConverter.to_fhir_obj(obj, self._reference_type)
         self.remove_attachment_data(fhir_obj)
@@ -100,7 +100,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
         if self.context.get('contained', None):
             self._add_contained_references(fhir_obj)
 
-        fhir_dict = fhir_obj.toDict()
+        fhir_dict = fhir_obj.dict()
         if self.context.get('contained', False):
             fhir_dict['contained'] = self._create_contained_obj_dict(obj)
         return fhir_dict
