@@ -1,12 +1,13 @@
 from django.utils.translation import gettext
 from api_fhir_r4.configurations import R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ContractConverter,  ReferenceConverterMixin
-from api_fhir_r4.models import Coverage, Reference, Period,Money, Extension, ContractTermAssetValuedItem, \
-    ContractTermOfferParty, CoverageClass, ContractTerm, ContractTermAsset, ContractTermOffer
+from api_fhir_r4.models import CoverageV2 as Coverage, Reference, Period,Money, Extension, ContractTermAssetValuedItem, \
+    ContractTermOfferParty, CoverageClassV2 as CoverageClass, ContractTerm, ContractTermAsset, ContractTermOffer
 from product.models import ProductItem, ProductService, Product
 from policy.models import Policy
 from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 from insuree.models import Family
+
 
 class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
@@ -18,8 +19,14 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_coverage_policy_holder(fhir_coverage, imis_policy)
         cls.build_coverage_period(fhir_coverage, imis_policy)
         cls.build_coverage_contract(fhir_coverage, imis_policy, reference_type)
-        #cls.build_coverage_class(fhir_coverage, imis_policy)
+        cls.build_coverage_class(fhir_coverage, imis_policy)
         #cls.build_coverage_value(fhir_coverage, imis_policy)
+        # TODO - build beneficiary - Patient/Insuree
+        cls.build_coverage_beneficiary(fhir_coverage, imis_policy)
+        # TODO - buid payor - is the openIMIS organisation
+        #  (hardcodded reference with name from config)
+        #  or PolicyHolder in case of FS
+        cls.build_coverage_payor(fhir_coverage, imis_policy)
         cls.build_coverage_extension(fhir_coverage, imis_policy)
         return fhir_coverage
  
@@ -63,6 +70,31 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return fhir_coverage
 
     @classmethod
+    def build_coverage_beneficiary(cls, fhir_coverage, imis_policy):
+        # TODO - build beneficiary - Patient/Insuree
+        reference = Reference.construct()
+        resource_type = R4CoverageConfig.get_family_reference_code()
+        resource_id = imis_policy.family.uuid
+        reference.reference = resource_type + '/' + str(resource_id)
+        fhir_coverage.beneficiary = reference
+        return fhir_coverage
+
+    @classmethod
+    def build_coverage_payor(cls, fhir_coverage, imis_policy):
+        # TODO - buid payor - is the openIMIS organisation
+        #  (hardcodded reference with name from config)
+        #  or PolicyHolder in case of FS
+        reference = Reference.construct()
+        resource_type = R4CoverageConfig.get_family_reference_code()
+        resource_id = imis_policy.family.uuid
+        reference.reference = resource_type + '/' + str(resource_id)
+        if type (fhir_coverage.payor) is not list:
+            fhir_coverage.payor = [reference]
+        else:
+            fhir_coverage.payor.append(reference)
+        return fhir_coverage
+
+    @classmethod
     def build_coverage_period(cls, fhir_coverage, imis_policy):
         period = Period.construct()
         if imis_policy.start_date is not None:
@@ -81,7 +113,10 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_coverage_contract(cls, fhir_coverage, imis_coverage, reference_type):
         reference = ContractConverter.build_fhir_resource_reference(imis_coverage, reference_type=reference_type)
-        fhir_coverage.contract = [reference]
+        if type(fhir_coverage.contract) is not list:
+            fhir_coverage.contract = [reference]
+        else:
+            fhir_coverage.contract.append(reference)
         return fhir_coverage
 
     @classmethod
@@ -129,11 +164,14 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         product = imis_coverage.product
         # TODO - Review later list
         class_.value = product.code
-        class_.type = R4CoverageConfig.get_product_code() + "/" + str(product.uuid)
+        class_.type = cls.build_simple_codeable_concept(R4CoverageConfig.get_product_code() + "/" + str(product.uuid))
         class_.name = product.code
 
         cls.__build_product_plan_display(class_, product)
-        fhir_coverage.classes = [class_]
+        if type(fhir_coverage.class_fhir) is not list:
+            fhir_coverage.class_fhir = [class_]
+        else:
+            fhir_coverage.class_fhir.append(class_)
 
     @classmethod
     def __map_status(cls, code):
@@ -155,13 +193,19 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def __build_effective_date(cls, fhir_coverage, imis_coverage):
         enroll_date = cls.__build_date_extension(imis_coverage.effective_date,
                                                  R4CoverageConfig.get_effective_date_code())
-        fhir_coverage.extension = [enroll_date]
+        if type(fhir_coverage.extension) is not list:
+            fhir_coverage.extension = [enroll_date]
+        else:
+            fhir_coverage.extension.append(enroll_date)
 
     @classmethod
     def __build_enroll_date(cls, fhir_coverage, imis_coverage):
         enroll_date = cls.__build_date_extension(imis_coverage.enroll_date,
                                                  R4CoverageConfig.get_enroll_date_code())
-        fhir_coverage.extension = [enroll_date]
+        if type(fhir_coverage.extension) is not list:
+            fhir_coverage.extension = [enroll_date]
+        else:
+            fhir_coverage.extension.append(enroll_date)
 
     @classmethod
     def __build_date_extension(cls, value, name):
@@ -180,5 +224,5 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         product_coverage[item_code] = [item.item.code for item in product_items]
         product_coverage[service_code] = [service.service.code for service in product_services]
         class_.value = product.code
-        class_.type = product.name
+        class_.type = cls.build_simple_codeable_concept(product.name)
         class_.name = str(product_coverage)

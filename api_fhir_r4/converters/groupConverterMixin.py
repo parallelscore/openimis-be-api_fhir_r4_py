@@ -11,7 +11,7 @@ class GroupConverterMixin(object):
     def build_fhir_names_for_person(cls, person_obj):
         if not hasattr(person_obj, 'last_name') and not hasattr(person_obj, 'other_names'):
             raise FHIRRequestProcessException([gettext('Missing `last_name` and `other_names` for IMIS object')])
-        head = HumanName()
+        head = HumanName.construct()
         head.use = NameUse.USUAL
         head.family = person_obj.last_name
         head.given = [person_obj.other_names]
@@ -19,9 +19,9 @@ class GroupConverterMixin(object):
     
     @classmethod
     def build_fhir_members(cls, family_id):
-        members =[]
+        members = []
         for insuree in Insuree.objects.filter(family__uuid=family_id):
-            member = GroupMember()
+            member = GroupMember.construct()
             member.inactive = False
             member.entity={
             "reference":"Patient"+'/'+insuree.uuid
@@ -34,5 +34,5 @@ class GroupConverterMixin(object):
         locations ={}
         if imis_family.location is not None:
             locations['reference'] = 'Location'+'/'+imis_family.location.uuid
-        fhir_family.location=locations
+        fhir_family.location = locations
     

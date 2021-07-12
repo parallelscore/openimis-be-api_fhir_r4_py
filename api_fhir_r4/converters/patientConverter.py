@@ -423,6 +423,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_imis_related_person(cls, imis_insuree, errors):
         fhir_link = PatientLink.construct()
         relation = fhir_link.type
+        # TODO - fix this head
         #head = fhir_link.other
         # if not cls.valid_condition(head is None, gettext('Missing patient `head` attribute'), errors):
         #     imis_insuree.family.head_insuree = head

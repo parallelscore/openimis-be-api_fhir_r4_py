@@ -18,7 +18,10 @@ class PolicyCoverageEligibilityRequestConverter(BaseFHIRConverter):
                     cls.build_fhir_insurance(fhir_response, item)
         except:
             for item in eligibility_response['items']:
-                fhir_response.insurance.append(item)
+                if type(fhir_response.insurance) is not list:
+                    fhir_response.insurance = [item]
+                else:
+                    fhir_response.insurance.append(item)
         return fhir_response
 
     @classmethod
@@ -34,7 +37,10 @@ class PolicyCoverageEligibilityRequestConverter(BaseFHIRConverter):
         cls.build_fhir_money_item(result, Config.get_fhir_balance_code(),
                                   response.ceiling,
                                   response.ded)
-        fhir_response.insurance.append(result)
+        if type(fhir_response.insurance) is not list:
+            fhir_response.insurance = [result]
+        else:
+            fhir_response.insurance.append(result)
 
     '''
     @classmethod
@@ -48,7 +54,10 @@ class PolicyCoverageEligibilityRequestConverter(BaseFHIRConverter):
         item = cls.build_fhir_generic_item(code)
         cls.build_fhir_money_item_benefit(
             item, allowed_value, used_value)
-        insurance.item.append(item)
+        if type(insurance.item) is not list:
+            insurance.item = [item]
+        else:
+            insurance.item.append(item)
 
     @classmethod
     def build_fhir_generic_item(cls, code):
@@ -66,7 +75,10 @@ class PolicyCoverageEligibilityRequestConverter(BaseFHIRConverter):
         used_money_value = Money.construct()
         used_money_value.value = used_value or 0
         benefit.usedMoney = used_money_value
-        item.benefit.append(benefit)
+        if type(item.benefit) is not list:
+            item.benefit = [benefit]
+        else:
+            item.benefit.append(benefit)
 
     @classmethod
     def build_fhir_generic_item_benefit(cls):

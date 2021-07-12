@@ -15,26 +15,30 @@ class OrganisationConverter(BaseFHIRConverter):
     
     @classmethod
     def to_fhir_obj(cls, imis_organisation, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+        # TODO reshape this fhir object and imis, fix BankAccount
         fhir_organisation = Organization()
         cls.build_fhir_pk(fhir_organisation, imis_organisation.id)
-        cls.build_fhir_location(fhir_organisation, imis_organisation)
+        # TODO - locaction - as an extension?
+        #cls.build_fhir_location(fhir_organisation, imis_organisation)
         cls.build_fhir_name(fhir_organisation, imis_organisation)
-        cls.build_fhir_contact_name(imis_organisation,fhir_organisation)
+        # TODO - fix contact name field
+        #cls.build_fhir_contact_name(imis_organisation, fhir_organisation)
         cls.build_fhir_date(fhir_organisation, imis_organisation)
         cls.build_fhir_legal_form(fhir_organisation, imis_organisation)
         cls.build_fhir_phone(fhir_organisation, imis_organisation)
         cls.build_fhir_fax(fhir_organisation, imis_organisation)
         cls.build_fhir_email(fhir_organisation, imis_organisation)
         cls.build_fhir_code(fhir_organisation, imis_organisation)
-        cls.build_fhir_addresses(fhir_organisation,imis_organisation)
-        cls.build_fhir_accountancy_account(fhir_organisation,imis_organisation)
+        cls.build_fhir_addresses(fhir_organisation, imis_organisation)
+        cls.build_fhir_accountancy_account(fhir_organisation, imis_organisation)
         #cls.build_fhir_bank_account(fhir_organisation,imis_organisation)
         return fhir_organisation
 
     @classmethod
     def to_imis_obj(cls, fhir_organisation, audit_user_id):
         errors = []
-        imis_organisation=PolicyHolder()
+        fhir_organisation = Organization(**fhir_organisation)
+        imis_organisation = PolicyHolder()
         imis_organisation.date_created = TimeUtils.now()
         imis_organisation.date_updated = TimeUtils.now()
         cls.build_imis_addresses(imis_organisation,fhir_organisation)
@@ -50,6 +54,7 @@ class OrganisationConverter(BaseFHIRConverter):
         cls.build_imis_legal_form(imis_organisation,fhir_organisation,errors)
         cls.check_errors(errors)
         return imis_organisation
+
     @classmethod
     def build_imis_addresses(cls,imis_organisation,fhir_organisation):
         addresses = fhir_organisation.address
@@ -59,6 +64,7 @@ class OrganisationConverter(BaseFHIRConverter):
             address['type']=addresses[0].type
             address['use']=addresses[0].use
         imis_organisation.address=address
+
     @classmethod
     def get_reference_obj_id(cls, imis_organisation):
         return imis_organisation.uuid
@@ -180,10 +186,13 @@ class OrganisationConverter(BaseFHIRConverter):
      
     @classmethod
     def build_fhir_location(cls, fhir_organisation, imis_organisation):
-        locations =[]
+        locations = []
         if imis_organisation.locations is not None:
-            locations.append({"name":imis_organisation.locations.name})
-        fhir_organisation.location=locations
+            locations.append({"name": imis_organisation.locations.name})
+        if type(fhir_organisation.location) is not list:
+            fhir_organisation.location = locations
+        else:
+            fhir_organisation.location.append(locations)
     
 
     @classmethod
@@ -199,15 +208,21 @@ class OrganisationConverter(BaseFHIRConverter):
         addresses = []
         if imis_organisation.address is not None:
             addresses.append(imis_organisation.address)
-        fhir_organisation.address = addresses
+        if type(fhir_organisation.address) is not list:
+            fhir_organisation.address = addresses
+        else:
+            fhir_organisation.address.append(addresses)
 
 
     @classmethod
     def build_fhir_contact_name(cls,imis_organisation,fhir_organisation):
         contacts =[]
-        # contact = ContactPoint()
+        #contact = ContactPoint()
         if imis_organisation.contact_name is not None:
             # contact.system = imis_organisation.contact_name['system']
             contacts.append(imis_organisation.contact_name)
-        fhir_organisation.contact = contacts
+        if type(fhir_organisation.contact) is not list:
+            fhir_organisation.contact = contacts
+        else:
+            fhir_organisation.contact.append(contacts)
         

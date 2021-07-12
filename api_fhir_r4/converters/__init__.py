@@ -25,6 +25,8 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def _build_simple_pk(cls, fhir_obj, resource_id):
+        if type(resource_id) is not str:
+            resource_id = str(resource_id)
         fhir_obj.id = resource_id
 
     @classmethod

@@ -124,4 +124,52 @@ class OperationOutcomeV2(OperationOutcome):
     )
 
 
+class UsageContextV2(UsageContext):
+    code: fhirtypes.CodingType = Field(
+        None,
+        alias="code",
+        title="Type of context being specified",
+        description=(
+            "A code that identifies the type of context being specified by this "
+            "usage context."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+
+class CoverageV2(Coverage):
+    payor: typing.List[fhirtypes.ReferenceType] = Field(
+        None,
+        alias="payor",
+        title="Issuer of the policy",
+        description=(
+            "The program or plan underwriter or payor including both insurance and "
+            "non-insurance agreements, such as patient-pay agreements."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Organization", "Patient", "RelatedPerson"],
+    )
+
+
+class CoverageClassV2(CoverageClass):
+    type: fhirtypes.CodeableConceptType = Field(
+        None,
+        alias="type",
+        title="Type of class such as 'group' or 'plan'",
+        description=(
+            "The type of classification for which an insurer-specific class label "
+            "or number and optional name is provided, for example may be used to "
+            "identify a class of coverage or employer group, Policy, Plan."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+
 from api_fhir_r4.models import OperationOutcomeV2
+from api_fhir_r4.models import UsageContextV2
+from api_fhir_r4.models import CoverageV2
+from api_fhir_r4.models import CoverageClassV2

@@ -26,6 +26,7 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_imis_validity_from(imis_condition, fhir_condition, errors)
         cls.build_imis_icd_code(imis_condition, fhir_condition, errors)
         cls.build_imis_icd_name(imis_condition, fhir_condition, errors)
+        imis_condition.audit_user_id = audit_user_id
         cls.check_errors(errors)
         return imis_condition
 
@@ -105,7 +106,13 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         icd_code = fhir_condition.code.coding
         if not cls.valid_condition(icd_code is None,
                                    gettext('Missing condition `icd_code` attribute'), errors):
-            imis_condition.code = icd_code
+
+            # get the code of condition/diagnosis
+            if type(icd_code) is not list:
+                imis_condition.code = icd_code.code
+            else:
+                icd_code_element = icd_code[0]
+                imis_condition.code = icd_code_element.code
 
     @classmethod
     def build_imis_icd_name(cls, imis_condition, fhir_condition, errors):

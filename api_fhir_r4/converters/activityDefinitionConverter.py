@@ -10,10 +10,12 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_activity_definition, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+        # TODO - test this
         fhir_activity_definition = ActivityDefinition.construct()
+        # first to construct is status - obligatory fields
+        cls.build_fhir_status(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_pk(fhir_activity_definition, imis_activity_definition, reference_type)
         cls.build_fhir_identifiers(fhir_activity_definition, imis_activity_definition)
-        cls.build_fhir_status(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_date(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_name(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_title(fhir_activity_definition, imis_activity_definition)
@@ -170,7 +172,10 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_unit_price(cls, fhir_activity_definition, imis_activity_definition):
         unit_price = cls.build_unit_price_extension(imis_activity_definition.price)
-        fhir_activity_definition.extension.append(unit_price)
+        if type(fhir_activity_definition.extension) is not list:
+            fhir_activity_definition.extension = [unit_price]
+        else:
+            fhir_activity_definition.extension.append(unit_price)
 
     @classmethod
     def build_unit_price_extension(cls, value):
@@ -186,7 +191,10 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_frequency_extension(cls, fhir_activity_definition, imis_activity_definition):
         serv_price = cls.build_fhir_serv_frequency_extension(imis_activity_definition)
-        fhir_activity_definition.extension.append(serv_price)
+        if type(fhir_activity_definition) is not list:
+            fhir_activity_definition.extension = [serv_price]
+        else:
+            fhir_activity_definition.extension.append(serv_price)
 
     @classmethod
     def build_fhir_serv_frequency_extension(cls, imis_activity_definition):
@@ -261,12 +269,18 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
             coding_male = Coding.construct()
             coding_male.code = male
             coding_male.display = "Male"
-            codeable_concept.coding.append(coding_male)
+            if type(codeable_concept.coding) is not list:
+                codeable_concept.coding = [coding_male]
+            else:
+                codeable_concept.coding.append(coding_male)
         if female is not None:
             coding_female = Coding.construct()
             coding_female.code = female
             coding_female.display = "Female"
-            codeable_concept.coding.append(coding_female)
+            if type(codeable_concept.coding) is not list:
+                codeable_concept.coding = [coding_female]
+            else:
+                codeable_concept.coding.append(coding_female)
             codeable_concept.text = "Male or Female"
         return codeable_concept
 
@@ -284,12 +298,18 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
             coding_adult = Coding.construct()
             coding_adult.code = adult
             coding_adult.display = "Adult"
-            codeable_concept.coding.append(coding_adult)
+            if type(codeable_concept.coding) is not list:
+                codeable_concept.coding = [coding_adult]
+            else:
+                codeable_concept.coding.append(coding_adult)
         if kid is not None:
             coding_kid = Coding.construct()
             coding_kid.code = kid
             coding_kid.display = "Kid"
-            codeable_concept.coding.append(coding_kid)
+            if type(codeable_concept.coding) is not list:
+                codeable_concept.coding = [coding_kid]
+            else:
+                codeable_concept.coding.append(coding_kid)
             codeable_concept.text = "Adult or Kid"
         return codeable_concept
 
@@ -307,7 +327,10 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         coding_venue = Coding.construct()
         coding_venue.code = imis_activity_definition.care_type
         coding_venue.display = display
-        codeable_concept.coding.append(coding_venue)
+        if type(codeable_concept.coding) is not list:
+            codeable_concept.coding = [coding_venue]
+        else:
+            codeable_concept.coding.append(coding_venue)
         codeable_concept.text = "Clinical Venue"
         return codeable_concept
 
@@ -328,7 +351,10 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         coding_level = Coding.construct()
         coding_level.code = imis_activity_definition.level
         coding_level.display = display
-        codeable_concept.coding.append(coding_level)
+        if type(codeable_concept.coding) is not list:
+            codeable_concept.coding = [coding_level]
+        else:
+            codeable_concept.coding.append(coding_level)
         codeable_concept.text = "Service Level"
 
         return codeable_concept
@@ -351,7 +377,10 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         coding_workflow = Coding.construct()
         coding_workflow.code = imis_activity_definition.category
         coding_workflow.display = display
-        codeable_concept.coding.append(coding_workflow)
+        if type(codeable_concept.coding) is not list:
+            codeable_concept.coding = [coding_workflow]
+        else:
+            codeable_concept.coding.append(coding_workflow)
         codeable_concept.text = "Workflow Setting"
         return codeable_concept
 

@@ -362,7 +362,7 @@ class CoverageRequestQuerySet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.Li
         return Policy.get_queryset(None, self.request.user)
 
 
-class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin,mixins.CreateModelMixin, GenericViewSet):
+class ContractViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     lookup_field = 'uuid'
     serializer_class = ContractSerializer
     permission_classes = (FHIRApiCoverageRequestPermissions,)
@@ -410,7 +410,7 @@ class MedicationViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListMode
         return Item.get_queryset(None, self.request.user)
 
 
-class ConditionViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class ConditionViewSet(BaseFHIRView, mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     lookup_field = 'id'
     serializer_class = ConditionSerializer
     permission_classes = (FHIRApiConditionPermissions,)
