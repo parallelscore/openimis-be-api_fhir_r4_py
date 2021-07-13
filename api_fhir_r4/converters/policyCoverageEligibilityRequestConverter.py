@@ -2,9 +2,10 @@ from policy.services import ByInsureeRequest
 
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
 from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter
-from api_fhir_r4.models import CoverageEligibilityResponse as FHIREligibilityResponse, \
+from api_fhir_r4.models import CoverageEligibilityRequestV2 as FHIREligibilityRequest, CoverageEligibilityResponse as FHIREligibilityResponse, \
     CoverageEligibilityResponseInsuranceItem, CoverageEligibilityResponseInsurance, \
     CoverageEligibilityResponseInsuranceItemBenefit, Money
+from api_fhir_r4.utils import TimeUtils
 
 
 class PolicyCoverageEligibilityRequestConverter(BaseFHIRConverter):
@@ -26,7 +27,10 @@ class PolicyCoverageEligibilityRequestConverter(BaseFHIRConverter):
 
     @classmethod
     def to_imis_obj(cls, fhir_eligibility_request, audit_user_id):
-        fhir_eligibility_request = FHIREligibilityResponse(**fhir_eligibility_request)
+        fhir_eligibility_request["status"] = "active"
+        fhir_eligibility_request["purpose"] = ["validation"]
+        fhir_eligibility_request["created"] = TimeUtils.date().isoformat()
+        fhir_eligibility_request = FHIREligibilityRequest(**fhir_eligibility_request)
         uuid = cls.build_imis_uuid(fhir_eligibility_request)
         return ByInsureeRequest(uuid)
 

@@ -326,6 +326,49 @@ class ClaimResponseV2(ClaimResponse):
     )
 
 
+class CoverageEligibilityRequestV2(CoverageEligibilityRequest):
+    insurer: fhirtypes.ReferenceType = Field(
+        None,
+        alias="insurer",
+        title="Coverage issuer",
+        description=(
+            "The Insurer who issued the coverage in question and is the recipient "
+            "of the request."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Organization"],
+    )
+
+    patient: fhirtypes.ReferenceType = Field(
+        None,
+        alias="patient",
+        title="Intended recipient of products and services",
+        description=(
+            "The party who is the beneficiary of the supplied coverage and for whom"
+            " eligibility is sought."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+        # note: Listed Resource Type(s) should be allowed as Reference.
+        enum_reference_types=["Patient"],
+    )
+
+    type: fhirtypes.CodeableConceptType = Field(
+        None,
+        alias="type",
+        title="More granular claim type",
+        description=(
+            "A finer grained suite of claim type codes which may convey additional "
+            "information such as Inpatient vs Outpatient and/or a specialty "
+            "service."
+        ),
+        # if property is element of this resource.
+        element_property=True,
+    )
+
+
 from api_fhir_r4.models import OperationOutcomeV2
 from api_fhir_r4.models import UsageContextV2
 from api_fhir_r4.models import CoverageV2
@@ -334,3 +377,4 @@ from api_fhir_r4.models import ContractSignerV2
 from api_fhir_r4.models import ClaimV2
 from api_fhir_r4.models import ClaimInsuranceV2
 from api_fhir_r4.models import ClaimResponseV2
+from api_fhir_r4.models import CoverageEligibilityRequestV2

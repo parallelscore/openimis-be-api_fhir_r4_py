@@ -2,8 +2,10 @@ from policy.services import EligibilityRequest
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
 from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter
 from api_fhir_r4.models import CoverageEligibilityResponse as FHIRCoverageEligibilityResponse, \
+    CoverageEligibilityRequestV2 as FHIRCoverageEligibilityRequest, \
     CoverageEligibilityResponseInsuranceItem, CoverageEligibilityResponseInsurance, \
     CoverageEligibilityResponseInsuranceItemBenefit, Money
+from api_fhir_r4.utils import TimeUtils
 
 
 class CoverageEligibilityRequestConverter(BaseFHIRConverter):
@@ -15,11 +17,14 @@ class CoverageEligibilityRequestConverter(BaseFHIRConverter):
         return fhir_response
 
     @classmethod
-    def to_imis_obj(cls, fhir_coverage_eligibility_response, audit_user_id):
-        fhir_coverage_eligibility_response = FHIRCoverageEligibilityResponse(**fhir_coverage_eligibility_response)
-        chf_id = cls.build_imis_uuid(fhir_coverage_eligibility_response)
-        service_code = cls.build_imis_service_code(fhir_coverage_eligibility_response)
-        item_code = cls.build_imis_item_code(fhir_coverage_eligibility_response)
+    def to_imis_obj(cls, fhir_coverage_eligibility_request, audit_user_id):
+        fhir_coverage_eligibility_request["status"] = "active"
+        fhir_coverage_eligibility_request["purpose"] = ["validation"]
+        fhir_coverage_eligibility_request["created"] = TimeUtils.date().isoformat()
+        fhir_coverage_eligibility_request = FHIRCoverageEligibilityRequest(**fhir_coverage_eligibility_request)
+        chf_id = cls.build_imis_uuid(fhir_coverage_eligibility_request)
+        service_code = cls.build_imis_service_code(fhir_coverage_eligibility_request)
+        item_code = cls.build_imis_item_code(fhir_coverage_eligibility_request)
         return EligibilityRequest(chf_id, service_code, item_code)
 
     @classmethod
@@ -43,14 +48,20 @@ class CoverageEligibilityRequestConverter(BaseFHIRConverter):
         cls.build_fhir_int_item(result, Config.get_fhir_item_left_code(), response.item_left)
         cls.build_fhir_bool_item(result, Config.get_fhir_is_service_ok_code(), response.is_service_ok)
         cls.build_fhir_bool_item(result, Config.get_fhir_is_item_ok_code(), response.is_item_ok)
-        fhir_response.insurance.append(result)
+        if type(fhir_response.insurance) is not list:
+            fhir_response.insurance = [result]
+        else:
+            fhir_response.insurance.append(result)
 
     @classmethod
     def build_fhir_bool_item(cls, insurance, code, is_ok):
         if is_ok is not None:
             item = cls.build_fhir_generic_item(code)
             item.excluded = not is_ok
-            insurance.item.append(item)
+            if type(insurance.item) is not list:
+                insurance.item = [item]
+            else:
+                insurance.item.append(item)
 
     @classmethod
     def build_fhir_int_item(cls, insurance, code, value):
