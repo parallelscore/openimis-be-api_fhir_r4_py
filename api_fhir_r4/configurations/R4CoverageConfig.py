@@ -51,7 +51,7 @@ class R4CoverageConfig(CoverageConfiguration):
 
     @classmethod
     def get_organization_code(cls):
-        return cls.get_config_attribute("R4_fhir_contract_config").get('fhir_claim_organization_code', "openIMIS")
+        return cls.get_config_attribute("R4_fhir_contract_config").get('fhir_organization_code', "openIMIS")
 
     @classmethod
     def get_family_reference_code(cls):
