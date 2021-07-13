@@ -5,7 +5,13 @@ from django.db.models import Model
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models import CodeableConcept, ContactPoint, Address, Coding, Identifier, IdentifierUse, Reference
+from api_fhir_r4.models.identifier import IdentifierUse
+from fhir.resources.codeableconcept import CodeableConcept
+from fhir.resources.contactpoint import ContactPoint
+from fhir.resources.address import Address
+from fhir.resources.coding import Coding
+from fhir.resources.reference import Reference
+from fhir.resources.identifier import Identifier
 from api_fhir_r4.configurations import GeneralConfiguration
 
 
@@ -25,6 +31,8 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def _build_simple_pk(cls, fhir_obj, resource_id):
+        if type(resource_id) is not str:
+            resource_id = str(resource_id)
         fhir_obj.id = resource_id
 
     @classmethod
@@ -32,7 +40,8 @@ class BaseFHIRConverter(ABC):
         if not reference_type:
             cls._build_simple_pk(fhir_obj, resource)
         if reference_type == ReferenceConverterMixin.UUID_REFERENCE_TYPE:
-            fhir_obj.id = resource.uuid
+            # OE0-18 - change into string type uuid
+            fhir_obj.id = str(resource.uuid)
         elif reference_type == ReferenceConverterMixin.DB_ID_REFERENCE_TYPE:
             fhir_obj.id = str(resource.id)
         elif reference_type == ReferenceConverterMixin.CODE_REFERENCE_TYPE:
@@ -59,9 +68,9 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def build_codeable_concept(cls, code, system=None, text=None):
-        codeable_concept = CodeableConcept()
+        codeable_concept = CodeableConcept.construct()
         if code or system:
-            coding = Coding()
+            coding = Coding.construct()
             if GeneralConfiguration.show_system():
                 coding.system = system
             if not isinstance(code, str):
@@ -73,7 +82,7 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def get_first_coding_from_codeable_concept(cls, codeable_concept):
-        result = Coding()
+        result = Coding.construct()
         if codeable_concept:
             coding = codeable_concept.coding
             if coding and isinstance(coding, list) and len(coding) > 0:
@@ -122,11 +131,12 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def build_fhir_identifier(cls, value, type_system, type_code):
-        identifier = Identifier()
+        identifier = Identifier.construct()
         identifier.use = IdentifierUse.USUAL.value
         type = cls.build_codeable_concept(type_code, type_system)
         identifier.type = type
-        identifier.value = value
+        # OE0-18 - change into string type always
+        identifier.value = str(value)
         return identifier
 
     @classmethod
@@ -141,7 +151,7 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def build_fhir_contact_point(cls, value, contact_point_system, contact_point_use):
-        contact_point = ContactPoint()
+        contact_point = ContactPoint.construct()
         if GeneralConfiguration.show_system():
             contact_point.system = contact_point_system
         contact_point.use = contact_point_use
@@ -150,7 +160,7 @@ class BaseFHIRConverter(ABC):
 
     @classmethod
     def build_fhir_address(cls, value, use, type):
-        current_address = Address()
+        current_address = Address.construct()
         current_address.text = value
         current_address.use = use
         current_address.type = type
@@ -158,14 +168,14 @@ class BaseFHIRConverter(ABC):
     
     @classmethod
     def build_fhir_address(cls, value, use, type):
-        current_address = Address()
+        current_address = Address.construct()
         current_address.text = value
         current_address.use = use
         current_address.type = type
         return current_address
     @classmethod
     def build_fhir_reference(cls, identifier, display, type, reference):
-        reference = Reference()
+        reference = Reference.construct()
         reference.identifier = identifier
         reference.display = display
         reference.type = type
@@ -174,7 +184,6 @@ class BaseFHIRConverter(ABC):
 
 
 from api_fhir_r4.converters.groupConverterMixin import GroupConverterMixin
-from api_fhir_r4.converters.organisationConverterMixin import OrganisationConverterMixin
 from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
 from api_fhir_r4.converters.referenceConverterMixin import ReferenceConverterMixin
 from api_fhir_r4.converters.contractConverter import ContractConverter

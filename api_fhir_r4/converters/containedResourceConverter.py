@@ -5,7 +5,7 @@ from collections.abc import Iterable
 
 from api_fhir_r4.converters import ReferenceConverterMixin
 from api_fhir_r4.exceptions import FHIRException
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 class ContainedResourceConverter:
@@ -35,7 +35,7 @@ class ContainedResourceConverter:
         self.converter = resource_fhir_converter()
         self.reference_type = reference_type
 
-    def convert_from_source(self, imis_obj: models.Model) -> List[FHIRBaseObject]:
+    def convert_from_source(self, imis_obj: models.Model) -> List[FHIRAbstractModel]:
         """Convert IMIS Model attribute to FHIR Object.
 
         :param imis_obj: IMIS Object with attribute that have to be converted.
@@ -49,10 +49,10 @@ class ContainedResourceConverter:
             converted = self._convert_single_resource(resource)
             return [converted] if converted else []
 
-    def _convert_all_values(self, imis_resources: List[object]) -> List[FHIRBaseObject]:
+    def _convert_all_values(self, imis_resources: List[object]) -> List[FHIRAbstractModel]:
         return [self._convert_single_resource(next_resource) for next_resource in imis_resources]
 
-    def _convert_single_resource(self, imis_resource_value: object) -> FHIRBaseObject:
+    def _convert_single_resource(self, imis_resource_value: object) -> FHIRAbstractModel:
         if imis_resource_value is not None:
             try:
                 fhir_value = self.converter.to_fhir_obj(imis_resource_value, self.reference_type)

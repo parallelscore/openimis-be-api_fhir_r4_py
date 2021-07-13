@@ -5,7 +5,12 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration,
 from api_fhir_r4.converters import BaseFHIRConverter,GroupConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models import  AdministrativeGender, ImisMaritalStatus, Extension,Coding, FHIRDate,Group,Member
+from api_fhir_r4.models.administrative import AdministrativeGender
+from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
+from api_fhir_r4.models.fhirdate import FHIRDate
+from fhir.resources.extension import Extension
+from fhir.resources.coding import Coding
+from fhir.resources.group import Group, GroupMember
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 from api_fhir_r4.exceptions import FHIRException
@@ -13,22 +18,27 @@ from api_fhir_r4.exceptions import FHIRException
 class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterMixin):
     @classmethod
     def to_fhir_obj(cls, imis_family, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_family = Group()
+        fhir_family = {}
+        # create two obligatory field then
+        cls.build_fhir_actual(fhir_family, imis_family)
+        cls.build_fhir_type(fhir_family, imis_family)
+        fhir_family = Group(**fhir_family)
+        # then create fhir object as usual
         cls.build_fhir_identifiers(fhir_family,imis_family)
         cls.build_fhir_pk(fhir_family, imis_family.uuid)
         cls.build_fhir_active(fhir_family,imis_family)
-        cls.build_fhir_actual(fhir_family,imis_family)
         cls.build_fhir_quantity(fhir_family,imis_family)
-        cls.build_fhir_type(fhir_family,imis_family)
         cls.build_fhir_name(fhir_family,imis_family)
-        cls.build_fhir_location(fhir_family,imis_family)
-        cls.build_fhir_addresses(fhir_family,imis_family)
+        # TODO - fix location and address according to FHIR requirements
+        #cls.build_fhir_location(fhir_family,imis_family)
+        #cls.build_fhir_addresses(fhir_family, imis_family)
         cls.build_fhir_member(fhir_family,imis_family)
         return fhir_family
 
     @classmethod
     def to_imis_obj(cls,fhir_family, audit_user_id):
         errors = []
+        fhir_family = Group(**fhir_family)
         imis_family = Family()
         imis_family.audit_user_id = audit_user_id
         cls.build_imis_location(imis_family,fhir_family)
@@ -52,7 +62,10 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     @classmethod
     def build_human_names(cls,fhir_family, imis_family):
         name = cls.build_fhir_names_for_person(imis_family)
-        fhir_family.head = [name]
+        if type(fhir_family.head) is not list:
+            fhir_family.head = [name]
+        else:
+            fhir_family.head.append(name)
 
     @classmethod
     def build_imis_head(cls, imis_family, fhir_family, errors):
@@ -99,15 +112,15 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     @classmethod
     def build_fhir_name(cls, fhir_family, imis_family):
       if imis_family.head_insuree is not None:
-          fhir_family.name =imis_family.head_insuree.last_name
+          fhir_family.name = imis_family.head_insuree.last_name
     
     @classmethod
     def build_fhir_actual(cls, fhir_family, imis_family):
-        fhir_family.actual =True
+        fhir_family['actual'] = True
     
     @classmethod
     def build_fhir_type(cls, fhir_family, imis_family):
-        fhir_family.type = "Person"
+        fhir_family['type'] = "Person"
         
     @classmethod
     def build_fhir_active(cls, fhir_family, imis_family):
@@ -116,8 +129,8 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     
     @classmethod
     def build_fhir_member(cls,fhir_family,imis_family):
-        fhir_family.member=cls.build_fhir_members(imis_family.uuid)
-        
+        fhir_family.member = cls.build_fhir_members(imis_family.uuid)
+
     @classmethod
     def build_fhir_quantity(cls,fhir_family,imis_family):
         quantity=Insuree.objects.filter(family__uuid=imis_family.uuid).count()
@@ -130,7 +143,10 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
             current_address = cls.build_fhir_address(imis_family.address,AddressUse.HOME.value,
                                                      AddressType.PHYSICAL.value)
             addresses.append(current_address)
-        fhir_family.address = addresses
+        if type(fhir_family.address) is not list:
+            fhir_family.address = addresses
+        else:
+            fhir_family.address.append(addresses)
 
     @classmethod
     def build_imis_addresses(cls, imis_family, fhir_family):
@@ -141,15 +157,19 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                     imis_family.current_address = address.text
                 elif address.type == AddressType.BOTH.value:
                     imis_family.geolocation = address.text
+
     @classmethod
     def build_poverty_status(cls, fhir_family, imis_family):
         poverty_status = cls.build_poverty_status_extension(imis_family)
         if poverty_status.valueBoolean is not None:
-            fhir_family.extension.append(poverty_status)
+            if type(fhir_family.extension) is not list:
+                fhir_family.extension = poverty_status
+            else:
+                fhir_family.extension.append(poverty_status)
 
     @classmethod
     def build_poverty_status_extension(cls, imis_family):
-        extension = Extension()
+        extension = Extension.construct()
         extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/1556643849/povertyStatus"
         extension.valueBoolean = imis_family.family.poverty
         return extension

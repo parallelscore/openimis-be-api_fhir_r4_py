@@ -4,7 +4,8 @@ from location.models import HealthFacility, Location, HealthFacilityCatchment
 from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig, R4LocationConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models import HealthcareService as FHIRHealthcareService, ContactPointSystem, ContactPointUse
+from api_fhir_r4.models.contactPoint import ContactPointSystem, ContactPointUse
+from fhir.resources.healthcareservice import HealthcareService as FHIRHealthcareService
 from api_fhir_r4.models.address import AddressType
 from api_fhir_r4.models.imisModelEnums import ImisHfLevel
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
@@ -14,7 +15,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_hf, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_hcs = FHIRHealthcareService()
+        fhir_hcs = FHIRHealthcareService.construct()
         cls.build_fhir_pk(fhir_hcs, imis_hf, reference_type)
         cls.build_fhir_healthcare_service_identifier(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_name(fhir_hcs, imis_hf)
@@ -23,7 +24,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_healthcare_service_telecom(fhir_hcs, imis_hf)
         cls.build_fhir_location_reference(fhir_hcs, imis_hf, reference_type=reference_type)
         cls.build_fhir_healthcare_service_program(fhir_hcs, imis_hf)
-        cls.build_fhir_healthcare_service_speciality(fhir_hcs, imis_hf)
+        cls.build_fhir_healthcare_service_specialty(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_type(fhir_hcs, imis_hf)
         cls.build_fhir_healthcare_service_coverage_area(fhir_hcs, imis_hf, reference_type=reference_type)
         return fhir_hcs
@@ -31,7 +32,8 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def to_imis_obj(cls, fhir_hcs, audit_user_id):
         errors = []
-        imis_hf = cls.createDefaultInsuree(audit_user_id)
+        fhir_hcs = FHIRHealthcareService(**fhir_hcs)
+        imis_hf = cls.createDefaultHealthFacility(audit_user_id)
         cls.build_imis_hf_identiftier(imis_hf, fhir_hcs, errors)
         cls.build_imis_location_identiftier(imis_hf, fhir_hcs, errors)
         cls.build_imis_hf_name(imis_hf, fhir_hcs, errors)
@@ -70,7 +72,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return DbManagerUtils.get_object_or_none(HealthFacility, uuid=healthfacility_uuid)
 
     @classmethod
-    def createDefaultInsuree(cls, audit_user_id):
+    def createDefaultHealthFacility(cls, audit_user_id):
         imis_hf = HealthFacility()
         # TODO legalForm isn't covered because that value is missing in the model (value need to be nullable in DB)
         # TODO LocationId isn't covered because that value is missing in the model (value need to be nullable in DB)
@@ -106,6 +108,7 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_imis_location_identiftier(cls, imis_hf, fhir_location, errors):
         value = cls.get_fhir_identifier_by_code(fhir_location.identifier,
                                                 R4IdentifierConfig.get_fhir_facility_id_type())
+        # TODO - fix assigning location in HF
         if value:
             imis_hf.location.code = value
         cls.valid_condition(imis_hf.location.code is None, gettext('Missing location code'), errors)
@@ -215,15 +218,15 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
             imis_hf.legal_form.legal_form = text
 
     @classmethod
-    def build_fhir_healthcare_service_speciality(cls, fhir_hcs, imis_hf):
+    def build_fhir_healthcare_service_specialty(cls, fhir_hcs, imis_hf):
         if imis_hf.sub_level is not None:
-            fhir_hcs.speciality = [cls.build_codeable_concept(imis_hf.sub_level.code,
+            fhir_hcs.specialty = [cls.build_codeable_concept(imis_hf.sub_level.code,
                                                              text=imis_hf.sub_level.health_facility_sub_level)]
 
     @classmethod
     def build_imis_sub_level(cls, imis_hf, fhir_hcs, errors):
-        code = fhir_hcs.speciality.coding
-        text = fhir_hcs.speciality.text
+        code = fhir_hcs.specialty.coding
+        text = fhir_hcs.specialty.text
         if not cls.valid_condition(code and text is None,
                                    gettext('Missing healthcare service `legal form` attribute'), errors):
             imis_hf.sub_level.code = code

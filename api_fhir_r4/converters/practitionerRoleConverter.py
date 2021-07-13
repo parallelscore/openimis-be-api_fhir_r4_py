@@ -2,7 +2,7 @@ from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from claim.models import ClaimAdmin
-from api_fhir_r4.models import PractitionerRole
+from fhir.resources.practitionerrole import PractitionerRole
 from api_fhir_r4.utils import DbManagerUtils
 
 
@@ -10,7 +10,7 @@ class PractitionerRoleConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_claim_admin, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_practitioner_role = PractitionerRole()
+        fhir_practitioner_role = PractitionerRole.construct()
         cls.build_fhir_pk(fhir_practitioner_role, imis_claim_admin, reference_type)
         cls.build_fhir_identifiers(fhir_practitioner_role, imis_claim_admin)
         cls.build_fhir_practitioner_reference(fhir_practitioner_role, imis_claim_admin, reference_type)
@@ -20,6 +20,7 @@ class PractitionerRoleConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def to_imis_obj(cls, fhir_practitioner_role, audit_user_id):
         errors = []
+        fhir_practitioner_role = PractitionerRole(**fhir_practitioner_role)
         practitioner = fhir_practitioner_role.practitioner
         claim_admin = PractitionerConverter.get_imis_obj_by_fhir_reference(practitioner, errors)
         hf_references = fhir_practitioner_role.location

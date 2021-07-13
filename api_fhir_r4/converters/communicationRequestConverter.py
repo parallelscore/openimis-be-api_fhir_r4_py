@@ -2,7 +2,8 @@ from claim.models import Feedback
 
 from api_fhir_r4.configurations import R4CommunicationRequestConfig as Config
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.models import CommunicationRequest, RequestStatus
+from api_fhir_r4.models.requestStatus import RequestStatus
+from fhir.resources.communicationrequest import CommunicationRequest
 from api_fhir_r4.utils import DbManagerUtils
 
 
@@ -10,7 +11,7 @@ class CommunicationRequestConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_feedback, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_communication_request = CommunicationRequest()
+        fhir_communication_request = CommunicationRequest.construct()
         fhir_communication_request.status = RequestStatus.UNKNOWN.value
         cls.build_fhir_occurrence_datetime(fhir_communication_request, imis_feedback)
         cls.build_fhir_pk(fhir_communication_request, imis_feedback, reference_type)

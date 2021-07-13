@@ -1,7 +1,7 @@
 from medical.models import Diagnosis
 from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.models.condition import Condition as FHIRCondition
-from api_fhir_r4.models import Reference
+from fhir.resources.reference import Reference
+from fhir.resources.condition import Condition as FHIRCondition
 from django.utils.translation import gettext
 from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 
@@ -10,7 +10,7 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_condition, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_condition = FHIRCondition()
+        fhir_condition = FHIRCondition.construct()
         cls.build_fhir_pk(fhir_condition, imis_condition, reference_type)
         cls.build_fhir_identifiers(fhir_condition, imis_condition)
         cls.build_fhir_codes(fhir_condition, imis_condition)
@@ -21,11 +21,13 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def to_imis_obj(cls, fhir_condition, audit_user_id):
         errors = []
+        fhir_condition = FHIRCondition(**fhir_condition)
         imis_condition = Diagnosis()
         cls.build_imis_identifier(imis_condition, fhir_condition, errors)
         cls.build_imis_validity_from(imis_condition, fhir_condition, errors)
         cls.build_imis_icd_code(imis_condition, fhir_condition, errors)
         cls.build_imis_icd_name(imis_condition, fhir_condition, errors)
+        imis_condition.audit_user_id = audit_user_id
         cls.check_errors(errors)
         return imis_condition
 
@@ -44,7 +46,8 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_reference_identifier(cls, obj, reference_type):
         # Regardless of reference type diagnosis identifier is string format is used
-        return obj.id
+        identifiers = []
+        return cls.build_fhir_id_identifier(identifiers, obj)
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
@@ -105,7 +108,13 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         icd_code = fhir_condition.code.coding
         if not cls.valid_condition(icd_code is None,
                                    gettext('Missing condition `icd_code` attribute'), errors):
-            imis_condition.code = icd_code
+
+            # get the code of condition/diagnosis
+            if type(icd_code) is not list:
+                imis_condition.code = icd_code.code
+            else:
+                icd_code_element = icd_code[0]
+                imis_condition.code = icd_code_element.code
 
     @classmethod
     def build_imis_icd_name(cls, imis_condition, fhir_condition, errors):
@@ -116,6 +125,6 @@ class ConditionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_subject(cls, fhir_condition):
-        reference = Reference()
+        reference = Reference.construct()
         reference.type = "Patient"
         fhir_condition.subject = reference

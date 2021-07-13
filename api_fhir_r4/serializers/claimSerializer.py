@@ -5,7 +5,7 @@ from typing import List, Union
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.mixins import ContainedContentSerializerMixin
-from api_fhir_r4.models import Claim as FHIRClaim, Property
+from api_fhir_r4.models import Claim as FHIRClaim
 from django.http import HttpResponseForbidden
 from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
@@ -15,7 +15,7 @@ from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConve
     ConditionConverter, MedicationConverter, HealthcareServiceConverter, PractitionerConverter, \
     ActivityDefinitionConverter, ReferenceConverterMixin as r
 from api_fhir_r4.converters.claimConverter import ClaimConverter
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
@@ -40,7 +40,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
                                    ]),
     ]
 
-    def fhir_object_reference_fields(self, fhir_obj: FHIRClaim) -> List[FHIRBaseObject]:
+    def fhir_object_reference_fields(self, fhir_obj: FHIRClaim) -> List[FHIRAbstractModel]:
         return [
             fhir_obj.patient,
             *[diagnosis.diagnosisReference for diagnosis in fhir_obj.diagnosis],
@@ -88,9 +88,9 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
 
     def to_representation(self, obj):
         if isinstance(obj, HttpResponseBase):
-            return OperationOutcomeConverter.to_fhir_obj(obj).toDict()
-        elif isinstance(obj, FHIRBaseObject):
-            return obj.toDict()
+            return OperationOutcomeConverter.to_fhir_obj(obj).dict()
+        elif isinstance(obj, FHIRAbstractModel):
+            return obj.dict()
 
         fhir_obj = self.fhirConverter.to_fhir_obj(obj, self._reference_type)
         self.remove_attachment_data(fhir_obj)
@@ -98,7 +98,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
         if self.context.get('contained', None):
             self._add_contained_references(fhir_obj)
 
-        fhir_dict = fhir_obj.toDict()
+        fhir_dict = fhir_obj.dict()
         if self.context.get('contained', False):
             fhir_dict['contained'] = self._create_contained_obj_dict(obj)
         return fhir_dict

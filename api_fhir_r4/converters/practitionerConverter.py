@@ -3,7 +3,7 @@ from django.utils.translation import gettext
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
-from api_fhir_r4.models import Practitioner
+from fhir.resources.practitioner import Practitioner
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
 
@@ -11,7 +11,7 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
 
     @classmethod
     def to_fhir_obj(cls, imis_claim_admin, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        fhir_practitioner = Practitioner()
+        fhir_practitioner = Practitioner.construct()
         cls.build_fhir_pk(fhir_practitioner, imis_claim_admin, reference_type)
         cls.build_fhir_identifiers(fhir_practitioner, imis_claim_admin)
         cls.build_human_names(fhir_practitioner, imis_claim_admin)
@@ -22,6 +22,7 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
     @classmethod
     def to_imis_obj(cls, fhir_practitioner, audit_user_id):
         errors = []
+        fhir_practitioner = Practitioner(**fhir_practitioner)
         imis_claim_admin = PractitionerConverter.create_default_claim_admin(audit_user_id)
         cls.build_imis_identifiers(imis_claim_admin, fhir_practitioner, errors)
         cls.build_imis_names(imis_claim_admin, fhir_practitioner)
@@ -97,7 +98,12 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
     @classmethod
     def build_fhir_birth_date(cls, fhir_practitioner, imis_claim_admin):
         if imis_claim_admin.dob is not None:
-            fhir_practitioner.birthDate = imis_claim_admin.dob.isoformat()
+            from core import datetime
+            # check if datetime object
+            if isinstance(imis_claim_admin.dob, datetime.datetime):
+                fhir_practitioner.birthDate = imis_claim_admin.dob.date().isoformat()
+            else:
+                fhir_practitioner.birthDate = imis_claim_admin.dob.isoformat()
 
     @classmethod
     def build_imis_birth_date(cls, imis_claim_admin, fhir_practitioner):

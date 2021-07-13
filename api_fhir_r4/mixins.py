@@ -1,7 +1,7 @@
 from typing import List
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 class ContainedContentSerializerMixin:
@@ -22,7 +22,7 @@ class ContainedContentSerializerMixin:
         """
         raise NotImplementedError('Serializer with contained resources require contained_resources implemented')
 
-    def fhir_object_reference_fields(self, fhir_obj: FHIRBaseObject) -> List[FHIRBaseObject]:
+    def fhir_object_reference_fields(self, fhir_obj: FHIRAbstractModel) -> List[FHIRAbstractModel]:
         """
         When contained resources are used, the references in fhir object fields should
         change to the contained resource reference starting with hash.
@@ -46,18 +46,18 @@ class ContainedContentSerializerMixin:
 
     def _create_contained_obj_dict(self, obj):
         contained_resources = self.create_contained_resource_fhir_implementation(obj)
-        dict_list = [resource.toDict() for resource in contained_resources]
+        dict_list = [resource.dict() for resource in contained_resources]
         for contained_resource in dict_list:
             contained_resource['id'] = F"{contained_resource['resourceType']}/{contained_resource['id']}"
         return dict_list
 
-    def create_contained_resource_fhir_implementation(self, obj) -> List[FHIRBaseObject]:
+    def create_contained_resource_fhir_implementation(self, obj) -> List[FHIRAbstractModel]:
         contained_resources = []
         for resource, fhir_repr in self._get_converted_resources(obj):
             contained_resources.extend(fhir_repr)
         return contained_resources
 
-    def _add_contained_references(self, fhir_obj: FHIRBaseObject):
+    def _add_contained_references(self, fhir_obj: FHIRAbstractModel):
         for field in self.fhir_object_reference_fields(fhir_obj):
             field.reference = self._create_contained_reference(field.reference)
 
