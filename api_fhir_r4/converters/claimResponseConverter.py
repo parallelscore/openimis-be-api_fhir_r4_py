@@ -11,14 +11,20 @@ from api_fhir_r4.converters import BaseFHIRConverter, CommunicationRequestConver
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
-from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse, Money, ClaimResponseError, ClaimResponseItem, ClaimV2 as FHIRClaim, \
-    ClaimResponseItemAdjudication, ClaimResponseProcessNote, ClaimResponseTotal, CodeableConcept, \
-    Coding, Reference, Extension, Period, ImisClaimIcdTypes, ClaimResponsePayment
-from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
+from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse, ClaimV2 as FHIRClaim
+from api_fhir_r4.models.imisModelEnums import ImisClaimIcdTypes
+from fhir.resources.money import Money
+from fhir.resources.claimresponse import ClaimResponseError, ClaimResponseItem, ClaimResponseItemAdjudication, \
+    ClaimResponseProcessNote, ClaimResponseTotal, ClaimResponsePayment
+from fhir.resources.coding import Coding
+from fhir.resources.codeableconcept import CodeableConcept
+from fhir.resources.reference import Reference
+from fhir.resources.extension import Extension
+from fhir.resources.period import Period
+from api_fhir_r4.utils import TimeUtils, FhirUtils
 
 
 class ClaimResponseConverter(BaseFHIRConverter):

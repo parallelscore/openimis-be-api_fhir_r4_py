@@ -1,6 +1,7 @@
 
 from api_fhir_r4.configurations import GeneralConfiguration
-from api_fhir_r4.models import Bundle, BundleEntry, BundleLink, BundleType, BundleLinkRelation
+from fhir.resources.bundle import Bundle, BundleEntry, BundleLink
+from api_fhir_r4.models.bundle import BundleType, BundleLinkRelation
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.pagination import BasePagination

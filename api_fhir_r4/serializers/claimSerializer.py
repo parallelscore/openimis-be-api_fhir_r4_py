@@ -15,8 +15,7 @@ from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConve
     ConditionConverter, MedicationConverter, HealthcareServiceConverter, PractitionerConverter, \
     ActivityDefinitionConverter, ReferenceConverterMixin as r
 from api_fhir_r4.converters.claimConverter import ClaimConverter
-#from api_fhir_r4.models import FHIRBaseObject
-from api_fhir_r4.models import FHIRAbstractModel
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.serializers import BaseFHIRSerializer
 
 

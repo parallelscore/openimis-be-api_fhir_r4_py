@@ -1,6 +1,7 @@
 from medical.models import Diagnosis
 from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.models import Reference, Condition as FHIRCondition
+from fhir.resources.reference import Reference
+from fhir.resources.condition import Condition as FHIRCondition
 from django.utils.translation import gettext
 from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 

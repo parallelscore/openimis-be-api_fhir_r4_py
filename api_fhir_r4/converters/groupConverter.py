@@ -5,7 +5,12 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration,
 from api_fhir_r4.converters import BaseFHIRConverter,GroupConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models import  AdministrativeGender, ImisMaritalStatus, Extension,Coding, FHIRDate,Group,GroupMember
+from api_fhir_r4.models.administrative import AdministrativeGender
+from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
+from api_fhir_r4.models.fhirdate import FHIRDate
+from fhir.resources.extension import Extension
+from fhir.resources.coding import Coding
+from fhir.resources.group import Group, GroupMember
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 from api_fhir_r4.exceptions import FHIRException

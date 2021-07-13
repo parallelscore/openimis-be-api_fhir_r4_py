@@ -2,9 +2,10 @@ from policy.services import ByInsureeRequest
 
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
 from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter
-from api_fhir_r4.models import CoverageEligibilityRequestV2 as FHIREligibilityRequest, CoverageEligibilityResponse as FHIREligibilityResponse, \
-    CoverageEligibilityResponseInsuranceItem, CoverageEligibilityResponseInsurance, \
-    CoverageEligibilityResponseInsuranceItemBenefit, Money
+from fhir.resources.money import Money
+from fhir.resources.coverageeligibilityresponse import CoverageEligibilityResponse as FHIREligibilityResponse, \
+    CoverageEligibilityResponseInsuranceItem, CoverageEligibilityResponseInsurance, CoverageEligibilityResponseInsuranceItemBenefit
+from api_fhir_r4.models import CoverageEligibilityRequestV2 as FHIREligibilityRequest
 from api_fhir_r4.utils import TimeUtils
 
 

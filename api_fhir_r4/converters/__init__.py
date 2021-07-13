@@ -5,7 +5,13 @@ from django.db.models import Model
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models import IdentifierUse, CodeableConcept, ContactPoint, Address, Coding, Identifier, Reference
+from api_fhir_r4.models.identifier import IdentifierUse
+from fhir.resources.codeableconcept import CodeableConcept
+from fhir.resources.contactpoint import ContactPoint
+from fhir.resources.address import Address
+from fhir.resources.coding import Coding
+from fhir.resources.reference import Reference
+from fhir.resources.identifier import Identifier
 from api_fhir_r4.configurations import GeneralConfiguration
 
 

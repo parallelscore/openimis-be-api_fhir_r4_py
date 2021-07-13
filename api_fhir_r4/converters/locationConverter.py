@@ -3,11 +3,9 @@ from location.models import Location
 
 from api_fhir_r4.configurations import R4IdentifierConfig, R4LocationConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.models import Location as FHIRLocation
+from fhir.resources.location import Location as FHIRLocation
 from api_fhir_r4.models.imisModelEnums import ImisLocationType
-
 from api_fhir_r4.utils import DbManagerUtils
-from api_fhir_r4.paginations import FhirBundleResultsSetPagination
 
 
 class LocationConverter(BaseFHIRConverter, ReferenceConverterMixin):

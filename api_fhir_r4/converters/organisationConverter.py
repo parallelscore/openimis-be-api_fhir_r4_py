@@ -5,10 +5,13 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration
 from api_fhir_r4.converters import BaseFHIRConverter,ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models import Extension, Attachment, \
-    Coding, FHIRDate,ContactPoint
-from api_fhir_r4.models import Organization, OrganizationContact
+from fhir.resources.extension import Extension
+from fhir.resources.attachment import Attachment
+from fhir.resources.coding import Coding
+from fhir.resources.contactpoint import ContactPoint
+from fhir.resources.organization import Organization, OrganizationContact
 from api_fhir_r4.models.address import AddressUse, AddressType
+from api_fhir_r4.models.fhirdate import FHIRDate
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
 class OrganisationConverter(BaseFHIRConverter):

@@ -2,7 +2,9 @@ from django.utils.translation import gettext
 
 from api_fhir_r4.converters import BaseFHIRConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models import NameUse, HumanName, ContactPointSystem, ContactPointUse
+from api_fhir_r4.models.humanName import NameUse
+from api_fhir_r4.models.contactPoint import ContactPointSystem, ContactPointUse
+from fhir.resources.humanname import HumanName
 
 
 class PersonConverterMixin(object):

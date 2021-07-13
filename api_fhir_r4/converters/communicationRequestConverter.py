@@ -2,7 +2,8 @@ from claim.models import Feedback
 
 from api_fhir_r4.configurations import R4CommunicationRequestConfig as Config
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.models import CommunicationRequest, RequestStatus
+from api_fhir_r4.models.requestStatus import RequestStatus
+from fhir.resources.communicationrequest import CommunicationRequest
 from api_fhir_r4.utils import DbManagerUtils
 
 

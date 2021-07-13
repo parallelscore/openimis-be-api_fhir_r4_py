@@ -2,7 +2,9 @@ from django.utils.translation import gettext
 from insuree.models import Insuree, Gender, Education, Profession,Family
 from api_fhir_r4.converters import BaseFHIRConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models import HumanName, GroupMember, NameUse
+from fhir.resources.humanname import HumanName
+from fhir.resources.group import GroupMember
+from api_fhir_r4.models.humanName import NameUse
 
 
 class GroupConverterMixin(object):

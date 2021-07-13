@@ -1,7 +1,7 @@
 import inspect
 
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models import Reference
+from fhir.resources.reference import Reference
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 

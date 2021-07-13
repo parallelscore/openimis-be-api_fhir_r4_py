@@ -6,7 +6,7 @@ from django.http.response import HttpResponseBase
 from api_fhir_r4.configurations import GeneralConfiguration
 from rest_framework import serializers
 from api_fhir_r4.converters import BaseFHIRConverter, OperationOutcomeConverter, ReferenceConverterMixin
-from api_fhir_r4.models import FHIRAbstractModel
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 class BaseFHIRSerializer(serializers.Serializer):

@@ -5,7 +5,7 @@ from collections.abc import Iterable
 
 from api_fhir_r4.converters import ReferenceConverterMixin
 from api_fhir_r4.exceptions import FHIRException
-from api_fhir_r4.models import FHIRAbstractModel
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 class ContainedResourceConverter:

@@ -1,9 +1,12 @@
 from django.utils.translation import gettext
 from api_fhir_r4.configurations import R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.models import Contract, Money, Period,\
-     ContractTermAssetContext, ContractTermAssetValuedItem,  ContractTerm,\
-    ContractTermAsset, ContractSignerV2 as ContractSigner
+from api_fhir_r4.models import ContractSignerV2 as ContractSigner
+from fhir.resources.contract import Contract, ContractTermAssetContext, ContractTermAssetValuedItem, \
+    ContractTerm, ContractTermAsset
+from fhir.resources.money import Money
+from fhir.resources.period import Period
+
 from product.models import Product
 from policy.models import Policy
 from insuree.models import Insuree

@@ -1,13 +1,18 @@
 from django.utils.translation import gettext
 from insuree.models import Insuree, Gender, Education, Profession, Family,InsureePhoto, Relation
 from location.models import Location
-from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models import Patient, AdministrativeGender, ImisMaritalStatus, Extension, PatientLink, Attachment, \
-    Coding, FHIRDate, Reference, Identifier, CodeableConcept
+from api_fhir_r4.models.administrative import AdministrativeGender
+from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
+from fhir.resources.patient import Patient, PatientLink
+from fhir.resources.extension import Extension
+from fhir.resources.attachment import Attachment
+from fhir.resources.coding import Coding
+from fhir.resources.reference import Reference
+from fhir.resources.identifier import Identifier
 from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 

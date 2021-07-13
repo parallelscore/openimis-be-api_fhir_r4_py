@@ -2,7 +2,7 @@ from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from claim.models import ClaimAdmin
-from api_fhir_r4.models import PractitionerRole
+from fhir.resources.practitionerrole import PractitionerRole
 from api_fhir_r4.utils import DbManagerUtils
 
 

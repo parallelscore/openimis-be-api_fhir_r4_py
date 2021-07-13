@@ -17,9 +17,16 @@ from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.coverageConverter import CoverageConverter
-from api_fhir_r4.models import ClaimV2 as FHIRClaim, ClaimItem as FHIRClaimItem, Period, ClaimDiagnosis, Money, \
-    ImisClaimIcdTypes, ClaimSupportingInfo, Quantity, Condition, Extension, Reference, \
-    CodeableConcept, ClaimInsuranceV2 as ClaimInsurance, Attachment
+from api_fhir_r4.models import ClaimV2 as FHIRClaim, ClaimInsuranceV2 as ClaimInsurance
+from api_fhir_r4.models.imisModelEnums import ImisClaimIcdTypes
+from fhir.resources.attachment import Attachment
+from fhir.resources.period import Period
+from fhir.resources.claim import ClaimDiagnosis, ClaimSupportingInfo, ClaimItem as FHIRClaimItem
+from fhir.resources.extension import Extension
+from fhir.resources.money import Money
+from fhir.resources.quantity import Quantity
+from fhir.resources.reference import Reference
+
 from api_fhir_r4.utils import TimeUtils, FhirUtils, DbManagerUtils
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 

@@ -1,8 +1,7 @@
 from typing import List
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
-#from api_fhir_r4.models import FHIRBaseObject
-from api_fhir_r4.models import FHIRAbstractModel
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 class ContainedContentSerializerMixin:
