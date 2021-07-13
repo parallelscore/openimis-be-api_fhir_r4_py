@@ -81,13 +81,9 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_coverage_payor(cls, fhir_coverage, imis_policy):
-        # TODO - buid payor - is the openIMIS organisation
-        #  (hardcodded reference with name from config)
-        #  or PolicyHolder in case of FS
         reference = Reference.construct()
-        resource_type = R4CoverageConfig.get_family_reference_code()
-        resource_id = imis_policy.family.uuid
-        reference.reference = resource_type + '/' + str(resource_id)
+        organization = R4CoverageConfig.get_organization_code()
+        reference.reference = "Organization/" + str(organization)
         if type (fhir_coverage.payor) is not list:
             fhir_coverage.payor = [reference]
         else:

@@ -36,6 +36,7 @@ class R4CoverageConfig(CoverageConfiguration):
     @classmethod
     def get_signer_eo_type_code(cls):
         return cls.get_config_attribute("R4_fhir_contract_config").get('fhir_contract_eo_signer_type', "EnrolmentOfficer")
+
     @classmethod
     def get_signer_head_type_code(cls):
         return cls.get_config_attribute("R4_fhir_contract_config").get('fhir_contract_head_signer_type', "HeadOfFamily")
@@ -47,6 +48,10 @@ class R4CoverageConfig(CoverageConfiguration):
     @classmethod
     def get_offer_dependant_role_code(cls):
         return cls.get_config_attribute("R4_fhir_contract_config").get('fhir_contract_dependant_role', "Dependant")
+
+    @classmethod
+    def get_organization_code(cls):
+        return cls.get_config_attribute("R4_fhir_contract_config").get('fhir_claim_organization_code', "openIMIS")
 
     @classmethod
     def get_family_reference_code(cls):
@@ -91,3 +96,4 @@ class R4CoverageConfig(CoverageConfiguration):
     @classmethod
     def get_effective_date_code(cls):
         return cls.get_config_attribute("R4_fhir_claim_config").get('fhir_effective_date_code', "EffectiveDate")
+
