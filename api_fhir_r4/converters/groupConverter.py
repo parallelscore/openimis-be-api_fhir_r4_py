@@ -13,7 +13,6 @@ from api_fhir_r4.exceptions import FHIRException
 class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterMixin):
     @classmethod
     def to_fhir_obj(cls, imis_family, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        # TODO - update
         fhir_family = {}
         # create two obligatory field then
         cls.build_fhir_actual(fhir_family, imis_family)

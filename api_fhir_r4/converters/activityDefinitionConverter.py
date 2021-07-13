@@ -10,7 +10,6 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_activity_definition, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
-        # TODO - test this
         fhir_activity_definition = ActivityDefinition.construct()
         # first to construct is status - obligatory fields
         cls.build_fhir_status(fhir_activity_definition, imis_activity_definition)

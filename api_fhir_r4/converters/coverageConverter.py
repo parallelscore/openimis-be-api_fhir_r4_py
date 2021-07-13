@@ -21,11 +21,7 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_coverage_contract(fhir_coverage, imis_policy, reference_type)
         cls.build_coverage_class(fhir_coverage, imis_policy)
         #cls.build_coverage_value(fhir_coverage, imis_policy)
-        # TODO - build beneficiary - Patient/Insuree
         cls.build_coverage_beneficiary(fhir_coverage, imis_policy)
-        # TODO - buid payor - is the openIMIS organisation
-        #  (hardcodded reference with name from config)
-        #  or PolicyHolder in case of FS
         cls.build_coverage_payor(fhir_coverage, imis_policy)
         cls.build_coverage_extension(fhir_coverage, imis_policy)
         return fhir_coverage
@@ -71,7 +67,6 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_coverage_beneficiary(cls, fhir_coverage, imis_policy):
-        # TODO - build beneficiary - Patient/Insuree
         reference = Reference.construct()
         resource_type = R4CoverageConfig.get_family_reference_code()
         resource_id = imis_policy.family.uuid
@@ -158,7 +153,6 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_coverage_class(cls, fhir_coverage, imis_coverage):
         class_ = CoverageClass.construct()
         product = imis_coverage.product
-        # TODO - Review later list
         class_.value = product.code
         class_.type = cls.build_simple_codeable_concept(R4CoverageConfig.get_product_code() + "/" + str(product.uuid))
         class_.name = product.code
