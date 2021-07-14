@@ -1,19 +1,13 @@
 from django.utils.translation import gettext
-from insuree.models import Insuree, Gender, Education, Profession,Family
+from insuree.models import Insuree, Gender, Education, Profession, Family
 from location.models import Location
-from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
+from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter,GroupConverterMixin, ReferenceConverterMixin
-from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
-from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models.administrative import AdministrativeGender
-from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
-from api_fhir_r4.models.fhirdate import FHIRDate
 from fhir.resources.extension import Extension
-from fhir.resources.coding import Coding
-from fhir.resources.group import Group, GroupMember
-from api_fhir_r4.models.address import AddressUse, AddressType
-from api_fhir_r4.utils import TimeUtils, DbManagerUtils
+from fhir.resources.group import Group
+from api_fhir_r4.utils import DbManagerUtils
 from api_fhir_r4.exceptions import FHIRException
+
 
 class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterMixin):
     @classmethod
@@ -140,8 +134,8 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     def build_fhir_addresses(cls, fhir_family, imis_family):
         addresses = []
         if imis_family.address is not None:
-            current_address = cls.build_fhir_address(imis_family.address,AddressUse.HOME.value,
-                                                     AddressType.PHYSICAL.value)
+            current_address = cls.build_fhir_address(imis_family.address, "home",
+                                                     "physical")
             addresses.append(current_address)
         if type(fhir_family.address) is not list:
             fhir_family.address = addresses
@@ -153,9 +147,9 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         addresses = fhir_family.address
         if addresses is not None:
             for address in addresses:
-                if address.type == AddressType.PHYSICAL.value:
+                if address.type == "physical":
                     imis_family.current_address = address.text
-                elif address.type == AddressType.BOTH.value:
+                elif address.type == "both":
                     imis_family.geolocation = address.text
 
     @classmethod

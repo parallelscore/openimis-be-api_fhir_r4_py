@@ -5,7 +5,6 @@ from django.db.models import Model
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.models.identifier import IdentifierUse
 from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.contactpoint import ContactPoint
 from fhir.resources.address import Address
@@ -132,7 +131,7 @@ class BaseFHIRConverter(ABC):
     @classmethod
     def build_fhir_identifier(cls, value, type_system, type_code):
         identifier = Identifier.construct()
-        identifier.use = IdentifierUse.USUAL.value
+        identifier.use = "usual"
         type = cls.build_codeable_concept(type_code, type_system)
         identifier.type = type
         # OE0-18 - change into string type always

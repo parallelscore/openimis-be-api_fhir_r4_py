@@ -10,9 +10,8 @@ from fhir.resources.attachment import Attachment
 from fhir.resources.coding import Coding
 from fhir.resources.contactpoint import ContactPoint
 from fhir.resources.organization import Organization, OrganizationContact
-from api_fhir_r4.models.address import AddressUse, AddressType
-from api_fhir_r4.models.fhirdate import FHIRDate
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
+
 
 class OrganisationConverter(BaseFHIRConverter):
     
