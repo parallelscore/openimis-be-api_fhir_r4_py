@@ -4,9 +4,7 @@ from location.models import HealthFacility, Location, HealthFacilityCatchment
 from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig, R4LocationConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models.contactPoint import ContactPointSystem, ContactPointUse
 from fhir.resources.healthcareservice import HealthcareService as FHIRHealthcareService
-from api_fhir_r4.models.address import AddressType
 from api_fhir_r4.models.imisModelEnums import ImisHfLevel
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
@@ -166,23 +164,23 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_imis_hf_address(cls, imis_hf, fhir_hcs):
         address = fhir_hcs.extraDetails
         if address is not None:
-            if address.type == AddressType.PHYSICAL.value:
+            if address.type == 'physical':
                 imis_hf.address = address.text
 
     @classmethod
     def build_fhir_healthcare_service_telecom(cls, fhir_hcs, imis_hf):
         telecom = []
         if imis_hf.phone is not None and imis_hf.phone != "":
-            phone = HealthcareServiceConverter.build_fhir_contact_point(imis_hf.phone, ContactPointSystem.PHONE.value,
-                                                               ContactPointUse.HOME.value)
+            phone = HealthcareServiceConverter.build_fhir_contact_point(imis_hf.phone, 'phone',
+                                                               "home")
             telecom.append(phone)
         if imis_hf.fax is not None and imis_hf.fax != "":
-            fax = HealthcareServiceConverter.build_fhir_contact_point(imis_hf.fax, ContactPointSystem.FAX.value,
-                                                             ContactPointUse.HOME.value)
+            fax = HealthcareServiceConverter.build_fhir_contact_point(imis_hf.fax, 'fax',
+                                                             "home")
             telecom.append(fax)
         if imis_hf.email is not None and imis_hf.email != "":
-            email = HealthcareServiceConverter.build_fhir_contact_point(imis_hf.email, ContactPointSystem.EMAIL.value,
-                                                               ContactPointUse.HOME.value)
+            email = HealthcareServiceConverter.build_fhir_contact_point(imis_hf.email, 'email',
+                                                               "home")
             telecom.append(email)
         fhir_hcs.telecom = telecom
 
@@ -191,11 +189,11 @@ class HealthcareServiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         telecom = fhir_hcs.telecom
         if telecom is not None:
             for contact_point in telecom:
-                if contact_point.system == ContactPointSystem.PHONE.value:
+                if contact_point.system == 'phone':
                     imis_hf.phone = contact_point.value
-                elif contact_point.system == ContactPointSystem.FAX.value:
+                elif contact_point.system == 'fax':
                     imis_hf.fax = contact_point.value
-                elif contact_point.system == ContactPointSystem.EMAIL.value:
+                elif contact_point.system == 'email':
                     imis_hf.email = contact_point.value
 
     @classmethod

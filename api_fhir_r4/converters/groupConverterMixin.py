@@ -1,10 +1,8 @@
 from django.utils.translation import gettext
-from insuree.models import Insuree, Gender, Education, Profession,Family
-from api_fhir_r4.converters import BaseFHIRConverter
+from insuree.models import Insuree, Gender, Education, Profession, Family
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from fhir.resources.humanname import HumanName
 from fhir.resources.group import GroupMember
-from api_fhir_r4.models.humanName import NameUse
 
 
 class GroupConverterMixin(object):
@@ -14,7 +12,7 @@ class GroupConverterMixin(object):
         if not hasattr(person_obj, 'last_name') and not hasattr(person_obj, 'other_names'):
             raise FHIRRequestProcessException([gettext('Missing `last_name` and `other_names` for IMIS object')])
         head = HumanName.construct()
-        head.use = NameUse.USUAL
+        head.use = "usual"
         head.family = person_obj.last_name
         head.given = [person_obj.other_names]
         return head
@@ -25,7 +23,7 @@ class GroupConverterMixin(object):
         for insuree in Insuree.objects.filter(family__uuid=family_id):
             member = GroupMember.construct()
             member.inactive = False
-            member.entity={
+            member.entity = {
             "reference":"Patient"+'/'+insuree.uuid
             }
             members.append(member)
@@ -33,7 +31,7 @@ class GroupConverterMixin(object):
     
     @classmethod
     def build_fhir_location(cls,fhir_family, imis_family):
-        locations ={}
+        locations = {}
         if imis_family.location is not None:
             locations['reference'] = 'Location'+'/'+imis_family.location.uuid
         fhir_family.location = locations

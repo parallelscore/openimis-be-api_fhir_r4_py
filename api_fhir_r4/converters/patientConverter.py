@@ -5,7 +5,6 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration,
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models.administrative import AdministrativeGender
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
 from fhir.resources.patient import Patient, PatientLink
 from fhir.resources.extension import Extension
@@ -13,7 +12,6 @@ from fhir.resources.attachment import Attachment
 from fhir.resources.coding import Coding
 from fhir.resources.reference import Reference
 from fhir.resources.identifier import Identifier
-from api_fhir_r4.models.address import AddressUse, AddressType
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
 
@@ -240,13 +238,13 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         if imis_insuree.gender is not None:
             code = imis_insuree.gender.code
             if code == GeneralConfiguration.get_male_gender_code():
-                fhir_patient.gender = AdministrativeGender.MALE.value
+                fhir_patient.gender = "male"
             elif code == GeneralConfiguration.get_female_gender_code():
-                fhir_patient.gender = AdministrativeGender.FEMALE.value
+                fhir_patient.gender = "female"
             elif code == GeneralConfiguration.get_other_gender_code():
-                fhir_patient.gender = AdministrativeGender.OTHER.value
+                fhir_patient.gender = "other"
         else:
-            fhir_patient.gender = AdministrativeGender.UNKNOWN.value
+            fhir_patient.gender = "unknown"
 
     @classmethod
     def build_imis_gender(cls, imis_insuree, fhir_patient):
@@ -255,11 +253,11 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         if gender is not None:
             imis_gender_code = None
             if gender == GeneralConfiguration.get_male_gender_code():
-                imis_gender_code = str(AdministrativeGender.MALE.value).upper()
+                imis_gender_code = "M"
             elif gender == GeneralConfiguration.get_female_gender_code():
-                imis_gender_code = str(AdministrativeGender.FEMALE.value).upper()
+                imis_gender_code = "F"
             elif gender == GeneralConfiguration.get_other_gender_code():
-                imis_gender_code = str(AdministrativeGender.OTHER.value).upper()
+                imis_gender_code = "O"
             if imis_gender_code is not None:
                 imis_insuree.gender = Gender.objects.get(pk=imis_gender_code)
 
@@ -317,15 +315,15 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_fhir_addresses(cls, fhir_patient, imis_insuree):
         addresses = []
         if imis_insuree.current_address is not None:
-            current_address = cls.build_fhir_address(imis_insuree.current_address, AddressUse.HOME.value,
-                                                     AddressType.PHYSICAL.value)
+            current_address = cls.build_fhir_address(imis_insuree.current_address, "home",
+                                                     "physical")
             if type(addresses) is not list:
                 addresses = [current_address]
             else:
                 addresses.append(current_address)
         if imis_insuree.geolocation is not None:
-            geolocation = cls.build_fhir_address(imis_insuree.geolocation, AddressUse.HOME.value,
-                                                 AddressType.BOTH.value)
+            geolocation = cls.build_fhir_address(imis_insuree.geolocation, "home",
+                                                 "both")
             if type(addresses) is not list:
                 addresses = [geolocation]
             else:
@@ -337,9 +335,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         addresses = fhir_patient.address
         if addresses is not None:
             for address in addresses:
-                if address.type == AddressType.PHYSICAL.value:
+                if address.type == "physical":
                     imis_insuree.current_address = address.text
-                elif address.type == AddressType.BOTH.value:
+                elif address.type == "both":
                     imis_insuree.geolocation = address.text
 
     @classmethod
