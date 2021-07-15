@@ -400,11 +400,6 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 if imis_insuree.validity_from is not None:
                     extension.valueDateTime = imis_insuree.validity_from.isoformat()
 
-            elif value == "validity_from":
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331779/registrationDate"
-                if imis_insuree.validity_from is not None:
-                    extension.valueDateTime = imis_insuree.validity_from.isoformat()
-
             elif value == "family.location.code":
                 extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960495619/locationCode"
                 if hasattr(imis_insuree, "family") and imis_insuree.family is not None:
