@@ -5,8 +5,9 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration,
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
+from api_fhir_r4.mapping.patientMapping import ReliatonshipMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
-from fhir.resources.patient import Patient, PatientLink
+from fhir.resources.patient import Patient, PatientContact
 from fhir.resources.extension import Extension
 from fhir.resources.attachment import Attachment
 from fhir.resources.coding import Coding
@@ -30,8 +31,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_addresses(fhir_patient, imis_insuree)
         cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
         cls.build_poverty_status(fhir_patient, imis_insuree)
-        cls.build_fhir_related_person(fhir_patient, imis_insuree, reference_type)
-        cls.build_fhir_photo(fhir_patient, imis_insuree)
+        cls.build_fhir_contact(fhir_patient, imis_insuree)
+        #cls.build_fhir_photo(fhir_patient, imis_insuree)
         cls.build_fhir_general_practitioner(fhir_patient, imis_insuree)
         return fhir_patient
 
@@ -325,7 +326,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
                 # municipality extension
                 extension = Extension.construct()
-                extension.url = "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/municipality"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/municipality"
                 extension.valueString = imis_family.location.parent.name
                 family_address.extension = [extension]
 
@@ -461,17 +462,32 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         return extension
 
     @classmethod
-    def build_fhir_related_person(cls, fhir_patient, imis_insuree, reference_type):
-        fhir_link = PatientLink.construct()
+    def build_fhir_contact(cls, fhir_patient, imis_insuree):
+        fhir_contact = PatientContact.construct()
         if imis_insuree.relationship is not None and imis_insuree.family is not None \
-            and imis_insuree.family.head_insuree is not None:
-            fhir_link.other = PatientConverter\
-                .build_fhir_resource_reference(imis_insuree.family.head_insuree, reference_type=reference_type)
-            fhir_link.type = imis_insuree.relationship.relation
-            if type(fhir_patient.link) is not list:
-                fhir_patient.link = [fhir_link]
+                and imis_insuree.family.head_insuree is not None:
+            system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem-openimis-contact-relationship-cs"
+            # map to the fhir value from imis one
+            code = ReliatonshipMapping.reliatonship[str(imis_insuree.relationship.relation)]
+            fhir_contact.relationship = [cls.build_codeable_concept(code=code, system=system)]
+            fhir_contact.name = cls.build_fhir_names_for_person(imis_insuree)
+            if imis_insuree.phone and imis_insuree.phone != "":
+                telecom = cls.build_fhir_contact_point(imis_insuree.phone, "phone", "home")
+                if type(fhir_contact.telecom) is not list:
+                    fhir_contact.telecom = [telecom]
+                else:
+                    fhir_contact.telecom.append(telecom)
+            if imis_insuree.email and imis_insuree.email != "":
+                telecom = cls.build_fhir_contact_point(imis_insuree.email, "email", "home")
+                if type(fhir_contact.telecom) is not list:
+                    fhir_contact.telecom = [telecom]
+                else:
+                    fhir_contact.telecom.append(telecom)
+
+            if type(fhir_patient.contact) is not list:
+                fhir_patient.contact = [fhir_contact]
             else:
-                fhir_patient.link.append(fhir_link)
+                fhir_patient.contact.append(fhir_contact)
 
     @classmethod
     def build_imis_related_person(cls, imis_insuree, errors):
