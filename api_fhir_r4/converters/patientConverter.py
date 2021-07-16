@@ -32,7 +32,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
         cls.build_poverty_status(fhir_patient, imis_insuree)
         cls.build_fhir_contact(fhir_patient, imis_insuree)
-        #cls.build_fhir_photo(fhir_patient, imis_insuree)
+        cls.build_fhir_photo(fhir_patient, imis_insuree)
         cls.build_fhir_general_practitioner(fhir_patient, imis_insuree)
         return fhir_patient
 
