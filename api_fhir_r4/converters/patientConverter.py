@@ -5,7 +5,7 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration,
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.mapping.patientMapping import ReliatonshipMapping
+from api_fhir_r4.mapping.patientMapping import RelationshipMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
 from fhir.resources.patient import Patient, PatientContact
 from fhir.resources.extension import Extension
@@ -482,7 +482,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 and imis_insuree.family.head_insuree is not None:
             system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem-openimis-contact-relationship-cs"
             # map to the fhir value from imis one
-            code = ReliatonshipMapping.reliatonship[str(imis_insuree.relationship.relation)]
+            code = RelationshipMapping.relationship[str(imis_insuree.relationship.relation)]
             fhir_contact.relationship = [cls.build_codeable_concept(code=code, system=system)]
             fhir_contact.name = cls.build_fhir_names_for_person(imis_insuree)
             if imis_insuree.phone and imis_insuree.phone != "":

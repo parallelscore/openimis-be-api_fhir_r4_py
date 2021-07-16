@@ -1,7 +1,7 @@
 
-class ReliatonshipMapping(object):
+class RelationshipMapping(object):
 
-    reliatonship = {
+    relationship = {
         "Spouse": "Spouse",
         "Brother/Sister": "Brother/Sister",
         "Father/Mother": "Father/Mother",
