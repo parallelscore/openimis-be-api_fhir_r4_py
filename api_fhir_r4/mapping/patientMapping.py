@@ -11,7 +11,3 @@ class ReliatonshipMapping(object):
         "Employee": "Employee",
         "Others": "Others",
     }
-
-
-
-

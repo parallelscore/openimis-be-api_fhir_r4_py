@@ -28,7 +28,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_gender(fhir_patient, imis_insuree)
         cls.build_fhir_marital_status(fhir_patient, imis_insuree)
         cls.build_fhir_telecom(fhir_patient, imis_insuree)
-        cls.build_fhir_addresses(fhir_patient, imis_insuree)
+        cls.build_fhir_addresses(fhir_patient, imis_insuree, reference_type)
         cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
         cls.build_poverty_status(fhir_patient, imis_insuree)
         cls.build_fhir_contact(fhir_patient, imis_insuree)
@@ -314,7 +314,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         imis_insuree.phone, imis_insuree.email = cls.build_imis_phone_num_and_email(fhir_patient.telecom)
 
     @classmethod
-    def build_fhir_addresses(cls, fhir_patient, imis_insuree):
+    def build_fhir_addresses(cls, fhir_patient, imis_insuree, reference_type):
         addresses = []
         # family slice - required
         if imis_insuree.family is not None:
@@ -330,8 +330,15 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.valueString = imis_family.location.parent.name
                 family_address.extension = [extension]
 
+                # address location reference extension
+                extension = Extension.construct()
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition-address-location-reference-ext"
+                reference_location = Reference.construct()
+                reference_location.reference = F"Location/{imis_family.location.uuid}"
+                extension.valueReference = reference_location
+                family_address.extension.append(extension)
+
                 family_address.city = imis_family.location.name
-                family_address.postalCode = imis_family.location.code
 
             if family_address is not None:
                 if type(addresses) is not list:
@@ -352,8 +359,15 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.valueString = imis_insuree.current_village.parent.name
                 current_address.extension = [extension]
 
+                # address location reference extension
+                extension = Extension.construct()
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition-address-location-reference-ext"
+                reference_location = Reference.construct()
+                reference_location.reference = F"Location/{imis_insuree.current_village.uuid}"
+                extension.valueReference = reference_location
+                current_address.extension.append(extension)
+
                 current_address.city = imis_insuree.current_village.name
-                current_address.postalCode = imis_insuree.current_village.code
 
             if current_address is not None:
                 if type(addresses) is not list:
