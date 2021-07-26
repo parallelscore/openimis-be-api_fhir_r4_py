@@ -9,6 +9,7 @@ class GeneralConfiguration(BaseConfiguration):
         config = cls.get_config()
         config.default_audit_user_id = cfg['default_audit_user_id']
         config.gender_codes = cfg['gender_codes']
+        config.base_url = cfg['base_url']
         config.default_value_of_patient_head_attribute = cfg['default_value_of_patient_head_attribute']
         config.default_value_of_patient_card_issued_attribute = cfg['default_value_of_patient_card_issued_attribute']
         config.default_value_of_location_offline_attribute = cfg['default_value_of_location_offline_attribute']
@@ -53,4 +54,8 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
     def show_system(cls):
-        return 0
+        return 1
+
+    @classmethod
+    def get_system_base_url(cls):
+        return cls.get_config_attribute("base_url")
