@@ -76,7 +76,9 @@ class BaseFHIRConverter(ABC):
                 code = str(code)
             coding.code = code
             codeable_concept.coding = [coding]
-        codeable_concept.text = text
+
+        if text:
+            codeable_concept.text = text
         return codeable_concept
 
     @classmethod

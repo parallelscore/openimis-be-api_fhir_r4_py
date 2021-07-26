@@ -7,6 +7,8 @@ from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.coding import Coding
 from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
 from django.utils.translation import gettext
+
+from api_fhir_r4.models.imisModelEnums import ImisCategoryDefinition
 from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 import core
 
@@ -195,7 +197,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_frequency_extension(cls, fhir_activity_definition, imis_activity_definition):
         serv_price = cls.build_fhir_serv_frequency_extension(imis_activity_definition)
-        if type(fhir_activity_definition) is not list:
+        if type(fhir_activity_definition.extension) is not list:
             fhir_activity_definition.extension = [serv_price]
         else:
             fhir_activity_definition.extension.append(serv_price)
@@ -214,62 +216,48 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_use_context_context(cls, imis_activity_definition):
-        gender = cls.build_fhir_gender(imis_activity_definition)
-        age = cls.build_fhir_age(imis_activity_definition)
-        workflow = cls.build_fhir_workflow(imis_activity_definition)
-        venue = cls.build_fhir_venue(imis_activity_definition)
-        level = cls.build_fhir_level(imis_activity_definition)
+        usage_context_gender = \
+            cls.__build_usage_context('useContextGender', cls.build_fhir_gender(imis_activity_definition))
+        usage_context_age = \
+            cls.__build_usage_context('useContextAge', cls.build_fhir_age(imis_activity_definition))
+        usage_context_workflow = \
+            cls.__build_usage_context('useContextWorkflow',  cls.build_fhir_workflow(imis_activity_definition))
+        usage_context_venue = \
+            cls.__build_usage_context('useContextVenue', cls.build_fhir_venue(imis_activity_definition))
+        usage_context_level = \
+            cls.__build_usage_context('useContextLevel', cls.build_fhir_level(imis_activity_definition))
 
-        usage_context_gender = UsageContext.construct()
-        usage_context_age = UsageContext.construct()
-        usage_context_workflow = UsageContext.construct()
-        usage_context_venue = UsageContext.construct()
-        usage_context_level = UsageContext.construct()
+        usage = [usage_context_gender, usage_context_age]
+        if usage_context_workflow.valueCodeableConcept.coding[0].display:
+            usage.append(usage_context_workflow)
+        elif usage_context_venue.valueCodeableConcept.coding[0].display:
+            usage.append(usage_context_venue)
 
-        usage_context_gender.valueCodeableConcept = CodeableConcept.construct()
-        usage_context_gender.code = Coding.construct()
-        usage_context_gender.code.code = "useContextGender"
-        usage_context_gender.valueCodeableConcept = gender
+        usage.append(usage_context_level)
 
-        usage_context_age.valueCodeableConcept = CodeableConcept.construct()
-        usage_context_age.code = Coding.construct()
-        usage_context_age.code.code = "useContextAge"
-        usage_context_age.valueCodeableConcept = age
+        for x in usage:
+            a = all([a.code for a in x.valueCodeableConcept.coding])
+            if a:
+                print(x)
+        return usage
 
-        usage_context_workflow.valueCodeableConcept = CodeableConcept.construct()
-        usage_context_workflow.code = Coding.construct()
-        usage_context_workflow.code.code = "useContextWorkflow"
-        usage_context_workflow.valueCodeableConcept = workflow
-
-        usage_context_venue.valueCodeableConcept = CodeableConcept.construct()
-        usage_context_venue.code = Coding.construct()
-        usage_context_venue.code.code = "useContextVenue"
-        usage_context_venue.valueCodeableConcept = venue
-
-        usage_context_level.valueCodeableConcept = CodeableConcept.construct()
-        usage_context_level.code = Coding.construct()
-        usage_context_level.code.code = "useContextLevel"
-        usage_context_level.valueCodeableConcept = level
-
-        if usage_context_workflow.valueCodeableConcept.coding[0].display == "":
-            return [usage_context_gender, usage_context_age, usage_context_venue, usage_context_level]
-        elif usage_context_venue.valueCodeableConcept.coding[0].display == "":
-            return [usage_context_gender, usage_context_age, usage_context_workflow, usage_context_level]
-        else:
-            return [usage_context_gender, usage_context_age, usage_context_workflow,
-                    usage_context_venue, usage_context_level]
+    @classmethod
+    def __build_usage_context(cls, code, codeable_concept):
+        usage_context = UsageContext.construct()
+        usage_context.valueCodeableConcept = CodeableConcept.construct()
+        usage_context.code = Coding.construct()
+        usage_context.code.code = code
+        usage_context.valueCodeableConcept = codeable_concept
+        return usage_context
 
     @classmethod
     def build_fhir_gender(cls, imis_activity_definition):
         male = cls.build_fhir_male(imis_activity_definition)
         female = cls.build_fhir_female(imis_activity_definition)
-        if male == "":
-            male = None
-        if female == "":
-            female = None
 
         codeable_concept = CodeableConcept.construct()
-        if male is not None:
+
+        if male:
             coding_male = Coding.construct()
             coding_male.code = male
             coding_male.display = "Male"
@@ -277,7 +265,8 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 codeable_concept.coding = [coding_male]
             else:
                 codeable_concept.coding.append(coding_male)
-        if female is not None:
+
+        if female:
             coding_female = Coding.construct()
             coding_female.code = female
             coding_female.display = "Female"
@@ -286,19 +275,16 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
             else:
                 codeable_concept.coding.append(coding_female)
             codeable_concept.text = "Male or Female"
+
         return codeable_concept
 
     @classmethod
     def build_fhir_age(cls, imis_activity_definition):
         adult = cls.build_fhir_adult(imis_activity_definition)
         kid = cls.build_fhir_kid(imis_activity_definition)
-        if adult == "":
-            adult = None
-        if kid == "":
-            kid = None
-
         codeable_concept = CodeableConcept.construct()
-        if adult is not None:
+
+        if adult:
             coding_adult = Coding.construct()
             coding_adult.code = adult
             coding_adult.display = "Adult"
@@ -306,7 +292,9 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 codeable_concept.coding = [coding_adult]
             else:
                 codeable_concept.coding.append(coding_adult)
-        if kid is not None:
+            codeable_concept.text = "Adult"
+
+        if kid:
             coding_kid = Coding.construct()
             coding_kid.code = kid
             coding_kid.display = "Kid"
@@ -315,6 +303,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
             else:
                 codeable_concept.coding.append(coding_kid)
             codeable_concept.text = "Adult or Kid"
+
         return codeable_concept
 
     @classmethod
@@ -365,22 +354,13 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_workflow(cls, imis_activity_definition):
-        display = ""
-        if imis_activity_definition.category == "S":
-            display = "Surgery"
-        if imis_activity_definition.category == "C":
-            display = "Consulation"
-        if imis_activity_definition.category == "D":
-            display = "Delivery"
-        if imis_activity_definition.category == "A":
-            display = "Antenatal"
-        if imis_activity_definition.category == "O":
-            display = "Other"
-
         codeable_concept = CodeableConcept.construct()
         coding_workflow = Coding.construct()
-        coding_workflow.code = imis_activity_definition.category
-        coding_workflow.display = display
+
+        if imis_activity_definition.category and imis_activity_definition.category != ' ':
+            coding_workflow.code = imis_activity_definition.category
+            coding_workflow.display = ImisCategoryDefinition.get_category_display(imis_activity_definition.category)
+
         if type(codeable_concept.coding) is not list:
             codeable_concept.coding = [coding_workflow]
         else:
