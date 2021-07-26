@@ -329,13 +329,13 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
                 # municipality extension
                 extension = Extension.construct()
-                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition-address-municipality"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-municipality"
                 extension.valueString = imis_family.location.parent.name
                 family_address.extension = [extension]
 
                 # address location reference extension
                 extension = Extension.construct()
-                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition-address-location-reference"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
                 reference_location = Reference.construct()
                 reference_location.reference = F"Location/{imis_family.location.uuid}"
                 extension.valueReference = reference_location
@@ -358,13 +358,13 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
                 # municipality extension
                 extension = Extension.construct()
-                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition-address-municipality"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-municipality"
                 extension.valueString = imis_insuree.current_village.parent.name
                 current_address.extension = [extension]
 
                 # address location reference extension
                 extension = Extension.construct()
-                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition-address-location-reference"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
                 reference_location = Reference.construct()
                 reference_location.reference = F"Location/{imis_insuree.current_village.uuid}"
                 extension.valueReference = reference_location
@@ -483,9 +483,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         fhir_contact = PatientContact.construct()
         if imis_insuree.relationship is not None and imis_insuree.family is not None \
                 and imis_insuree.family.head_insuree is not None:
-            system = f"{GeneralConfiguration.get_system_base_url()}ValueSet-patient-contact-relationship"
+            system = f"{GeneralConfiguration.get_system_base_url()}ValueSet/patient-contact-relationship"
             # map to the fhir value from imis one
-            code = RelationshipMapping.relationship[str(imis_insuree.relationship.relation)]
+            code = RelationshipMapping.relationship[str(imis_insuree.relationship.id)]
             fhir_contact.relationship = [cls.build_codeable_concept(code=code, system=system)]
             fhir_contact.name = cls.build_fhir_names_for_person(imis_insuree)
             if imis_insuree.phone and imis_insuree.phone != "":
