@@ -177,7 +177,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_passport_identifier(cls, identifiers, imis_insuree):
-        if hasattr(imis_insuree, "typeofid") and imis_insuree.typeofid is not None:
+        if hasattr(imis_insuree, "type_of_id") and imis_insuree.type_of_id is not None:
             pass  # TODO typeofid isn't provided, this section should contain logic used to create passport field based on typeofid
         elif imis_insuree.passport:
             identifier = cls.build_fhir_identifier(imis_insuree.passport,
@@ -318,12 +318,51 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_fhir_addresses(cls, fhir_patient, imis_insuree):
         addresses = []
-        if imis_insuree.current_address:
-            current_address = cls.build_fhir_address(imis_insuree.current_address, "home", "physical")
-            addresses.append(current_address)
-        if imis_insuree.geolocation:
-            geolocation = cls.build_fhir_address(imis_insuree.geolocation, "home", "both")
-            addresses.append(geolocation)
+        # family slice - required
+        if imis_insuree.family is not None:
+            imis_family = imis_insuree.family
+            family_address = cls.build_fhir_address(imis_family.address, "home", "physical")
+            if imis_family.location:
+                family_address.state = imis_family.location.parent.parent.parent.name
+                family_address.district = imis_family.location.parent.parent.name
+
+                # municipality extension
+                extension = Extension.construct()
+                extension.url = "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/municipality"
+                extension.valueString = imis_family.location.parent.name
+                family_address.extension = [extension]
+
+                family_address.city = imis_family.location.name
+                family_address.postalCode = imis_family.location.code
+
+            if family_address is not None:
+                if type(addresses) is not list:
+                    addresses = [family_address]
+                else:
+                    addresses.append(family_address)
+
+        # insuree slice
+        if imis_insuree.current_address is not None:
+            current_address = cls.build_fhir_address(imis_insuree.current_address, "temp", "physical")
+            if imis_insuree.current_village:
+                current_address.state = imis_insuree.current_village.parent.parent.parent.name
+                current_address.district = imis_insuree.current_village.parent.parent.name
+
+                # municipality extension
+                extension = Extension.construct()
+                extension.url = "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/municipality"
+                extension.valueString = imis_insuree.current_village.parent.name
+                current_address.extension = [extension]
+
+                current_address.city = imis_insuree.current_village.name
+                current_address.postalCode = imis_insuree.current_village.code
+
+            if current_address is not None:
+                if type(addresses) is not list:
+                    addresses = [current_address]
+                else:
+                    addresses.append(current_address)
+                    
         fhir_patient.address = addresses
 
     @classmethod

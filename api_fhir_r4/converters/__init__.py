@@ -166,14 +166,7 @@ class BaseFHIRConverter(ABC):
         current_address.use = use
         current_address.type = type
         return current_address
-    
-    @classmethod
-    def build_fhir_address(cls, value, use, type):
-        current_address = Address.construct()
-        current_address.text = value
-        current_address.use = use
-        current_address.type = type
-        return current_address
+
     @classmethod
     def build_fhir_reference(cls, identifier, display, type, reference):
         reference = Reference.construct()
