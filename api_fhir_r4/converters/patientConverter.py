@@ -358,7 +358,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
                 # municipality extension
                 extension = Extension.construct()
-                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/municipality"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition-address-municipality"
                 extension.valueString = imis_insuree.current_village.parent.name
                 current_address.extension = [extension]
 
