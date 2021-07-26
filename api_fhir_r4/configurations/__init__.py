@@ -2,6 +2,7 @@ import sys
 
 from api_fhir_r4.defaultConfig import DEFAULT_CFG
 
+
 class BaseConfiguration(object):  # pragma: no cover
 
     @classmethod
