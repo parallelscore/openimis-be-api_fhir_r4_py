@@ -58,5 +58,5 @@ class ContainedResourceConverter:
                 fhir_value = self.converter.to_fhir_obj(imis_resource_value, self.reference_type)
                 return fhir_value
             except Exception as e:
-                raise FHIRException("Failed to process: {}, exception: {}"
+                raise FHIRException("Failed to process: {}, exception: \n{}"
                                     .format((self.imis_resource_name, imis_resource_value), str(e)))

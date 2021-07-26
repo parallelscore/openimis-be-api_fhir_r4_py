@@ -34,13 +34,11 @@ class PersonConverterMixin(object):
     @classmethod
     def build_fhir_telecom_for_person(cls, phone=None, email=None):
         telecom = []
-        if phone is not None:
-            phone = BaseFHIRConverter.build_fhir_contact_point(phone, "phone",
-                                                               "home")
+        if phone:
+            phone = BaseFHIRConverter.build_fhir_contact_point(phone, "phone", "home")
             telecom.append(phone)
-        if email is not None:
-            email = BaseFHIRConverter.build_fhir_contact_point(email, "email",
-                                                               "home")
+        if email:
+            email = BaseFHIRConverter.build_fhir_contact_point(email, "email", "home")
             telecom.append(email)
         return telecom
 

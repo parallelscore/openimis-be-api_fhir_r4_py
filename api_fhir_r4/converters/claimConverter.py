@@ -210,16 +210,15 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
             raise FHIRRequestProcessException(['ICD code cannot be null'])
         if icd_type is None:
             raise FHIRRequestProcessException(['ICD Type cannot be null'])
+
         claim_diagnosis_data =  {}
         claim_diagnosis_data['sequence'] = FhirUtils.get_next_array_sequential_id(diagnoses)
         claim_diagnosis_data['diagnosisReference'] = ConditionConverter\
             .build_fhir_resource_reference(icd_code, reference_type=reference_type)
         claim_diagnosis = ClaimDiagnosis(**claim_diagnosis_data)
         claim_diagnosis.type = [cls.build_codeable_concept(icd_type)]
-        if type(diagnoses) is not list:
-            diagnoses = [claim_diagnosis]
-        else:
-            diagnoses.append(claim_diagnosis)
+
+        diagnoses.append(claim_diagnosis)
 
     @classmethod
     def build_imis_diagnoses(cls, imis_claim, fhir_claim, errors):
@@ -279,21 +278,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def get_diagnosis_code(cls, diagnosis):
         code = None
         if diagnosis.diagnosisReference.reference:
-            _,icd = diagnosis.diagnosisReference.reference.rsplit('/',1)
+            _, icd = diagnosis.diagnosisReference.reference.rsplit('/',1)
             code = icd
-        # concept = diagnosis.diagnosisCodeableConcept
-        
-        # if concept:
-        #     coding = cls.get_first_coding_from_codeable_concept(concept)
-        #     icd_code = coding.code
-        #     if icd_code:
-        #         code = icd_code
-
-        #if diagnosis.diagnosisReference:
-            #code = ConditionConverter.get_imis_obj_by_fhir_reference(diagnosis.diagnosisReference)
-            #if code:
-            #    imis_claim.icd = code
-            #    imis_claim.icd_code = code.code
 
         return code
 

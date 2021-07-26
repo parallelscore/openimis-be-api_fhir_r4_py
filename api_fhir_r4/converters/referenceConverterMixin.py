@@ -42,7 +42,7 @@ class ReferenceConverterMixin(object):
         reference.identifier = cls.build_reference_identifier(obj, reference_type)
         reference.reference = resource_type + '/' + resource_id
 
-        if display is not None:
+        if display:
             reference.display = display
 
         return reference

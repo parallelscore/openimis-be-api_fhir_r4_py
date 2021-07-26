@@ -1,8 +1,7 @@
+from .imisModelEnums import BundleType
 import typing
 
-
 SUPPORTED_FORMATS = ['json']
-
 
 # fix of 'issue' type from https://github.com/nazrulworld/fhir.resources/blob/main/fhir/resources/operationoutcome.py#L31
 # by overriding 'issue' property. Without this fix - there is no 'issue' field in 'OperationOutcome' model.
