@@ -44,3 +44,14 @@ class IdentificationTypeMapping(object):
         "P": "Passport",
         "V": "Voter Card",
     }
+
+
+class MaritalStatusMapping(object):
+
+    marital_status = {
+        "M": "Married",
+        "S": "Single",
+        "D": "Divorced",
+        "W": "Widowed",
+        "UNK": "unknown"
+    }
