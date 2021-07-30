@@ -27,3 +27,14 @@ class IdentificationTypeMapping(object):
     identification_type = {
         identification.code: identification.identification_type for identification in IdentificationType.objects.all()
     }
+
+
+class MaritalStatusMapping(object):
+
+    marital_status = {
+        "M": "Married",
+        "S": "Single",
+        "D": "Divorced",
+        "W": "Widowed",
+        "UNK": "unknown"
+    }

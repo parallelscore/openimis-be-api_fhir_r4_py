@@ -11,7 +11,7 @@ from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, Refe
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.mapping.patientMapping import RelationshipMapping, EducationLevelMapping, \
-    PatientProfessionMapping, IdentificationTypeMapping
+    PatientProfessionMapping, IdentificationTypeMapping, MaritalStatusMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
 from fhir.resources.patient import Patient, PatientLink, PatientContact
 from fhir.resources.extension import Extension
@@ -281,26 +281,12 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_fhir_marital_status(cls, fhir_patient, imis_insuree):
         if imis_insuree.marital:
-            if imis_insuree.marital == ImisMaritalStatus.MARRIED.value:
-                fhir_patient.maritalStatus = \
-                    cls.build_codeable_concept(R4MaritalConfig.get_fhir_married_code(),
-                                               R4MaritalConfig.get_fhir_marital_status_system(), text="Married")
-            elif imis_insuree.marital == ImisMaritalStatus.SINGLE.value:
-                fhir_patient.maritalStatus = \
-                    cls.build_codeable_concept(R4MaritalConfig.get_fhir_never_married_code(),
-                                               R4MaritalConfig.get_fhir_marital_status_system(), text="Single")
-            elif imis_insuree.marital == ImisMaritalStatus.DIVORCED.value:
-                fhir_patient.maritalStatus = \
-                    cls.build_codeable_concept(R4MaritalConfig.get_fhir_divorced_code(),
-                                               R4MaritalConfig.get_fhir_marital_status_system(), text="Divorced")
-            elif imis_insuree.marital == ImisMaritalStatus.WIDOWED.value:
-                fhir_patient.maritalStatus = \
-                    cls.build_codeable_concept(R4MaritalConfig.get_fhir_widowed_code(),
-                                               R4MaritalConfig.get_fhir_marital_status_system(), text="Widowed")
-            elif imis_insuree.marital == ImisMaritalStatus.NOT_SPECIFIED.value:
-                fhir_patient.maritalStatus = \
-                    cls.build_codeable_concept(R4MaritalConfig.get_fhir_unknown_marital_status_code(),
-                                               R4MaritalConfig.get_fhir_marital_status_system(), text="Not specific")
+            display = MaritalStatusMapping.marital_status[imis_insuree.marital]
+            fhir_patient.maritalStatus = \
+                cls.build_codeable_concept(code=imis_insuree.marital,
+                                           system=R4MaritalConfig.get_fhir_marital_status_system())
+            if len(fhir_patient.maritalStatus.coding) == 1:
+                fhir_patient.maritalStatus.coding[0].display = display
 
     @classmethod
     def build_imis_marital(cls, imis_insuree, fhir_patient):
