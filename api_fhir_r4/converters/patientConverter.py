@@ -532,13 +532,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_imis_photo(cls, imis_insuree, fhir_patient, errors):
-        # build insuree photo for insuree to use in service
-        # update_or_create_insuree
-        insuree_photo = {}
-        # here assign data base64 encoded photo
         photo = fhir_patient.photo[0].data
         date = fhir_patient.photo[0].creation
-        # assign the insuree photo to use this entity in service
         obj, created = \
             InsureePhoto.objects.get_or_create(
                 chf_id=imis_insuree.chf_id,
