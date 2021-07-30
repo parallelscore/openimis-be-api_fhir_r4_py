@@ -3,13 +3,15 @@ import urllib
 from urllib.parse import urlparse
 
 from django.utils.translation import gettext
-from insuree.models import Insuree, Gender, Education, Profession, Family,InsureePhoto, Relation
+from insuree.models import Insuree, Gender, Education, Profession, Family, \
+    InsureePhoto, Relation, IdentificationType
 from location.models import Location
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.mapping.patientMapping import RelationshipMapping
+from api_fhir_r4.mapping.patientMapping import RelationshipMapping, EducationLevelMapping, \
+    PatientProfessionMapping, IdentificationTypeMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
 from fhir.resources.patient import Patient, PatientLink, PatientContact
 from fhir.resources.extension import Extension
@@ -34,7 +36,6 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_telecom(fhir_patient, imis_insuree)
         cls.build_fhir_addresses(fhir_patient, imis_insuree)
         cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
-        cls.build_poverty_status(fhir_patient, imis_insuree)
         cls.build_fhir_contact(fhir_patient, imis_insuree)
         cls.build_fhir_photo(fhir_patient, imis_insuree)
         cls.build_fhir_general_practitioner(fhir_patient, imis_insuree)
@@ -77,26 +78,37 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     def build_imis_extentions(cls, imis_insuree, fhir_patient, errors):
         for extension in fhir_patient.extension:
-            if extension.url == "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/isHead":
+            if extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-is-head":
                 imis_insuree.head = extension.valueBoolean
-            elif extension.url == "https://openimis.atlassian.net/wiki/spaces/OP/pages/960495619/locationCode":
-                value = cls.get_location_reference(extension.valueReference.reference)
-                if value:
-                    try:
-                        imis_insuree.current_village = Location.objects.get(uuid=value)
-                    except:
-                        imis_insuree.current_village = None
-                        
-            elif extension.url == "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331788/educationCode":
+
+            elif extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-education-level":
                 try:
-                    imis_insuree.education = Education.objects.get(id=extension.valueCoding.code)
+                    imis_insuree.education = Education.objects.get(id=extension.valueCodeableConcept.coding[0].code)
                 except:
                     imis_insuree.education = None
-            elif extension.url == "https://openimis.atlassian.net/wiki/spaces/OP/pages/960135203/professionCode":
+
+            elif extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-profession":
                 try:
-                    imis_insuree.profession = Profession.objects.get(id=extension.valueCoding.code)
+                    imis_insuree.profession = Profession.objects.get(id=extension.valueCodeableConcept.coding[0].code)
                 except:
                     imis_insuree.profession = None
+
+            elif extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-card-issued":
+                try:
+                    imis_insuree.card_issued = extension.valueBoolean
+                except:
+                    imis_insuree.card_issued = False
+
+            elif extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-identification":
+                try:
+                    for ext in extension.extension:
+                        if ext.url == "number":
+                            imis_insuree.passport = ext.valueString
+                        if ext.url == "type":
+                            imis_insuree.type_of_id = IdentificationType.objects.get(code=ext.valueCodeableConcept.coding[0].code)
+                except:
+                    imis_insuree.passport = None
+                    imis_insuree.type_of_id = None
             else:
                 pass
     
@@ -387,6 +399,15 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
             for address in addresses:
                 if address.type == "physical":
                     imis_insuree.current_address = address.text
+                if address.type == "temp":
+                    for ext in address.extension:
+                        if "StructureDefinition/address-location-reference" in ext.url:
+                            value = cls.get_location_reference(ext.valueReference.reference)
+                            if value:
+                                try:
+                                    imis_insuree.current_village = Location.objects.get(uuid=value)
+                                except:
+                                    imis_insuree.current_village = False
                 elif address.type == "both":
                     imis_insuree.geolocation = address.text
 
@@ -397,49 +418,52 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         def build_extension(fhir_patient, imis_insuree, value):
             extension = Extension.construct()
             if value == "head":
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/isHead"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-is-head"
                 extension.valueBoolean = imis_insuree.head
-                
-            elif value == "family.uuid":
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960069653/group"
-                reference = Reference.construct()
-                identifier = Identifier.construct()
-                identifier.use = 'usual'
-                identifier.type = PatientConverter._family_reference_identifier_type(reference_type)
-                identifier.value = PatientConverter\
-                    ._family_reference_identifier_value(imis_insuree.family, reference_type)
-                reference.identifier = identifier
-                reference.reference = F"Group/{identifier.value}"
-                reference.type = 'Group'
-                extension.valueReference = reference
-                
-            elif value == "validity_from":
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331779/registrationDate"
-                if imis_insuree.validity_from is not None:
-                    extension.valueDateTime = imis_insuree.validity_from.isoformat()
-
-            elif value == "family.location.code":
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960495619/locationCode"
-                if hasattr(imis_insuree, "family") and imis_insuree.family is not None:
-                    if imis_insuree.family.location is not None:
-                        extension.valueReference = LocationConverter\
-                            .build_fhir_resource_reference(imis_insuree.family.location, reference_type=reference_type)
 
             elif value == "education.education":
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960331788/educationCode"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-education-level"
                 if hasattr(imis_insuree, "education") and imis_insuree.education is not None:
-                    extension.valueCoding = Coding.construct()
-                    if imis_insuree.education is not None:
-                        extension.valueCoding.code = str(imis_insuree.education.id)
-                        extension.valueCoding.display = imis_insuree.education.education
+                    display = EducationLevelMapping.education_level[str(imis_insuree.education.id)]
+                    system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-education-level"
+                    extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_insuree.education.id), system=system)
+                    if len(extension.valueCodeableConcept.coding) == 1:
+                        extension.valueCodeableConcept.coding[0].display = display
+
+            elif value == "patient.card.issue":
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-card-issued"
+                extension.valueBoolean = imis_insuree.card_issued
+
+            elif value == "patient.group.reference":
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-group-reference"
+                reference_group = Reference.construct()
+                reference_group.reference = F"Group/{imis_insuree.last_name}-family"
+                extension.valueReference = reference_group
+
+            elif value == "patient.identification":
+                nested_extension = Extension.construct()
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-identification"
+                if hasattr(imis_insuree, "type_of_id") and imis_insuree.type_of_id is not None:
+                    if hasattr(imis_insuree, "passport") and imis_insuree.passport is not None:
+                        # add number extension
+                        nested_extension.url = "number"
+                        nested_extension.valueString = imis_insuree.passport
+                        extension.extension = [nested_extension]
+                        # add identifier extension
+                        nested_extension = Extension.construct()
+                        nested_extension.url = "type"
+                        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-identification-types"
+                        nested_extension.valueCodeableConcept = cls.build_codeable_concept(code=imis_insuree.type_of_id.code, system=system)
+                        extension.extension.append(nested_extension)
 
             else:
-                extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/960135203/professionCode"
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-profession"
                 if hasattr(imis_insuree, "profession") and imis_insuree.profession is not None:
-                    extension.valueCoding = Coding.construct()
-                    if imis_insuree.profession is not None:
-                        extension.valueCoding.code = str(imis_insuree.profession.id)
-                        extension.valueCoding.display = imis_insuree.profession.profession
+                    display = PatientProfessionMapping.patient_profession[str(imis_insuree.profession.id)]
+                    system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-profession"
+                    extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_insuree.profession.id), system=system)
+                    if len(extension.valueCodeableConcept.coding) == 1:
+                        extension.valueCodeableConcept.coding[0].display = display
 
             if type(fhir_patient.extension) is not list:
                 fhir_patient.extension = [extension]
@@ -449,44 +473,27 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
         if imis_insuree.head is not None:
             build_extension(fhir_patient, imis_insuree, "head")
-        if imis_insuree.validity_from is not None:
-            build_extension(fhir_patient, imis_insuree, "validity_from")
-        if hasattr(imis_insuree, "family") and imis_insuree.family is not None and \
-                imis_insuree.family.location is not None:
-            build_extension(fhir_patient, imis_insuree, "family.location.code")
-            build_extension(fhir_patient, imis_insuree, "family.uuid")
         if imis_insuree.education is not None:
             build_extension(fhir_patient, imis_insuree, "education.education")
         if imis_insuree.profession is not None:
             build_extension(fhir_patient, imis_insuree, "profession.profession")
-
-    @classmethod
-    def build_poverty_status(cls, fhir_patient, imis_insuree):
-        poverty_status = cls.build_poverty_status_extension(imis_insuree)
-        if poverty_status.valueBoolean is not None:
-            if type(fhir_patient.extension) is not list:
-                fhir_patient.extension = [poverty_status]
-            else:
-                fhir_patient.extension.append(poverty_status)
-
-    @classmethod
-    def build_poverty_status_extension(cls, imis_insuree):
-        extension = Extension.construct()
-        extension.url = "https://openimis.atlassian.net/wiki/spaces/OP/pages/1556643849/povertyStatus"
-        if hasattr(imis_insuree, "family") and imis_insuree.family is not None:
-            if imis_insuree.family.poverty is not None:
-                extension.valueBoolean = imis_insuree.family.poverty
-        return extension
+        if imis_insuree.card_issued is not None:
+            build_extension(fhir_patient, imis_insuree, "patient.card.issue")
+        if imis_insuree.family is not None:
+            build_extension(fhir_patient, imis_insuree, "patient.group.reference")
+        if imis_insuree.type_of_id is not None and imis_insuree.passport is not None:
+            build_extension(fhir_patient, imis_insuree, "patient.identification")
 
     @classmethod
     def build_fhir_contact(cls, fhir_patient, imis_insuree):
         fhir_contact = PatientContact.construct()
         if imis_insuree.relationship is not None and imis_insuree.family is not None \
                 and imis_insuree.family.head_insuree is not None:
-            system = f"{GeneralConfiguration.get_system_base_url()}ValueSet/patient-contact-relationship"
+            system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-contact-relationship"
             # map to the fhir value from imis one
-            code = RelationshipMapping.relationship[str(imis_insuree.relationship.id)]
-            fhir_contact.relationship = [cls.build_codeable_concept(code=code, system=system)]
+            display = RelationshipMapping.relationship[str(imis_insuree.relationship.id)]
+            fhir_contact.relationship = [cls.build_codeable_concept(code=imis_insuree.relationship.id, system=system)]
+            fhir_contact.relationship[0].coding[0].display = display
             fhir_contact.name = cls.build_fhir_names_for_person(imis_insuree)
             if imis_insuree.phone and imis_insuree.phone != "":
                 telecom = cls.build_fhir_contact_point(imis_insuree.phone, "phone", "home")
