@@ -1,3 +1,5 @@
+from insuree.models import Profession, Education, IdentificationType
+
 
 class RelationshipMapping(object):
 
@@ -16,31 +18,19 @@ class RelationshipMapping(object):
 class EducationLevelMapping(object):
 
     education_level = {
-        "1": "Nursery",
-        "2": "Primary school",
-        "3": "Secondary school",
-        "4": "University",
-        "5": "Postgraduate studies",
-        "6": "PHD",
-        "7": "Other",
+        str(education.id): education.education for education in Education.objects.all()
     }
 
 
 class PatientProfessionMapping(object):
 
     patient_profession = {
-        "1": "Housewife",
-        "2": "Employee",
-        "3": "Self Employee",
-        "4": "Other",
+        str(profession.id): profession.profession for profession in Profession.objects.all()
     }
 
 
 class IdentificationTypeMapping(object):
 
     identification_type = {
-        "D": "Driver's License",
-        "N": "National ID",
-        "P": "Passport",
-        "V": "Voter Card",
+        identification.code: identification.identification_type for identification in IdentificationType.objects.all()
     }
