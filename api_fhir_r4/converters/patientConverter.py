@@ -521,6 +521,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
             parsed = urllib.parse.urlunparse(('http', domain, photo_uri, None, None, None))
             photo.url = parsed
             photo.creation = imis_insuree.photo.date.isoformat()
+            photo.contentType = imis_insuree.photo.filename[imis_insuree.photo.filename.rfind('.') + 1:]
+            photo.title = imis_insuree.photo.filename
             if type(fhir_patient.photo) is not list:
                 fhir_patient.photo = [photo]
             else:
