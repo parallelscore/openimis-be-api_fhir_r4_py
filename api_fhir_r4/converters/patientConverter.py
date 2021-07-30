@@ -128,6 +128,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def createDefaultInsuree(cls, audit_user_id):
         imis_insuree = Insuree()
+        # temporary set uuid as None - this will be generated in service create insuree from that module
+        imis_insuree.uuid = None
         imis_insuree.head = GeneralConfiguration.get_default_value_of_patient_head_attribute()
         imis_insuree.card_issued = GeneralConfiguration.get_default_value_of_patient_card_issued_attribute()
         imis_insuree.validity_from = TimeUtils.now()
@@ -528,26 +530,19 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_imis_photo(cls, imis_insuree, fhir_patient, errors):
-        url = fhir_patient.photo[0].url
-        url = url.split("\\", 2)
-        folder = url[0]
-        filename = url[1]
-        creation = fhir_patient.photo[0].creation
-        if not cls.valid_condition(creation is None, gettext('Missing patient `photo url` attribute'), errors):
-            pass
-        if not cls.valid_condition(folder is None, gettext('Missing patient `photo folder` attribute'), errors):
-            # imis_insuree.photo.folder = folder
-            pass
-        if not cls.valid_condition(filename is None, gettext('Missing patient `photo filename` attribute'), errors):
-            # imis_insuree.photo.filename = filename
-            pass
+        # build insuree photo for insuree to use in service
+        # update_or_create_insuree
+        insuree_photo = {}
+        # here assign data base64 encoded photo
+        photo = fhir_patient.photo[0].data
+        date = fhir_patient.photo[0].creation
+        # assign the insuree photo to use this entity in service
         obj, created = \
             InsureePhoto.objects.get_or_create(
                 chf_id=imis_insuree.chf_id,
                 defaults={
-                    "date": TimeUtils.str_to_date(creation),
-                    "folder": folder,
-                    "filename": filename,
+                    "photo": photo,
+                    "date": date,
                     "audit_user_id": -1,
                     "officer_id": 3
                 }

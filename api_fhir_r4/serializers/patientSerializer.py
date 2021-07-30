@@ -1,6 +1,8 @@
 import copy
 
-from insuree.models import Insuree, Gender, Education, Profession,Family
+from insuree.apps import InsureeConfig
+from insuree.models import Insuree, Gender, Education, Profession, Family, InsureePhoto
+from insuree.gql_mutations import update_or_create_insuree, create_file
 
 from api_fhir_r4.converters import PatientConverter
 from api_fhir_r4.exceptions import FHIRException
@@ -11,15 +13,20 @@ class PatientSerializer(BaseFHIRSerializer):
     fhirConverter = PatientConverter()
 
     def create(self, validated_data):
+        request = self.context.get("request")
+        user = request.user
         chf_id = validated_data.get('chf_id')
         if Insuree.objects.filter(chf_id=chf_id).count() > 0:
             raise FHIRException('Exists patient with following chfid `{}`'.format(chf_id))
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
-        obj = Insuree.objects.create(**copied_data)
+        obj = update_or_create_insuree(copied_data, user)
+        # create photo as a file to specified configured path
+        if InsureeConfig.insuree_photos_root_path:
+            create_file(date=obj.photo.date, insuree_id=obj.id, photo_bin=obj.photo.photo)
         if copied_data['head']:
-            obj.family=Family.objects.create(head_insuree=obj,audit_user_id=copied_data['audit_user_id'])
-        obj.save()
+            obj.family = Family.objects.create(head_insuree=obj, audit_user_id=copied_data['audit_user_id'])
+            obj.save()
         return obj
 
     def update(self, instance, validated_data):
