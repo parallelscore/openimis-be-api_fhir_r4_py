@@ -348,7 +348,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                     addresses.append(family_address)
 
         # insuree slice
-        if imis_insuree.current_address is not None:
+        if imis_insuree.current_address:
             current_address = cls.build_fhir_address(imis_insuree.current_address, "temp", "physical")
             if imis_insuree.current_village:
                 current_address.state = imis_insuree.current_village.parent.parent.parent.name
