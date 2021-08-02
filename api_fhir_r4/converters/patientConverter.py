@@ -247,17 +247,18 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_imis_relationship(cls, imis_insuree,fhir_patient):
         if fhir_patient.contact:
-            if fhir_patient.relationship:
-                relationship_name = None
-                for relationship in fhir_patient.contact.relationship:
-                    for coding in relationship.coding:
-                        if "CodeSystem/patient-contact-relationship" in coding.system:
-                            relationship_name = coding.display
-                try:
-                    relation = Relation.objects.get(relation=relationship_name)
-                    imis_insuree.relationship = relation
-                except:
-                    pass
+            for contact in fhir_patient.contact:
+                if contact.relationship:
+                    relationship_name = None
+                    for relationship in contact.relationship:
+                        for coding in relationship.coding:
+                            if "CodeSystem/patient-contact-relationship" in coding.system:
+                                relationship_name = coding.display
+                    try:
+                        relation = Relation.objects.get(relation=relationship_name)
+                        imis_insuree.relationship = relation
+                    except:
+                        pass
     
     @classmethod
     def build_imis_birth_date(cls, imis_insuree, fhir_patient, errors):
