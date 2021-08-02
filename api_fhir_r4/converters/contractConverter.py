@@ -49,6 +49,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_imis_insurees(fhir_contract, imis_policy, errors)
         cls.check_errors(errors)
         return imis_policy
+
     @classmethod
     def get_reference_obj_uuid(cls, imis_policy: Policy):
         return imis_policy.uuid

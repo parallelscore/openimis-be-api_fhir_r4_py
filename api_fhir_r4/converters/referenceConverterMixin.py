@@ -1,9 +1,13 @@
 import inspect
+import logging
 
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from fhir.resources.reference import Reference
 
 from api_fhir_r4.configurations import R4IdentifierConfig
+
+
+logger = logging.getLogger(__name__)
 
 
 class ReferenceConverterMixin(object):
@@ -100,4 +104,9 @@ class ReferenceConverterMixin(object):
         else:
             raise NotImplementedError(f"Unhandled reference type {reference_type}")
 
+        if len(identifiers) == 0:
+            logger.error(
+                f"Failed to build reference of type {reference_type} for resource "
+                f"of type {type(cls)}, using default identifier."
+            )
         return identifiers[0]
