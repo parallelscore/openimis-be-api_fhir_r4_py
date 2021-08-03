@@ -386,7 +386,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
                 current_address.city = imis_insuree.current_village.name
 
-            if current_address is not None:
+            if imis_insuree.current_address is not None:
                 if type(addresses) is not list:
                     addresses = [current_address]
                 else:
