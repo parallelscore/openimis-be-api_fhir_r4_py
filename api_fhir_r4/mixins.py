@@ -47,8 +47,6 @@ class ContainedContentSerializerMixin:
     def _create_contained_obj_dict(self, obj):
         contained_resources = self.create_contained_resource_fhir_implementation(obj)
         dict_list = [resource.dict() for resource in contained_resources]
-        for contained_resource in dict_list:
-            contained_resource['id'] = F"{contained_resource['resourceType']}/{contained_resource['id']}"
         return dict_list
 
     def create_contained_resource_fhir_implementation(self, obj) -> List[FHIRAbstractModel]:
