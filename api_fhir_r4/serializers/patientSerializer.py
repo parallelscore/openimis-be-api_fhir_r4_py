@@ -30,17 +30,14 @@ class PatientSerializer(BaseFHIRSerializer):
         return obj
 
     def update(self, instance, validated_data):
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.other_names = validated_data.get('other_names', instance.other_names)
-        instance.passport = validated_data.get('passport', instance.passport)
-        instance.dob = validated_data.get('dob', instance.dob)
-        gender_code = validated_data.get('gender_id', instance.gender.code)
-        instance.gender = Gender.objects.get(pk=gender_code)
-        instance.marital = validated_data.get('marital', instance.marital)
-        instance.phone = validated_data.get('phone', instance.phone)
-        instance.email = validated_data.get('email', instance.email)
-        instance.current_address = validated_data.get('current_address', instance.current_address)
-        instance.geolocation = validated_data.get('geolocation', instance.geolocation)
-        instance.audit_user_id = self.get_audit_user_id()
-        instance.save()
+        request = self.context.get("request")
+        user = request.user
+        chf_id = validated_data.get('chf_id')
+        if Insuree.objects.filter(chf_id=chf_id).count() == 0:
+            raise FHIRException('No patients with following chfid `{}`'.format(chf_id))
+        insuree = Insuree.objects.get(chf_id=chf_id, validity_to__isnull=True)
+        validated_data["id"] = insuree.id
+        validated_data["uuid"] = insuree.uuid
+        del validated_data['_state']
+        instance = update_or_create_insuree(validated_data, user)
         return instance
