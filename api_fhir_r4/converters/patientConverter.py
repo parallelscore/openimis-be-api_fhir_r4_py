@@ -448,8 +448,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
             elif value == "patient.identification":
                 nested_extension = Extension.construct()
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-identification"
-                if hasattr(imis_insuree, "type_of_id") and imis_insuree.type_of_id is not None:
-                    if hasattr(imis_insuree, "passport") and imis_insuree.passport is not None:
+                if hasattr(imis_insuree, "type_of_id") and imis_insuree.type_of_id:
+                    if hasattr(imis_insuree, "passport") and imis_insuree.passport:
                         # add number extension
                         nested_extension.url = "number"
                         nested_extension.valueString = imis_insuree.passport
