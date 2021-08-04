@@ -40,12 +40,12 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def get_reference_obj_code(cls, imis_policy: Policy):
-        # Policy doesn't have cove representation, uuid is used instead
+        # Policy doesn't have code representation, uuid is used instead
         return imis_policy.uuid
 
     @classmethod
     def build_fhir_code_identifier(cls, identifiers, imis_object):
-        ## Policy doesn't include code
+        # Policy doesn't have code representation, uuid is used instead
         cls.build_fhir_uuid_identifier(identifiers, imis_object)
 
     @classmethod

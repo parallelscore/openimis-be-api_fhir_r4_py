@@ -106,7 +106,6 @@ class ReferenceConverterMixin(object):
 
         if len(identifiers) == 0:
             logger.error(
-                f"Failed to build reference of type {reference_type} for resource "
-                f"of type {type(cls)}, using default identifier."
+                f"Failed to build reference of type {reference_type} for resource of type {type(cls)}."
             )
         return identifiers[0]
