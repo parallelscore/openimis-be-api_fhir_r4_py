@@ -174,14 +174,14 @@ class ClaimResponseConverter(BaseFHIRConverter):
         approved = cls.build_fhir_total_approved(imis_claim)
         claimed = cls.build_fhir_total_claimed(imis_claim)
 
-        if imis_claim.status == 16 and approved:
+        if imis_claim.status == Claim.STATUS_VALUATED and approved:
             if fhir_claim_response.total is not list:
                 fhir_claim_response.total = [claimed, approved]
             else:
                 fhir_claim_response.total.append(claimed)
                 fhir_claim_response.total.append(approved)
 
-        if imis_claim.status == 16 and not approved:
+        if imis_claim.status == Claim.STATUS_VALUATED and not approved:
             if fhir_claim_response.total is not list:
                 fhir_claim_response.total = [claimed]
             else:
@@ -519,20 +519,20 @@ class ClaimResponseConverter(BaseFHIRConverter):
         adjudications = []
 
         if rejected_reason == 0 and imis_claim.status != 1:
-            if imis_claim.status >= 2:
-                adjudications.append(build_asked_adjudication(2, price_asked))
+            if imis_claim.status >= Claim.STATUS_ENTERED:
+                adjudications.append(build_asked_adjudication(Claim.STATUS_ENTERED, price_asked))
 
-            if imis_claim.status >= 4:
+            if imis_claim.status >= Claim.STATUS_CHECKED:
                 price_approved = cls.__build_item_price(item.price_approved)
-                adjudications.append(build_processed_adjudication(4, price_approved))
+                adjudications.append(build_processed_adjudication(Claim.STATUS_CHECKED, price_approved))
 
-            if imis_claim.status >= 8:
+            if imis_claim.status >= Claim.STATUS_PROCESSED:
                 price_adjusted = cls.__build_item_price(item.price_adjusted)
-                adjudications.append(build_processed_adjudication(8, price_adjusted))
+                adjudications.append(build_processed_adjudication(Claim.STATUS_PROCESSED, price_adjusted))
 
-            if imis_claim.status == 16:
+            if imis_claim.status == Claim.STATUS_VALUATED:
                 price_valuated = cls.__build_item_price(item.price_valuated)
-                adjudications.append(build_processed_adjudication(16, price_valuated))
+                adjudications.append(build_processed_adjudication(Claim.STATUS_VALUATED, price_valuated))
         else:
             adjudications.append(build_asked_adjudication(1, price_asked))
 
