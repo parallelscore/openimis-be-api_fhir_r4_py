@@ -30,13 +30,13 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         return fhir_family
 
     @classmethod
-    def to_imis_obj(cls,fhir_family, audit_user_id):
+    def to_imis_obj(cls, fhir_family, audit_user_id):
         errors = []
         fhir_family = Group(**fhir_family)
         imis_family = Family()
         imis_family.audit_user_id = audit_user_id
-        cls.build_imis_location(imis_family,fhir_family)
-        cls.build_imis_head(imis_family,fhir_family,errors)
+        cls.build_imis_location(imis_family, fhir_family)
+        cls.build_imis_head(imis_family, fhir_family, errors)
         cls.check_errors(errors)
         return imis_family
 
@@ -83,7 +83,21 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     def build_fhir_identifiers(cls, fhir_family, imis_family):
         identifiers = []
         cls.build_fhir_uuid_identifier(identifiers, imis_family)
+        cls.build_fhir_code_identifier(identifiers, imis_family)
         fhir_family.identifier = identifiers
+
+    @classmethod
+    def build_fhir_code_identifier(cls, identifiers, imis_family):
+        cls._build_family_head_identifier(identifiers, imis_family)
+
+    @classmethod
+    def _build_family_head_identifier(cls, identifiers, imis_family):
+        if imis_family.head_insuree:
+            head_id = cls.build_fhir_identifier(
+                imis_family.head_insuree.chf_id,
+                R4IdentifierConfig.get_fhir_identifier_type_system(),
+                R4IdentifierConfig.get_fhir_chfid_type_code())
+            identifiers.append(head_id)
 
     @classmethod
     def build_imis_identifiers(cls, imis_family,identifier):

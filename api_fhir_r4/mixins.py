@@ -16,6 +16,7 @@ from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
+
 class ContainedContentSerializerMixin:
     """
     Mixin for extending BaseFHIRSerializer. The creation of a FHIR representation through to_representation is extended
@@ -79,6 +80,8 @@ class ContainedContentSerializerMixin:
 
 
 class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin):
+    lookup_field = 'identifier'
+
     @property
     @abstractmethod
     def retrievers(self) -> List[GenericModelRetriever]:
@@ -94,7 +97,7 @@ class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin):
         for retriever in self.retrievers:
             if retriever.identifier_validator(identifier):
                 try:
-                    queryset = self.get_queryset().filter(validity_to__isnull=True)
+                    queryset = retriever.retriever_additional_queryset_filtering(self.get_queryset())
                     resource = retriever.get_model_object(queryset, identifier)
 
                     # May raise a permission denied

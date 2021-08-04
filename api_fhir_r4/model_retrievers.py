@@ -24,11 +24,15 @@ class GenericModelRetriever(ABC):
     ]:
         pass
 
-    #ReferenceConverterMixin.UUID_REFERENCE_TYPE
     @classmethod
     @abstractmethod
     def identifier_validator(cls, identifier_value) -> bool:
         pass
+
+    @classmethod
+    def retriever_additional_queryset_filtering(cls, queryset):
+        # By default no additional changes are made in queryset
+        return queryset
 
     @classmethod
     def get_model_object(cls, queryset: QuerySet, identifier_value) -> Model:
@@ -52,6 +56,15 @@ class UUIDIdentifierModelRetriever(GenericModelRetriever):
             return False
 
 
+class DatabaseIdentifierModelRetriever(GenericModelRetriever):
+    identifier_field = 'id'
+    serializer_reference_type = ReferenceConverterMixin.DB_ID_REFERENCE_TYPE
+
+    @classmethod
+    def identifier_validator(cls, identifier_value):
+        return isinstance(identifier_value, int) or identifier_value.isdigit()
+
+
 class CodeIdentifierModelRetriever(GenericModelRetriever):
     identifier_field = 'code'
     serializer_reference_type = ReferenceConverterMixin.CODE_REFERENCE_TYPE
@@ -60,14 +73,25 @@ class CodeIdentifierModelRetriever(GenericModelRetriever):
     def identifier_validator(cls, identifier_value):
         return isinstance(identifier_value, str)
 
+    @classmethod
+    def add_retriever_queryset_filtering(cls, queryset):
+        # By default no additional changes are made in queryset
+        return queryset.filter(validity_to__is_null=True)
 
-class CHFIdentifierModelRetriever(GenericModelRetriever):
+
+class CHFIdentifierModelRetriever(CodeIdentifierModelRetriever):
     identifier_field = 'chf_id'
-    serializer_reference_type = ReferenceConverterMixin.CODE_REFERENCE_TYPE
 
     @classmethod
     def identifier_validator(cls, identifier_value):
         # From model specification
         return isinstance(identifier_value, str) and len(identifier_value) <= 12
 
+    @classmethod
+    def get_model_object(cls, queryset: QuerySet, identifier_value) -> Model:
+        return queryset.get(**{cls.identifier_field: identifier_value, 'validity_to__isnull': True})
+
+
+class GroupIdentifierModelRetriever(CHFIdentifierModelRetriever):
+    identifier_field = 'head_insuree_id__chf_id'
 

@@ -1,13 +1,15 @@
 from location.models import HealthFacility, Location
 from rest_framework import viewsets
 
+from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin
+from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiHFPermissions
 from api_fhir_r4.serializers import LocationSerializer, LocationSiteSerializer
 from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
 
 
-class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
-    lookup_field = 'uuid'
+class LocationViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, viewsets.ModelViewSet):
+    retrievers = [UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever]
     serializer_class = LocationSerializer
     permission_classes = (FHIRApiHFPermissions,)
 
@@ -16,7 +18,7 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
         physical_type = request.GET.get('physicalType')
         queryset = self.get_queryset(physical_type)
         if identifier:
-            queryset = queryset.filter(code=identifier)
+            return self.retrieve(request, *args, **{**kwargs, 'identifier': identifier})
         else:
             queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
         if physical_type and physical_type == 'si':
@@ -31,7 +33,7 @@ class LocationViewSet(BaseFHIRView, viewsets.ModelViewSet):
         if physical_type and physical_type == 'si':
             self.serializer_class=LocationSiteSerializer
             self.queryset = self.get_queryset('si')
-        response = viewsets.ModelViewSet.retrieve(self, *args, **kwargs)
+        response = super().retrieve(self, *args, **kwargs)
         return response
 
     def get_queryset(self, physicalType='area'):

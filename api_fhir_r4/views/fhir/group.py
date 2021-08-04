@@ -1,13 +1,15 @@
 from rest_framework import viewsets
 from insuree.models import Family
 
+from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin
+from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, GroupIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiGroupPermissions
 from api_fhir_r4.serializers import GroupSerializer
 from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
 
 
-class GroupViewSet(BaseFHIRView, viewsets.ModelViewSet):
-    lookup_field = 'uuid'
+class GroupViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, viewsets.ModelViewSet):
+    retrievers = [UUIDIdentifierModelRetriever, GroupIdentifierModelRetriever]
     serializer_class = GroupSerializer
     permission_classes = (FHIRApiGroupPermissions,)
 
@@ -15,7 +17,7 @@ class GroupViewSet(BaseFHIRView, viewsets.ModelViewSet):
         queryset = self.get_queryset()
         identifier = request.GET.get("identifier")
         if identifier:
-            queryset = queryset.filter(head_insuree_id__chf_id=identifier)
+            return self.retrieve(request, *args, **{**kwargs, 'identifier': identifier})
         else:
             queryset = queryset.filter(validity_to__isnull=True)
         serializer = GroupSerializer(self.paginate_queryset(queryset), many=True)

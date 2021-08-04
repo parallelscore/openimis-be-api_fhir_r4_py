@@ -8,26 +8,26 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from api_fhir_r4.converters import OperationOutcomeConverter
+from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin
+from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, CHFIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiInsureePermissions
 from api_fhir_r4.serializers import PatientSerializer
 from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
 
 
-class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
-    lookup_field = 'uuid'
+class InsureeViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin,  viewsets.ModelViewSet):
+    retrievers = [UUIDIdentifierModelRetriever, CHFIdentifierModelRetriever]
     serializer_class = PatientSerializer
     permission_classes = (FHIRApiInsureePermissions,)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()\
-            .select_related('gender')\
-            .select_related('photo')\
-            .select_related('family__location')
+        queryset = self.get_queryset()
         ref_date_str = request.GET.get('refDate')
         claim_date = request.GET.get('claimDateFrom')
         identifier = request.GET.get("identifier")
+
         if identifier:
-            queryset = queryset.filter(chf_id=identifier)
+            return self.retrieve(request, *args, **{**kwargs, 'identifier': identifier})
         else:
             queryset = queryset.filter(validity_to__isnull=True).order_by('validity_from')
             if ref_date_str is not None:
@@ -55,4 +55,7 @@ class InsureeViewSet(BaseFHIRView, viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
     def get_queryset(self):
-        return Insuree.get_queryset(None, self.request.user)
+        return Insuree.get_queryset(None, self.request.user)\
+            .select_related('gender')\
+            .select_related('photo')\
+            .select_related('family__location')
