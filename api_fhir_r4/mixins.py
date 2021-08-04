@@ -1,11 +1,9 @@
 import logging
-import uuid
 from abc import abstractmethod
 from typing import List
 
-from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import Http404, HttpResponseNotFound
+from django.http import Http404
 
 from rest_framework import mixins
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
