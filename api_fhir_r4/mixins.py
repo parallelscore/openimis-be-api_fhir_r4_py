@@ -5,7 +5,7 @@ from typing import List
 
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import Http404
+from django.http import Http404, HttpResponseNotFound
 
 from rest_framework import mixins
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
@@ -110,4 +110,4 @@ class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin):
                     )
 
         # Raise Http404 if resource couldn't be fetched with any of the retrievers
-        raise Http404
+        raise Http404(f"Resource for identifier {identifier} not found")
