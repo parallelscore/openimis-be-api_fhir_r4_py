@@ -82,6 +82,18 @@ class BaseFHIRConverter(ABC):
         return codeable_concept
 
     @classmethod
+    def build_codeable_concept_from_coding(cls, coding, text=None):
+        codeable_concept = CodeableConcept.construct()
+
+        if coding:
+            codeable_concept.coding = [coding]
+
+        if text:
+            codeable_concept.text = text
+
+        return codeable_concept
+
+    @classmethod
     def get_first_coding_from_codeable_concept(cls, codeable_concept):
         result = Coding.construct()
         if codeable_concept:
@@ -133,7 +145,6 @@ class BaseFHIRConverter(ABC):
     @classmethod
     def build_fhir_identifier(cls, value, type_system, type_code):
         identifier = Identifier.construct()
-        identifier.use = "usual"
         type = cls.build_codeable_concept(type_code, type_system)
         identifier.type = type
         # OE0-18 - change into string type always
@@ -149,6 +160,14 @@ class BaseFHIRConverter(ABC):
                 value = identifier.value
                 break
         return value
+
+    @classmethod
+    def get_fhir_extension_by_url(cls, extensions, url):
+        return next(iter([extension for extension in extensions if extension.url == url]), None)
+
+    @classmethod
+    def get_use_context_by_code(cls, use_context, code):
+        return next(iter([entry for entry in use_context if entry.code.code == code]), None)
 
     @classmethod
     def build_fhir_contact_point(cls, value, contact_point_system, contact_point_use):
