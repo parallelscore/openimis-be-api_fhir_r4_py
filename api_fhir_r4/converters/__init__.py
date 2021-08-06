@@ -181,7 +181,8 @@ class BaseFHIRConverter(ABC):
     @classmethod
     def build_fhir_address(cls, value, use, type):
         current_address = Address.construct()
-        current_address.text = value
+        if value:
+            current_address.text = value
         current_address.use = use
         current_address.type = type
         return current_address

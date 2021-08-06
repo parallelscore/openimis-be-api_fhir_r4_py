@@ -97,6 +97,10 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return imis_claim.uuid
 
     @classmethod
+    def get_reference_obj_code(cls, imis_claim):
+        return imis_claim.code
+
+    @classmethod
     def get_fhir_resource_type(cls):
         return FHIRClaim
 

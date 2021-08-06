@@ -38,7 +38,7 @@ class OperationOutcomeConverter(BaseFHIRConverter):
         elif isinstance(obj, ClaimSubmitError):
             result = cls.build_for_fhir_claim_submit_error(obj)
         elif isinstance(obj, Http404):
-            result = cls.build_for_404()
+            result = cls.build_for_404(obj)
         elif isinstance(obj, APIException):
             result = cls.build_for_key_api_exception(obj)
         elif isinstance(obj, KeyError):
@@ -57,10 +57,11 @@ class OperationOutcomeConverter(BaseFHIRConverter):
         return cls.build_outcome(severity, code, details_text)
 
     @classmethod
-    def build_for_404(cls):
+    def build_for_404(cls, obj):
         severity = "error"
         code = R4IssueTypeConfig.get_fhir_code_for_not_found()
-        return cls.build_outcome(severity, code)
+        details_text = str(obj) or None  # If error message is passed to 404 exception
+        return cls.build_outcome(severity, code, details_text)
 
     @classmethod
     def build_for_400_bad_request(cls, details_text=None):
@@ -114,8 +115,9 @@ class OperationOutcomeConverter(BaseFHIRConverter):
         issue_data["severity"] = severity
         issue_data["code"] = code
         if details_text:
-            #if type(details_text) is str:
-            issue_data["details"] = cls.build_simple_codeable_concept(text=details_text)
+            if type(details_text) != str:
+                details_text = str(details_text.__dict__)
+            issue_data["details"] = cls.build_simple_codeable_concept(text=str(details_text))
         issue = OperationOutcomeIssue(**issue_data)
         if type(outcome.issue) is not list:
            outcome.issue = [issue]
