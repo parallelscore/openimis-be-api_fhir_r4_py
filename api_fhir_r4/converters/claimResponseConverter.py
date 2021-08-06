@@ -174,42 +174,25 @@ class ClaimResponseConverter(BaseFHIRConverter):
         approved = cls.build_fhir_total_approved(imis_claim)
         claimed = cls.build_fhir_total_claimed(imis_claim)
 
-        # if valuated.amount.value is None and reinsured.amount.value is None and \
-        #         approved.amount.value is None and claimed.amount.value is not None:
-        #     fhir_claim_response.total = [claimed]
-        #
-        # elif valuated.amount.value is None and reinsured.amount.value is None and \
-        #         approved.amount.value is not None and claimed.amount.value is not None:
-        #     fhir_claim_response.total = [approved, claimed]
-        #
-        # elif valuated.amount.value is None and reinsured.amount.value is not None and \
-        #         approved.amount.value is not None and claimed.amount.value is not None:
-        #     fhir_claim_response.total = [reinsured, approved, claimed]
-        #
-        # else:
-        #     fhir_claim_response.total = [valuated, reinsured, approved, claimed]
-
-        # if not claimed and approved - do not set 'total'
-        if imis_claim.status == 16 and approved is not None:
-            if (fhir_claim_response.total) is not list:
+        if imis_claim.status == Claim.STATUS_VALUATED and approved:
+            if fhir_claim_response.total is not list:
                 fhir_claim_response.total = [claimed, approved]
             else:
                 fhir_claim_response.total.append(claimed)
                 fhir_claim_response.total.append(approved)
-        if imis_claim.status == 16 and approved is None:
-            if (fhir_claim_response.total) is not list:
+
+        if imis_claim.status == Claim.STATUS_VALUATED and not approved:
+            if fhir_claim_response.total is not list:
                 fhir_claim_response.total = [claimed]
             else:
                 fhir_claim_response.total.append(claimed)
 
     @classmethod
     def build_fhir_total_valuated(cls, imis_claim):
-        fhir_total = ClaimResponseTotal.construct()
-        money = Money.construct()
-        fhir_total.amount = money
-
-        if imis_claim.valuated is not None:
-
+        if imis_claim.valuated:
+            fhir_total = ClaimResponseTotal.construct()
+            money = Money.construct()
+            fhir_total.amount = money
             fhir_total.category = CodeableConcept.construct()
             coding = Coding.construct()
             coding.code = "V"
@@ -223,16 +206,16 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.amount.value = imis_claim.valuated
             if hasattr(core, 'currency'):
                 fhir_total.amount.currency = core.currency
-
-        return fhir_total
+            return fhir_total
+        else:
+            return None
 
     @classmethod
     def build_fhir_total_reinsured(cls, imis_claim):
-        fhir_total = ClaimResponseTotal.construct()
-        money = Money.construct()
-        fhir_total.amount = money
-
-        if imis_claim.reinsured is not None:
+        if imis_claim.reinsured:
+            fhir_total = ClaimResponseTotal.construct()
+            money = Money.construct()
+            fhir_total.amount = money
             fhir_total.category = CodeableConcept.construct()
             coding = Coding.construct()
             coding.code = "R"
@@ -247,17 +230,16 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.amount.value = imis_claim.reinsured
             if hasattr(core, 'currency'):
                 fhir_total.amount.currency = core.currency
-
-        return fhir_total
+            return fhir_total
+        else:
+            return None
 
     @classmethod
     def build_fhir_total_approved(cls, imis_claim):
-        fhir_total = ClaimResponseTotal.construct()
-        money = Money.construct()
-        fhir_total.amount = money
-
-        if imis_claim.approved is not None:
-
+        if imis_claim.approved:
+            fhir_total = ClaimResponseTotal.construct()
+            money = Money.construct()
+            fhir_total.amount = money
             fhir_total.category = CodeableConcept.construct()
             coding = Coding.construct()
             coding.code = "benefit"
@@ -273,15 +255,16 @@ class ClaimResponseConverter(BaseFHIRConverter):
             if hasattr(core, 'currency'):
                 fhir_total.amount.currency = core.currency
 
-        return fhir_total
+            return fhir_total
+        else:
+            return None
 
     @classmethod
     def build_fhir_total_claimed(cls, imis_claim):
-        fhir_total = ClaimResponseTotal.construct()
-        money = Money.construct()
-        fhir_total.amount = money
-
-        if imis_claim.claimed is not None:
+        if imis_claim.claimed:
+            fhir_total = ClaimResponseTotal.construct()
+            money = Money.construct()
+            fhir_total.amount = money
 
             fhir_total.category = CodeableConcept.construct()
             coding = Coding.construct()
@@ -297,8 +280,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
             fhir_total.amount.value = imis_claim.claimed
             if hasattr(core, 'currency'):
                 fhir_total.amount.currency = core.currency
-
-        return fhir_total
+            return fhir_total
+        else:
+            return None
 
     @classmethod
     def build_fhir_communication_request_reference(cls, fhir_claim_response, imis_claim, reference_type):
@@ -535,20 +519,20 @@ class ClaimResponseConverter(BaseFHIRConverter):
         adjudications = []
 
         if rejected_reason == 0 and imis_claim.status != 1:
-            if imis_claim.status >= 2:
-                adjudications.append(build_asked_adjudication(2, price_asked))
+            if imis_claim.status >= Claim.STATUS_ENTERED:
+                adjudications.append(build_asked_adjudication(Claim.STATUS_ENTERED, price_asked))
 
-            if imis_claim.status >= 4:
+            if imis_claim.status >= Claim.STATUS_CHECKED:
                 price_approved = cls.__build_item_price(item.price_approved)
-                adjudications.append(build_processed_adjudication(4, price_approved))
+                adjudications.append(build_processed_adjudication(Claim.STATUS_CHECKED, price_approved))
 
-            if imis_claim.status >= 8:
+            if imis_claim.status >= Claim.STATUS_PROCESSED:
                 price_adjusted = cls.__build_item_price(item.price_adjusted)
-                adjudications.append(build_processed_adjudication(8, price_adjusted))
+                adjudications.append(build_processed_adjudication(Claim.STATUS_PROCESSED, price_adjusted))
 
-            if imis_claim.status == 16:
+            if imis_claim.status == Claim.STATUS_VALUATED:
                 price_valuated = cls.__build_item_price(item.price_valuated)
-                adjudications.append(build_processed_adjudication(16, price_valuated))
+                adjudications.append(build_processed_adjudication(Claim.STATUS_VALUATED, price_valuated))
         else:
             adjudications.append(build_asked_adjudication(1, price_asked))
 
@@ -619,8 +603,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
         result = None
         if string_value:
             note = ClaimResponseProcessNote.construct()
-            note.number = FhirUtils.get_next_array_sequential_id(fhir_claim_response.processNote)
             note.text = string_value
+            note.number = FhirUtils.get_next_array_sequential_id(fhir_claim_response.processNote)
             if fhir_claim_response.processNote is not list:
                 fhir_claim_response.processNote = [note]
             else:
