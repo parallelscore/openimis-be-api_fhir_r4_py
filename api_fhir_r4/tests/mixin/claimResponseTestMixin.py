@@ -142,7 +142,7 @@ class ClaimResponseTestMixin(GenericTestMixin):
         fhir_error.code = ClaimResponseConverter.build_codeable_concept(self._TEST_REJECTION_REASON)
         fhir_claim_response.error = [fhir_error]
         # This is an IMIS object that is converted to FHIR
-        feedback = Feedback
+        feedback = Feedback()
         feedback.id = self._TEST_FEEDBACK_ID
         feedback.uuid = self._TEST_FEEDBACK_UUID
         fhir_claim_response.communicationRequest = \
