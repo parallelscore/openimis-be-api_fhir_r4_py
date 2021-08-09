@@ -5,7 +5,7 @@ from django.test import TestCase
 from unittest import mock
 
 from api_fhir_r4.converters import ContainedResourceConverter
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 class ContainedResourceConverterTestCase(TestCase):
@@ -16,7 +16,7 @@ class ContainedResourceConverterTestCase(TestCase):
     def test_convert_from_source_single_component(self, claim_mock, insuree_mock, insuree_converter_mock):
         # Arrange
         test_attribute = 'insuree'
-        test_fhir_object = FHIRBaseObject()
+        test_fhir_object = FHIRAbstractModel()
 
         #Act
         convert_result = self.__base_extract_conversion(claim_mock, insuree_mock, insuree_converter_mock,
@@ -35,7 +35,7 @@ class ContainedResourceConverterTestCase(TestCase):
     def test_convert_from_source_many_components(self, claim_mock, insuree_mock, insuree_converter_mock):
         # Arrange
         test_attribute = 'insuree'
-        test_fhir_object = FHIRBaseObject()
+        test_fhir_object = FHIRAbstractModel()
 
         # Act
         convert_result = self.__base_extract_conversion(claim_mock, [insuree_mock]*3, insuree_converter_mock,

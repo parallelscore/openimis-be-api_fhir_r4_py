@@ -1,72 +1,141 @@
 {
-  "resourceType": "Patient",
-  "address": [
-    {
-      "text": "TEST_ADDRESS",
-      "type": "physical",
-      "use": "home"
-    },
-    {
-      "text": "TEST_GEOLOCATION",
-      "type": "both",
-      "use": "home"
-    }
-  ],
-  "birthDate": "1990-03-24T00:00:00",
-  "gender": "male",
-  "identifier": [
-    {
-      "type": {
-        "coding": [
-          {
-            "code": "SB",
-            "system": "https://hl7.org/fhir/valueset-identifier-type.html"
-          }
-        ]
-      },
-      "use": "usual",
-      "value": "TEST_CHF_ID"
-    },
-    {
-      "type": {
-        "coding": [
-          {
-            "code": "PPN",
-            "system": "https://hl7.org/fhir/valueset-identifier-type.html"
-          }
-        ]
-      },
-      "use": "usual",
-      "value": "TEST_PASSPORT"
-    }
-  ],
-  "maritalStatus": {
-    "coding": [
-      {
-        "code": "D",
-        "system": "http://hl7.org/fhir/valueset-marital-status.html"
+    "resourceType": "Patient",
+    "address": [
+        {
+            "extension": [
+                {
+                    "url": "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-municipality",
+                    "valueString": "Actoloby"
+                },
+                {
+                    "url": "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference",
+                    "valueReference": {
+                        "reference": "Location/Octo-village"
+                    }
+                }
+            ],
+            "use": "temp",
+            "type": "physical",
+            "text": "Test Street 7th TownCity",
+            "city": "Octo",
+            "district": "Jambero",
+            "state": "Ultha"
+        }
+    ],
+    "extension": [
+        {
+            "url": "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/patient-is-head",
+            "valueBoolean": false
+        },
+        {
+            "url": "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/patient-profession",
+            "valueCodeableConcept": {
+                "coding": [
+                    {
+                        "system": "https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/patient-profession",
+                        "code": "4",
+                        "display": "Others"
+                    }
+                ]
+            }
+        },
+        {
+            "url": "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/patient-card-issued",
+            "valueBoolean": false
+        },
+        {
+            "url": "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/patient-group-reference",
+            "valueReference": {
+                "reference": "Group/Manth-family"
+            }
+        },
+        {
+          "extension": [
+              {
+                  "url": "number",
+                  "valueString": "PassportB1"
+              },
+              {
+                  "url": "type",
+                  "valueCodeableConcept": {
+                      "coding": [
+                          {
+                              "system": "https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/patient-identification-types",
+                              "code": "P"
+                          }
+                      ]
+                  }
+              }
+          ],
+          "url": "https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/patient-identification"
       }
-    ]
-  },
-  "name": [
-    {
-      "family": "TEST_LAST_NAME",
-      "given": [
-        "TEST_OTHER_NAME"
-      ],
-      "use": "usual"
-    }
-  ],
-  "telecom": [
-    {
-      "system": "phone",
-      "use": "home",
-      "value": "813-996-476"
+    ],
+    "birthDate": "1990-03-24",
+    "gender": "male",
+    "identifier": [
+      {
+        "type": {
+          "coding": [
+            {
+              "code": "SB",
+              "system": "https://hl7.org/fhir/valueset-identifier-type.html"
+            }
+          ]
+        },
+        "use": "usual",
+        "value": "CHF_TEST_ID"
+      }
+    ],
+    "maritalStatus": {
+      "coding": [
+        {
+          "code": "D",
+          "system": "http://hl7.org/fhir/valueset-marital-status.html"
+        }
+      ]
     },
+    "name": [
+      {
+        "family": "Test",
+        "given": [
+          "TestName"
+        ],
+        "use": "usual"
+      }
+    ],
+    "telecom": [
+      {
+        "system": "phone",
+        "use": "home",
+        "value": "813-996-476"
+      },
+      {
+        "system": "email",
+        "use": "home",
+        "value": "TEST@TEST.com"
+      }
+    ],
+    "photo": [
+      {
+        "contentType": "png",
+        "title": "photo_test",
+        "creation": "2021-03-27",
+        "data": "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"
+      }
+  ],
+  "contact": [
     {
-      "system": "email",
-      "use": "home",
-      "value": "TEST@TEST.com"
+        "relationship": [
+            {
+                "coding": [
+                    {
+                        "system": "https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/patient-contact-relationship",
+                        "code": "4",
+                        "display": "Son/Daughter"
+                    }
+                ]
+            }
+        ]
     }
   ]
 }

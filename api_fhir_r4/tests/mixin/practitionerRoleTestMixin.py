@@ -1,4 +1,5 @@
-from api_fhir_r4.models import PractitionerRole, Reference
+from fhir.resources.practitionerrole import PractitionerRole
+from fhir.resources.reference import Reference
 from api_fhir_r4.tests import GenericTestMixin, PractitionerTestMixin, LocationTestMixin
 
 
@@ -25,11 +26,11 @@ class PractitionerRoleTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_HF.code, imis_obj.health_facility.code)
 
     def create_test_fhir_instance(self):
-        fhir_practitioner_role = PractitionerRole()
-        location_reference = Reference()
+        fhir_practitioner_role = PractitionerRole.construct()
+        location_reference = Reference.construct()
         location_reference.reference = self._TEST_LOCATION_REFERENCE
         fhir_practitioner_role.location = [location_reference]
-        practitioner_reference = Reference()
+        practitioner_reference = Reference.construct()
         practitioner_reference.reference = self._TEST_PRACTITIONER_REFERENCE
         fhir_practitioner_role.practitioner = practitioner_reference
         return fhir_practitioner_role

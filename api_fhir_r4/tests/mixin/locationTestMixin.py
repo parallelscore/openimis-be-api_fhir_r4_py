@@ -2,7 +2,7 @@ from location.models import HealthFacility
 
 from api_fhir_r4.configurations import R4IdentifierConfig, R4LocationConfig
 from api_fhir_r4.converters import LocationConverter
-from api_fhir_r4.models import ContactPointSystem, AddressType, AddressUse, ContactPointUse, Location
+from fhir.resources.location import Location
 from api_fhir_r4.tests import GenericTestMixin
 
 
@@ -47,7 +47,7 @@ class LocationTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_EMAIL, imis_obj.email)
 
     def create_test_fhir_instance(self):
-        location = Location()
+        location = Location.construct()
         identifier = LocationConverter.build_fhir_identifier(self._TEST_HF_CODE,
                                                              R4IdentifierConfig.get_fhir_identifier_type_system(),
                                                              R4IdentifierConfig.get_fhir_facility_id_type())
@@ -56,17 +56,17 @@ class LocationTestMixin(GenericTestMixin):
         location.type = LocationConverter.build_codeable_concept(
             R4LocationConfig.get_fhir_code_for_hospital(),
             R4LocationConfig.get_fhir_location_site_type_system())
-        location.address = LocationConverter.build_fhir_address(self._TEST_ADDRESS, AddressUse.HOME.value,
-                                                                AddressType.PHYSICAL.value)
+        location.address = LocationConverter.build_fhir_address(self._TEST_ADDRESS, "home",
+                                                                "physical")
         telecom = []
-        phone = LocationConverter.build_fhir_contact_point(self._TEST_PHONE, ContactPointSystem.PHONE.value,
-                                                           ContactPointUse.HOME.value)
+        phone = LocationConverter.build_fhir_contact_point(self._TEST_PHONE, "phone",
+                                                           "home")
         telecom.append(phone)
-        fax = LocationConverter.build_fhir_contact_point(self._TEST_FAX, ContactPointSystem.FAX.value,
-                                                         ContactPointUse.HOME.value)
+        fax = LocationConverter.build_fhir_contact_point(self._TEST_FAX, "fax",
+                                                         "home")
         telecom.append(fax)
-        email = LocationConverter.build_fhir_contact_point(self._TEST_EMAIL, ContactPointSystem.EMAIL.value,
-                                                           ContactPointUse.HOME.value)
+        email = LocationConverter.build_fhir_contact_point(self._TEST_EMAIL, "email",
+                                                           "home")
         telecom.append(email)
         location.telecom = telecom
 
@@ -85,9 +85,9 @@ class LocationTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_ADDRESS, fhir_obj.address.text)
         self.assertEqual(3, len(fhir_obj.telecom))
         for telecom in fhir_obj.telecom:
-            if telecom.system == ContactPointSystem.PHONE.value:
+            if telecom.system == "phone":
                 self.assertEqual(self._TEST_PHONE, telecom.value)
-            elif telecom.system == ContactPointSystem.EMAIL.value:
+            elif telecom.system == "email":
                 self.assertEqual(self._TEST_EMAIL, telecom.value)
-            elif telecom.system == ContactPointSystem.FAX.value:
+            elif telecom.system == "fax":
                 self.assertEqual(self._TEST_FAX, telecom.value)

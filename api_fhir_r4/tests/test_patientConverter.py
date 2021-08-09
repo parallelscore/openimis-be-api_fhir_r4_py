@@ -3,7 +3,7 @@ from unittest import mock
 
 from api_fhir_r4.converters import PatientConverter
 
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.patient import Patient
 from api_fhir_r4.tests import PatientTestMixin
 
 
@@ -33,7 +33,7 @@ class PatientConverterTestCase(PatientTestMixin):
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_patient = FHIRBaseObject.loads(self._test_patient_json_representation, 'json')
+        fhir_patient = Patient(**dict(self._test_patient_json_representation))
         self.verify_fhir_instance(fhir_patient)
 
     def test_fhir_object_to_json(self):

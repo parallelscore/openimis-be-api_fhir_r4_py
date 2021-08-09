@@ -4,7 +4,7 @@ from policy.services import EligibilityResponse
 
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
 from api_fhir_r4.converters import PatientConverter
-from api_fhir_r4.models import CoverageEligibilityRequest
+from api_fhir_r4.models import CoverageEligibilityRequestV2 as CoverageEligibilityRequest
 from api_fhir_r4.tests import GenericTestMixin, PatientTestMixin
 
 
@@ -67,7 +67,7 @@ class CoverageEligibilityRequestTestMixin(GenericTestMixin):
 
     def create_test_fhir_instance(self):
         self.setUp()
-        fhir_reqest = CoverageEligibilityRequest()
+        fhir_reqest = CoverageEligibilityRequest.construct()
         fhir_reqest.patient = PatientConverter.build_fhir_resource_reference(self._TEST_INSUREE)
 
         fhir_reqest.item[0].category = PatientConverter.build_codeable_concept(

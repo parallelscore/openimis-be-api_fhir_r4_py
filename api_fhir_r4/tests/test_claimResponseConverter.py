@@ -9,8 +9,11 @@ from medical.models import Diagnosis, Item, Service
 from prompt_toolkit.cache import memoized
 
 from api_fhir_r4.converters import ClaimResponseConverter, ConditionConverter, HealthcareServiceConverter
-from api_fhir_r4.models import FHIRBaseObject, ClaimResponseError, CodeableConcept, Coding, Extension, Period, \
-    ClaimResponsePayment
+from fhir.resources.claimresponse import ClaimResponseError, ClaimResponsePayment
+from fhir.resources.coding import Coding
+from fhir.resources.codeableconcept import CodeableConcept
+from fhir.resources.extension import Extension
+from fhir.resources.period import Period
 from api_fhir_r4.tests import ClaimResponseTestMixin
 
 

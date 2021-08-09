@@ -6,9 +6,13 @@ from location.models import HealthFacility
 from medical.test_helpers import create_test_item, create_test_service
 
 from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
+from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse
 from api_fhir_r4.converters import ClaimResponseConverter, CommunicationRequestConverter
-from api_fhir_r4.models import ClaimResponse, ClaimResponsePayment, Money, ClaimResponseError, ClaimResponseItem, \
-    ClaimResponseItemAdjudication, ClaimResponseProcessNote
+from fhir.resources.claimresponse import ClaimResponseError, ClaimResponseItem, \
+    ClaimResponseItemAdjudication, ClaimResponsePayment, ClaimResponseProcessNote
+from fhir.resources.money import Money
+
+
 from api_fhir_r4.tests import GenericTestMixin
 from api_fhir_r4.utils import TimeUtils
 from claim.models import Claim, Feedback, ClaimItem, ClaimService
@@ -114,7 +118,7 @@ class ClaimResponseTestMixin(GenericTestMixin):
         return imis_claim
 
     def create_test_fhir_instance(self):
-        fhir_claim_response = ClaimResponse()
+        fhir_claim_response = ClaimResponse.construct()
         fhir_claim_response.id = self._TEST_UUID
         pk_id = ClaimResponseConverter.build_fhir_identifier(self._TEST_UUID,
                                                              R4IdentifierConfig.get_fhir_identifier_type_system(),
@@ -127,18 +131,18 @@ class ClaimResponseTestMixin(GenericTestMixin):
         display = R4ClaimConfig.get_fhir_claim_status_rejected_code()
         fhir_claim_response.outcome = ClaimResponseConverter.build_codeable_concept(self._TEST_STATUS, system=None,
                                                                                     text=display)
-        fhir_payment = ClaimResponsePayment()
+        fhir_payment = ClaimResponsePayment.construct()
         fhir_payment.adjustmentReason = ClaimResponseConverter.build_simple_codeable_concept(self._TEST_ADJUSTMENT)
         fhir_payment.date = self._TEST_DATE_PROCESSED
         fhir_claim_response.payment = fhir_payment
         #total_approved = Money()
         #total_approved.value = self._TEST_APPROVED
         #fhir_claim_response.totalBenefit = total_approved
-        fhir_error = ClaimResponseError()
+        fhir_error = ClaimResponseError.construct()
         fhir_error.code = ClaimResponseConverter.build_codeable_concept(self._TEST_REJECTION_REASON)
         fhir_claim_response.error = [fhir_error]
         # This is an IMIS object that is converted to FHIR
-        feedback = Feedback()
+        feedback = Feedback
         feedback.id = self._TEST_FEEDBACK_ID
         feedback.uuid = self._TEST_FEEDBACK_UUID
         fhir_claim_response.communicationRequest = \
@@ -148,19 +152,19 @@ class ClaimResponseTestMixin(GenericTestMixin):
         return fhir_claim_response
 
     def build_response_item(self, fhir_claim_response):
-        item = ClaimResponseItem()
+        item = ClaimResponseItem.construct()
         item.itemSequence = 1
-        item_general_adjudication = ClaimResponseItemAdjudication()
+        item_general_adjudication = ClaimResponseItemAdjudication.construct()
         item_general_adjudication.category = ClaimResponseConverter.build_simple_codeable_concept(
             R4ClaimConfig.get_fhir_claim_item_general_adjudication_code())
-        item_limitation = Money()
+        item_limitation = Money.construct()
         item_limitation.value = self._TEST_ITEM_LIMITATION_VALUE
         item_general_adjudication.amount = item_limitation
         item_general_adjudication.reason = ClaimResponseConverter \
             .build_codeable_concept(self._TEST_ITEM_STATUS, R4ClaimConfig.get_fhir_claim_item_status_passed_code())
         item_general_adjudication.value = self._TEST_ITEM_QUANTITY_APPROVED
         item.adjudication.append(item_general_adjudication)
-        item_rejection_adjudication = ClaimResponseItemAdjudication()
+        item_rejection_adjudication = ClaimResponseItemAdjudication.construct()
         item_rejection_adjudication.category = ClaimResponseConverter.build_simple_codeable_concept(
             R4ClaimConfig.get_fhir_claim_item_rejected_reason_adjudication_code())
         item_rejection_adjudication.reason = ClaimResponseConverter.build_codeable_concept(
@@ -168,18 +172,18 @@ class ClaimResponseTestMixin(GenericTestMixin):
         item.adjudication.append(item_rejection_adjudication)
         item.noteNumber = [1]
         fhir_claim_response.item.append(item)
-        item_note = ClaimResponseProcessNote()
+        item_note = ClaimResponseProcessNote.construct()
         item_note.number = 1
         item_note.text = self._TEST_ITEM_JUSTIFICATION
         fhir_claim_response.processNote.append(item_note)
 
     def build_response_service(self, fhir_claim_response):
-        service = ClaimResponseItem()
+        service = ClaimResponseItem.construct()
         service.itemSequence = 2
-        service_general_adjudication = ClaimResponseItemAdjudication()
+        service_general_adjudication = ClaimResponseItemAdjudication.construct()
         service_general_adjudication.category = ClaimResponseConverter.build_simple_codeable_concept(
             R4ClaimConfig.get_fhir_claim_item_general_adjudication_code())
-        item_limitation = Money()
+        item_limitation = Money.construct()
         item_limitation.value = self._TEST_SERVICE_LIMITATION_VALUE
         service_general_adjudication.amount = item_limitation
         service_general_adjudication.reason = ClaimResponseConverter \
@@ -187,7 +191,7 @@ class ClaimResponseTestMixin(GenericTestMixin):
                                     R4ClaimConfig.get_fhir_claim_item_status_rejected_code())
         service_general_adjudication.value = self._TEST_SERVICE_QUANTITY_APPROVED
         service.adjudication.append(service_general_adjudication)
-        item_rejection_adjudication = ClaimResponseItemAdjudication()
+        item_rejection_adjudication = ClaimResponseItemAdjudication.construct()
         item_rejection_adjudication.category = ClaimResponseConverter.build_simple_codeable_concept(
             R4ClaimConfig.get_fhir_claim_item_rejected_reason_adjudication_code())
         item_rejection_adjudication.reason = ClaimResponseConverter.build_codeable_concept(
@@ -195,7 +199,7 @@ class ClaimResponseTestMixin(GenericTestMixin):
         service.adjudication.append(item_rejection_adjudication)
         service.noteNumber = [2]
         fhir_claim_response.item.append(service)
-        item_note = ClaimResponseProcessNote()
+        item_note = ClaimResponseProcessNote.construct()
         item_note.number = 2
         item_note.text = self._TEST_SERVICE_JUSTIFICATION
         fhir_claim_response.processNote.append(item_note)

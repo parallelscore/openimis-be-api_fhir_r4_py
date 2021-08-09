@@ -2,7 +2,7 @@ import os
 
 from api_fhir_r4.converters import PractitionerConverter
 
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.tests import PractitionerTestMixin
 
 
@@ -26,7 +26,7 @@ class PractitionerConverterTestCase(PractitionerTestMixin):
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_practitioner = FHIRBaseObject.loads(self._test_practitioner_json_representation, 'json')
+        fhir_practitioner = FHIRAbstractModel(**dict(self._test_practitioner_json_representation))
         self.verify_fhir_instance(fhir_practitioner)
 
     def test_fhir_object_to_json(self):

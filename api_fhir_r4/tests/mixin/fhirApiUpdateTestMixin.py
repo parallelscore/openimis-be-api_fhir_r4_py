@@ -33,12 +33,13 @@ class FhirApiUpdateTestMixin(object):
         # create
         self.create_dependencies()
         response = self.client.post(self.base_url, data=self._test_request_data, format='json')
+        response_json = response.json()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         resource_id = self.get_id_for_created_resource(response)
         # update
         updated_data = copy.deepcopy(self._test_request_data)
         self.update_resource(updated_data)
-        response = self.client.put(self.base_url + resource_id + "/", data=updated_data, format='json')
+        response = self.client.put(self.base_url + resource_id + '/', data=updated_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # verify
         updated_obj = self.get_fhir_obj_from_json_response(response)

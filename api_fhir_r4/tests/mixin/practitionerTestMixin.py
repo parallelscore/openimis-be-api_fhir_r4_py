@@ -2,8 +2,10 @@ from claim.models import ClaimAdmin
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.converters import PractitionerConverter
-from api_fhir_r4.models import HumanName, NameUse, Identifier, ContactPoint, ContactPointSystem, Practitioner, \
-    ContactPointUse
+from fhir.resources.contactpoint import ContactPoint
+from fhir.resources.humanname import HumanName
+from fhir.resources.identifier import Identifier
+from fhir.resources.practitioner import Practitioner
 from api_fhir_r4.tests import GenericTestMixin
 from api_fhir_r4.utils import TimeUtils
 
@@ -41,11 +43,11 @@ class PractitionerTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_EMAIL, imis_obj.email_id)
 
     def create_test_fhir_instance(self):
-        fhir_practitioner = Practitioner()
-        name = HumanName()
+        fhir_practitioner = Practitioner.construct()
+        name = HumanName.construct()
         name.family = self._TEST_LAST_NAME
         name.given = [self._TEST_OTHER_NAME]
-        name.use = NameUse.USUAL.value
+        name.use = "usual"
         fhir_practitioner.name = [name]
         identifiers = []
         chf_id = PractitionerConverter.build_fhir_identifier(self._TEST_CODE,
@@ -55,11 +57,11 @@ class PractitionerTestMixin(GenericTestMixin):
         fhir_practitioner.identifier = identifiers
         fhir_practitioner.birthDate = self._TEST_DOB
         telecom = []
-        phone = PractitionerConverter.build_fhir_contact_point(self._TEST_PHONE, ContactPointSystem.PHONE.value,
-                                                               ContactPointUse.HOME.value)
+        phone = PractitionerConverter.build_fhir_contact_point(self._TEST_PHONE, "phone",
+                                                               "home")
         telecom.append(phone)
-        email = PractitionerConverter.build_fhir_contact_point(self._TEST_EMAIL, ContactPointSystem.EMAIL.value,
-                                                               ContactPointUse.HOME.value)
+        email = PractitionerConverter.build_fhir_contact_point(self._TEST_EMAIL, "email",
+                                                               "home")
         telecom.append(email)
         fhir_practitioner.telecom = telecom
         return fhir_practitioner
@@ -70,7 +72,7 @@ class PractitionerTestMixin(GenericTestMixin):
         self.assertTrue(isinstance(human_name, HumanName))
         self.assertEqual(self._TEST_OTHER_NAME, human_name.given[0])
         self.assertEqual(self._TEST_LAST_NAME, human_name.family)
-        self.assertEqual(NameUse.USUAL.value, human_name.use)
+        self.assertEqual("usual", human_name.use)
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = PractitionerConverter.get_first_coding_from_codeable_concept(identifier.type).code
@@ -82,7 +84,7 @@ class PractitionerTestMixin(GenericTestMixin):
         self.assertEqual(2, len(fhir_obj.telecom))
         for telecom in fhir_obj.telecom:
             self.assertTrue(isinstance(telecom, ContactPoint))
-            if telecom.system == ContactPointSystem.PHONE.value:
+            if telecom.system == "phone":
                 self.assertEqual(self._TEST_PHONE, telecom.value)
-            elif telecom.system == ContactPointSystem.EMAIL.value:
+            elif telecom.system == "email":
                 self.assertEqual(self._TEST_EMAIL, telecom.value)
