@@ -62,6 +62,5 @@ class GenericFhirAPITestMixin(object):
         return fhir_obj
 
     def test_get_should_required_login(self):
-        print(self.base_url)
         response = self.client.get(self.base_url, data=None, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
