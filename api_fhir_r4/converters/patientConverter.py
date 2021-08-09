@@ -60,6 +60,13 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         return imis_insuree
 
     @classmethod
+    def build_fhir_pk(cls, fhir_patient, resource, reference_type: str = None):
+        if reference_type == ReferenceConverterMixin.CODE_REFERENCE_TYPE:
+            fhir_patient.id = resource.chf_id
+        else:
+            super().build_fhir_pk(fhir_patient, resource, reference_type)
+
+    @classmethod
     def get_fhir_code_identifier_type(cls):
         return R4IdentifierConfig.get_fhir_chfid_type_code()
 
@@ -364,7 +371,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                     addresses.append(family_address)
 
         # insuree slice
-        if imis_insuree.current_address is not None:
+        if imis_insuree.current_address:
             current_address = cls.build_fhir_address(imis_insuree.current_address, "temp", "physical")
             if imis_insuree.current_village:
                 current_address.state = imis_insuree.current_village.parent.parent.parent.name

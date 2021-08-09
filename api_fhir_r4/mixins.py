@@ -1,7 +1,18 @@
+import logging
+from abc import abstractmethod
 from typing import List
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
+
+from rest_framework import mixins
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from fhir.resources.fhirabstractmodel import FHIRAbstractModel
+
+from api_fhir_r4.model_retrievers import GenericModelRetriever
+from rest_framework.response import Response
+
+logger = logging.getLogger(__name__)
 
 
 class ContainedContentSerializerMixin:
@@ -62,3 +73,37 @@ class ContainedContentSerializerMixin:
     def _create_contained_reference(self, base_reference):
         # Contained references are made by adding hash
         return F"#{base_reference}"
+
+
+class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin):
+    lookup_field = 'identifier'
+
+    @property
+    @abstractmethod
+    def retrievers(self) -> List[GenericModelRetriever]:
+        # Identifiers available for given resource
+        pass
+
+    def retrieve(self, request, *args, **kwargs):
+        ref_type, instance = self._get_object_with_first_valid_retriever(kwargs['identifier'])
+        serializer = self.get_serializer(instance, reference_type=ref_type)
+        return Response(serializer.data)
+
+    def _get_object_with_first_valid_retriever(self, identifier):
+        for retriever in self.retrievers:
+            if retriever.identifier_validator(identifier):
+                try:
+                    queryset = retriever.retriever_additional_queryset_filtering(self.get_queryset())
+                    resource = retriever.get_model_object(queryset, identifier)
+
+                    # May raise a permission denied
+                    self.check_object_permissions(self.request, resource)
+                    return retriever.serializer_reference_type, resource
+                except ObjectDoesNotExist as e:
+                    logger.exception(
+                        F"Failed to retrieve object from queryset {self.get_queryset()} using"
+                        F"identifier {identifier} for matching retriever: {retriever}"
+                    )
+
+        # Raise Http404 if resource couldn't be fetched with any of the retrievers
+        raise Http404(f"Resource for identifier {identifier} not found")
