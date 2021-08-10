@@ -2,7 +2,7 @@ import os
 from unittest import mock
 
 from api_fhir_r4.converters import PractitionerRoleConverter, PractitionerConverter, LocationConverter
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.tests import PractitionerRoleTestMixin
 
 

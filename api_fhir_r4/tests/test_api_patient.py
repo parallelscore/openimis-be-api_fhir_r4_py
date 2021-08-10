@@ -1,7 +1,7 @@
 from insuree.models import Gender
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIRequestFactory
 
-from api_fhir_r4.models import Patient
+from fhir.resources.patient import Patient
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
     FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
 
@@ -19,10 +19,10 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
 
     def verify_updated_obj(self, updated_obj):
         self.assertTrue(isinstance(updated_obj, Patient))
-        self.assertEqual(self._TEST_EXPECTED_NAME, updated_obj.name[0].family)
+        self.assertEqual(self._TEST_EXPECTED_NAME, updated_obj.name[0].given[0])
 
     def update_resource(self, data):
-        data['name'][0]['family'] = self._TEST_EXPECTED_NAME
+        data['name'][0]['given'][0] = self._TEST_EXPECTED_NAME
 
     def create_dependencies(self):
         gender = Gender()

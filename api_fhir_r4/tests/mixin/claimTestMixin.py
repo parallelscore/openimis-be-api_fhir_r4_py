@@ -5,7 +5,9 @@ from medical.models import Item, Service
 from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
 from api_fhir_r4.converters import PatientConverter, LocationConverter, PractitionerConverter
 from api_fhir_r4.converters.claimConverter import ClaimConverter
-from api_fhir_r4.models import Claim as FHIRClaim, ImisClaimIcdTypes, Period, Money
+from api_fhir_r4.models import ClaimV2 as FHIRClaim
+from fhir.resources.period import Period
+from fhir.resources.money import Money
 from api_fhir_r4.tests import GenericTestMixin, PatientTestMixin, LocationTestMixin, PractitionerTestMixin
 from api_fhir_r4.utils import TimeUtils
 
@@ -107,21 +109,21 @@ class ClaimTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_SERVICE_PRICE_ASKED, imis_obj.submit_services[0].price)
 
     def create_test_fhir_instance(self):
-        fhir_claim = FHIRClaim()
+        fhir_claim = FHIRClaim.construct()
         fhir_claim.id = self._TEST_UUID
         fhir_claim.patient = PatientConverter.build_fhir_resource_reference(self._TEST_INSUREE)
         claim_code = ClaimConverter.build_fhir_identifier(self._TEST_CODE,
                                                R4IdentifierConfig.get_fhir_identifier_type_system(),
                                                R4IdentifierConfig.get_fhir_claim_code_type())
         fhir_claim.identifier = [claim_code]
-        billable_period = Period()
+        billable_period = Period.construct()
         billable_period.start = self._TEST_DATE_FROM
         billable_period.end = self._TEST_DATE_TO
         fhir_claim.billablePeriod = billable_period
         diagnoses = []
-        ClaimConverter.build_fhir_diagnosis(diagnoses, self._TEST_DIAGNOSIS_CODE.code, ImisClaimIcdTypes.ICD_0.value)
+        ClaimConverter.build_fhir_diagnosis(diagnoses, self._TEST_DIAGNOSIS_CODE.code, "icd_0")
         fhir_claim.diagnosis = diagnoses
-        total = Money()
+        total = Money.construct()
         total.value = self._TEST_CLAIMED
         fhir_claim.total = total
         fhir_claim.created = self._TEST_DATE_CLAIMED
