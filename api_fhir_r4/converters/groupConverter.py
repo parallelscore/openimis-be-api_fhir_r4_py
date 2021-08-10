@@ -37,9 +37,11 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         errors = []
         fhir_family = Group(**fhir_family)
         imis_family = Family()
+        # set uuid to Null so as to use this family object properly in service
+        imis_family.uuid = None
         imis_family.audit_user_id = audit_user_id
         cls.build_imis_head(imis_family, fhir_family, errors)
-        cls.build_imis_extentions(imis_family, fhir_family)
+        cls.build_imis_extentions(imis_family, fhir_family, errors)
         cls.check_errors(errors)
         return imis_family
 
@@ -107,7 +109,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         value = cls.build_head(identifier, R4IdentifierConfig.get_fhir_chfid_type_code())
         if value:
             try:
-                imis_family.head_insuree = Insuree.objects.get(chf_id=value)
+                imis_family.head_insuree = Insuree.objects.get(chf_id=value, validity_to__isnull=True)
             except:
                 raise FHIRException('Invalid insuree chf_id')
 
