@@ -241,7 +241,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                                         try:
                                             # split 'viilage'
                                             value = value.split('-')[0]
-                                            imis_family.location = Location.objects.get(name=value)
+                                            imis_family.location = Location.objects.get(name=value, validity_to__isnull=True)
                                         except:
                                             imis_family.location = None
 
