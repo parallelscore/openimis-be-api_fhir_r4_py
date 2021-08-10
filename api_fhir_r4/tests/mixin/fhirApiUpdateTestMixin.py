@@ -33,7 +33,6 @@ class FhirApiUpdateTestMixin(object):
         # create
         self.create_dependencies()
         response = self.client.post(self.base_url, data=self._test_request_data, format='json')
-        response_json = response.json()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         resource_id = self.get_id_for_created_resource(response)
         # update
