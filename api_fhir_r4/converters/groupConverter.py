@@ -159,28 +159,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         def build_extension(fhir_family, imis_family, value):
             extension = Extension.construct()
             if value == "group-address":
-                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-address"
-                family_address = cls.build_fhir_address(imis_family.address, "home", "physical")
-                if imis_family.location:
-                    family_address.state = imis_family.location.parent.parent.parent.name
-                    family_address.district = imis_family.location.parent.parent.name
-                    # municipality extension
-                    extension_address = Extension.construct()
-                    extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-municipality"
-                    extension_address.valueString = imis_family.location.parent.name
-                    family_address.extension = [extension_address]
-
-                    # address location reference extension
-                    extension_address = Extension.construct()
-                    extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-                    reference_location = Reference.construct()
-                    reference_location.reference = F"Location/{imis_family.location.name}-village"
-                    extension_address.valueReference = reference_location
-                    family_address.extension.append(extension_address)
-
-                    family_address.city = imis_family.location.name
-
-                extension.valueAddress = family_address
+                cls._build_extension_address(extension, fhir_family, imis_family)
 
             elif value == "group-poverty-status":
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-poverty-status"
@@ -197,24 +176,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                         extension.valueCodeableConcept.coding[0].display = display
             # group-confirmation
             else:
-                nested_extension = Extension.construct()
-                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-confirmation"
-                if hasattr(imis_family, "confirmation_type") and imis_family.confirmation_type:
-                    if hasattr(imis_family, "confirmation_no") and imis_family.confirmation_no:
-                        # add number extension
-                        nested_extension.url = "number"
-                        nested_extension.valueString = imis_family.confirmation_no
-                        extension.extension = [nested_extension]
-                        # add identifier extension
-                        nested_extension = Extension.construct()
-                        nested_extension.url = "type"
-                        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/group-confirmation-type"
-                        display = ConfirmationTypeMapping.confirmation_type[str(imis_family.confirmation_type.code)]
-                        nested_extension.valueCodeableConcept = cls.build_codeable_concept(
-                            code=imis_family.confirmation_type.code, system=system)
-                        if len(nested_extension.valueCodeableConcept.coding) == 1:
-                            nested_extension.valueCodeableConcept.coding[0].display = display
-                        extension.extension.append(nested_extension)
+                cls._build_extension_group_confirmation(extension, fhir_family, imis_family)
 
             if type(fhir_family.extension) is not list:
                 fhir_family.extension = [extension]
@@ -281,12 +243,56 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     def get_location_reference(cls, location):
         return location.rsplit('/', 1)[1]
 
+    @classmethod
+    def _build_extension_address(cls, extension, fhir_family, imis_family):
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-address"
+        family_address = cls.build_fhir_address(imis_family.address, "home", "physical")
+        if imis_family.location:
+            family_address.state = imis_family.location.parent.parent.parent.name
+            family_address.district = imis_family.location.parent.parent.name
+            # municipality extension
+            extension_address = Extension.construct()
+            extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-municipality"
+            extension_address.valueString = imis_family.location.parent.name
+            family_address.extension = [extension_address]
+
+            # address location reference extension
+            extension_address = Extension.construct()
+            extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
+            reference_location = Reference.construct()
+            reference_location.reference = F"Location/{imis_family.location.name}-village"
+            extension_address.valueReference = reference_location
+            family_address.extension.append(extension_address)
+            family_address.city = imis_family.location.name
+        extension.valueAddress = family_address
+
+    @classmethod
+    def _build_extension_group_confirmation(cls, extension, fhir_family, imis_family):
+        nested_extension = Extension.construct()
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-confirmation"
+        if hasattr(imis_family, "confirmation_type") and imis_family.confirmation_type:
+            if hasattr(imis_family, "confirmation_no") and imis_family.confirmation_no:
+                # add number extension
+                nested_extension.url = "number"
+                nested_extension.valueString = imis_family.confirmation_no
+                extension.extension = [nested_extension]
+                # add identifier extension
+                nested_extension = Extension.construct()
+                nested_extension.url = "type"
+                system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/group-confirmation-type"
+                display = ConfirmationTypeMapping.confirmation_type[str(imis_family.confirmation_type.code)]
+                nested_extension.valueCodeableConcept = cls.build_codeable_concept(
+                    code=imis_family.confirmation_type.code, system=system)
+                if len(nested_extension.valueCodeableConcept.coding) == 1:
+                    nested_extension.valueCodeableConcept.coding[0].display = display
+                extension.extension.append(nested_extension)
+
     # fhir validations
     @classmethod
     def _validate_fhir_identifier_is_exist(cls, fhir_family):
         if not fhir_family.identifier or len(fhir_family.identifier) == 0:
             raise FHIRException(
-                _('FHIR Group entity for %(family_uuid)s without identifier') % {'family_uuid': imis_family.uuid}
+                _('FHIR Group entity without identifier')
             )
 
     # fhir validations
