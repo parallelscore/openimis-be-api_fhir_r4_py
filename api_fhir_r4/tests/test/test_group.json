@@ -31,20 +31,6 @@
          "valueBoolean":false
       }
    ],
-   "identifier":[
-      {
-         "use":"usual",
-         "type":{
-            "coding":[
-               {
-                  "system":"https://hl7.org/fhir/valueset-identifier-type.html",
-                  "code":"SB"
-               }
-            ]
-         },
-         "value":"TestCfhId1"
-      }
-   ],
    "name":"Test TestInsuree",
    "member":[
       {
