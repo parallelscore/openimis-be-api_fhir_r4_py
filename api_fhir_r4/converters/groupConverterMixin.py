@@ -22,17 +22,8 @@ class GroupConverterMixin(object):
         members = []
         for insuree in Insuree.objects.filter(family__uuid=family_id):
             member = GroupMember.construct()
-            member.inactive = False
             member.entity = {
-            "reference":"Patient"+'/'+insuree.uuid
+            "reference":"Patient"+'/'+insuree.other_names.lower()+'-'+insuree.last_name.lower()
             }
             members.append(member)
         return members
-    
-    @classmethod
-    def build_fhir_location(cls,fhir_family, imis_family):
-        locations = {}
-        if imis_family.location is not None:
-            locations['reference'] = 'Location'+'/'+imis_family.location.uuid
-        fhir_family.location = locations
-    

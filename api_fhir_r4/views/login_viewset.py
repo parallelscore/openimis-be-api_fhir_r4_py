@@ -1,4 +1,6 @@
 from graphql_jwt.utils import jwt_payload
+from core.jwt import *
+from core.models import User
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response

@@ -1,0 +1,53 @@
+{
+   "type":"Person",
+   "actual":"True",
+   "resourceType":"Group",
+   "extension":[
+      {
+         "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/group-address",
+         "valueAddress":{
+            "extension":[
+               {
+                  "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-municipality",
+                  "valueString":"Achi"
+               },
+               {
+                  "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference",
+                  "valueReference":{
+                     "reference":"Location/Rachla-village"
+                  }
+               }
+            ],
+            "use":"home",
+            "type":"physical",
+            "text":"Test Street 7th TownCity",
+            "city":"Rachla",
+            "district":"Rapta",
+            "state":"Ultha"
+         }
+      },
+      {
+         "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/group-poverty-status",
+         "valueBoolean":false
+      }
+   ],
+   "name":"Test TestInsuree",
+   "member":[
+      {
+         "entity":{
+            "identifier":{
+               "use":"usual",
+               "type":{
+                  "coding":[
+                     {
+                        "system":"https://hl7.org/fhir/valueset-identifier-type.html",
+                        "code":"SB"
+                     }
+                  ]
+               },
+               "value":"TestCfhId1"
+            }
+         }
+      }
+   ]
+}
