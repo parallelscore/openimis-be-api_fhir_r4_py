@@ -3,7 +3,7 @@ from claim.models import Feedback
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.converters import CommunicationRequestConverter as Converter
 from api_fhir_r4.configurations import R4CommunicationRequestConfig as Config
-from api_fhir_r4.models import CommunicationRequest
+from fhir.resources.communicationrequest import CommunicationRequest
 from api_fhir_r4.tests import GenericTestMixin
 from api_fhir_r4.utils import TimeUtils
 
@@ -32,7 +32,7 @@ class CommunicationRequestTestMixin(GenericTestMixin):
         return imis_feedback
 
     def create_test_fhir_instance(self):
-        fhir_communication_request = CommunicationRequest()
+        fhir_communication_request = CommunicationRequest.construct()
         fhir_communication_request.id = self._TEST_FEEDBACK_UUID
         fhir_communication_request.occurrenceDateTime = self._TEST_FEEDBACK_DATE
         identifiers = []

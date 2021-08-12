@@ -3,12 +3,12 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase
 
 from api_fhir_r4.mixins import ContainedContentSerializerMixin
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 class ContainedContentHelper(object):
     @staticmethod
-    def build_test_converter(returned_obj=FHIRBaseObject()):
+    def build_test_converter(returned_obj=FHIRAbstractModel()):
         converter = MagicMock()
         converter.convert_from_source = MagicMock(name='convert_from_source', return_value=[returned_obj])
         return converter
@@ -20,7 +20,7 @@ class ContainedContentSerializerMixinTestCase(TestCase):
         context = {'contained': True}
 
         def to_representation(self, obj):
-            return FHIRBaseObject().toDict()
+            return FHIRAbstractModel().dict()
 
     class TestSerializer(ContainedContentSerializerMixin, BaseTestSerializer):
 

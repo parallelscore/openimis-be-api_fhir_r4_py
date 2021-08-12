@@ -1,7 +1,7 @@
 import os
 
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.tests import LocationTestMixin
 
 
@@ -25,7 +25,7 @@ class LocationConverterTestCase(LocationTestMixin):
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_location = FHIRBaseObject.loads(self._test_location_json_representation, 'json')
+        fhir_location = FHIRAbstractModel(**dict(self._test_location_json_representation))
         self.verify_fhir_instance(fhir_location)
 
     def test_fhir_object_to_json(self):

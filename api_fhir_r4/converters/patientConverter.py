@@ -235,7 +235,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                                 value = value.split('-')[0]
                                 imis_insuree.current_village = Location.objects.get(name=value)
                             except:
-                                imis_insuree.current_village = False
+                                imis_insuree.current_village = None
             else:
                 try:
                     # split family reference
