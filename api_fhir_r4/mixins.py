@@ -1,5 +1,5 @@
 import logging
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -75,7 +75,7 @@ class ContainedContentSerializerMixin:
         return F"#{base_reference}"
 
 
-class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin):
+class GenericMultiIdentifierMixin(ABC):
     lookup_field = 'identifier'
 
     @property
@@ -83,11 +83,6 @@ class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin):
     def retrievers(self) -> List[GenericModelRetriever]:
         # Identifiers available for given resource
         pass
-
-    def retrieve(self, request, *args, **kwargs):
-        ref_type, instance = self._get_object_with_first_valid_retriever(kwargs['identifier'])
-        serializer = self.get_serializer(instance, reference_type=ref_type)
-        return Response(serializer.data)
 
     def _get_object_with_first_valid_retriever(self, identifier):
         for retriever in self.retrievers:
@@ -107,3 +102,28 @@ class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin):
 
         # Raise Http404 if resource couldn't be fetched with any of the retrievers
         raise Http404(f"Resource for identifier {identifier} not found")
+
+
+class MultiIdentifierRetrieverMixin(mixins.RetrieveModelMixin, GenericMultiIdentifierMixin, ABC):
+
+    def retrieve(self, request, *args, **kwargs):
+        ref_type, instance = self._get_object_with_first_valid_retriever(kwargs['identifier'])
+        serializer = self.get_serializer(instance, reference_type=ref_type)
+        return Response(serializer.data)
+
+
+class MultiIdentifierUpdateMixin(mixins.UpdateModelMixin, GenericMultiIdentifierMixin, ABC):
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        ref_type, instance = self._get_object_with_first_valid_retriever(kwargs['identifier'])
+        serializer = self.get_serializer(instance, data=request.data, partial=partial, reference_type=ref_type)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
