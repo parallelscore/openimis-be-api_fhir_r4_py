@@ -2,7 +2,7 @@ from claim import ClaimSubmitError
 from django.db import IntegrityError
 from django.http import Http404
 from django.http.response import HttpResponse
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ErrorDetail
 
 from api_fhir_r4.configurations import R4IssueTypeConfig
 from api_fhir_r4.converters import BaseFHIRConverter
@@ -115,7 +115,7 @@ class OperationOutcomeConverter(BaseFHIRConverter):
         issue_data["severity"] = severity
         issue_data["code"] = code
         if details_text:
-            if type(details_text) != str:
+            if type(details_text) != str and type(details_text) != ErrorDetail:
                 details_text = str(details_text.__dict__)
             issue_data["details"] = cls.build_simple_codeable_concept(text=str(details_text))
         issue = OperationOutcomeIssue(**issue_data)
