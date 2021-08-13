@@ -124,6 +124,11 @@ class LocationConfiguration(BaseConfiguration):  # pragma: no cover
         raise NotImplementedError('`get_fhir_code_for_both()` must be implemented')
 
 
+    @classmethod
+    def get_fhir_code_for_active(cls):
+        raise NotImplementedError('`get_fhir_code_for_active()` must be implemented')
+
+
 class MaritalConfiguration(BaseConfiguration):  # pragma: no cover
 
     @classmethod
