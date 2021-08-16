@@ -83,3 +83,4 @@ from api_fhir_r4.serializers.medicationSerializer import MedicationSerializer
 from api_fhir_r4.serializers.conditionSerializer import ConditionSerializer
 from api_fhir_r4.serializers.activityDefinitionSerializer import ActivityDefinitionSerializer
 from api_fhir_r4.serializers.healthcareServiceSerializer import HealthcareServiceSerializer
+from api_fhir_r4.serializers.insurancePlanSerializer import InsurancePlanSerializer
