@@ -3,7 +3,6 @@ import urllib
 from urllib.parse import urlparse
 
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext
 from insuree.models import Insuree, Gender, Education, Profession, Family, \
     InsureePhoto, Relation, IdentificationType
 from location.models import Location
@@ -157,11 +156,10 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_imis_names(cls, imis_insuree, fhir_patient, errors):
+        cls._validate_fhir_patient_human_name(fhir_patient)
         names = fhir_patient.name
-        if not cls.valid_condition(names is None, gettext('Missing patient `name` attribute'), errors):
-            imis_insuree.last_name, imis_insuree.other_names = cls.build_imis_last_and_other_name(names)
-            cls.valid_condition(imis_insuree.last_name is None, gettext('Missing patient family name'), errors)
-            cls.valid_condition(imis_insuree.other_names is None, gettext('Missing patient given name'), errors)
+        imis_insuree.last_name, imis_insuree.other_names = cls.build_imis_last_and_other_name(names)
+        cls._validate_imis_insuree_human_name(imis_insuree)
 
     @classmethod
     def build_fhir_identifiers(cls, fhir_patient, imis_insuree):
@@ -684,3 +682,23 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
             raise FHIRException(
                 _('Patient without family address')
             )
+
+    @classmethod
+    def _validate_fhir_patient_human_name(cls, fhir_patient):
+        if not fhir_patient.name:
+            raise FHIRException(
+                _('Missing fhir patient attribute: name')
+            )
+        for name in fhir_patient.name:
+            if not name.family or not name.given:
+                raise FHIRException(
+                    _('Missing obligatory fields for fhir patient name: family or given')
+                )
+
+    @classmethod
+    def _validate_imis_insuree_human_name(cls, imis_insuree):
+        if not imis_insuree.last_name or not imis_insuree.other_names:
+            raise FHIRException(
+                _('Missing patient family name or given name')
+            )
+

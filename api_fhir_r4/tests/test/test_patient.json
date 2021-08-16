@@ -78,12 +78,12 @@
             "coding":[
                {
                   "code":"SB",
-                  "system":"https://hl7.org/fhir/valueset-identifier-type.html"
+                  "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers"
                }
             ]
          },
          "use":"usual",
-         "value":"TEST_CHF_T"
+         "value":"TEST1"
       }
    ],
    "maritalStatus":{
