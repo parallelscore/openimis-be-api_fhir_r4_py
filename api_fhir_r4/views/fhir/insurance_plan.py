@@ -23,5 +23,9 @@ class ProductViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, viewsets.Model
         serializer = InsurancePlanSerializer(self.paginate_queryset(queryset), many=True)
         return self.get_paginated_response(serializer.data)
 
+    def retrieve(self, *args, **kwargs):
+        response = super().retrieve(self, *args, **kwargs)
+        return response
+
     def get_queryset(self):
-        return Product.objects.filter(validity_to__isnull=True).order_by('validity_from')
+        return Product.objects.all().order_by('validity_from')
