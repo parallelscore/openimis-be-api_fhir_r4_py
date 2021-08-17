@@ -38,9 +38,9 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
         errors = []
         fhir_insurance_plan = InsurancePlan(**fhir_insurance_plan)
         imis_product = Product()
-        imis_product.uuid = None
         imis_product.audit_user_id = audit_user_id
         cls.build_imis_name(imis_product, fhir_insurance_plan)
+        cls.build_imis_identifiers(imis_product, fhir_insurance_plan)
         cls.build_imis_period(imis_product, fhir_insurance_plan)
         cls.build_imis_coverage_area(imis_product, fhir_insurance_plan)
         cls.build_imis_coverage(imis_product, fhir_insurance_plan)
@@ -142,7 +142,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_coverage_area(cls, imis_product, fhir_insurance_plan):
         if fhir_insurance_plan.coverageArea:
-            coverage_area = fhir_insurance_plan.coverageAreae
+            coverage_area = fhir_insurance_plan.coverageArea[0]
             value = cls.__get_location_reference(coverage_area.reference)
             if value:
                 imis_product.location = Location.objects.get(uuid=value)
@@ -422,6 +422,10 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
                     imis_product.conversion_product = None
             elif "max-installments" in extension.url:
                     imis_product.max_installments = extension.valueUnsignedInt
+            # TODO - clarify this period extension and the same for discount extension
+            #  it is about handling the same extension object and how to assign values to particular one
+            elif "plan-period" in extension.url:
+                    imis_product.grace_period = extension.valueQuantity.value
             else:
                 pass
 
