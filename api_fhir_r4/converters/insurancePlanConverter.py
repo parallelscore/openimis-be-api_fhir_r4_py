@@ -5,6 +5,7 @@ from location.models import Location
 from product.models import Product
 from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from fhir.resources.extension import Extension
 from fhir.resources.money import Money
 from fhir.resources.insuranceplan import InsurancePlan, InsurancePlanCoverage, \
     InsurancePlanCoverageBenefit, InsurancePlanCoverageBenefitLimit, \
@@ -29,6 +30,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_coverage_area(fhir_insurance_plan, imis_product)
         cls.build_fhir_coverage(fhir_insurance_plan, imis_product)
         cls.build_fhir_plan(fhir_insurance_plan, imis_product)
+        cls.build_fhir_extentions(fhir_insurance_plan, imis_product)
         return fhir_insurance_plan
 
     @classmethod
@@ -38,6 +40,12 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
         imis_product = Product()
         imis_product.uuid = None
         imis_product.audit_user_id = audit_user_id
+        cls.build_imis_name(imis_product, fhir_insurance_plan)
+        cls.build_imis_period(imis_product, fhir_insurance_plan)
+        cls.build_imis_coverage_area(imis_product, fhir_insurance_plan)
+        cls.build_imis_coverage(imis_product, fhir_insurance_plan)
+        cls.build_imis_plan(imis_product, fhir_insurance_plan)
+        cls.build_imis_extentions(imis_product, fhir_insurance_plan)
         cls.check_errors(errors)
         return imis_product
 
@@ -338,9 +346,124 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 imis_product.general_assembly_fee = cost.cost.value
 
     @classmethod
-    def build_fhir_extentions(cls, fhir_insurance_plan, imis_product, reference_type):
-        pass
+    def build_fhir_extentions(cls, fhir_insurance_plan, imis_product):
+        fhir_insurance_plan.extension = []
+
+        def build_extension(fhir_insurance_plan, imis_product, value):
+            extension = Extension.construct()
+            if value == "conversion":
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-{value}"
+                reference_conversion = Reference.construct()
+                reference_conversion.reference = F"InsurancePlan/{imis_product.code}"
+                extension.valueReference = reference_conversion
+            elif value == "max-installments":
+                extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-{value}"
+                extension.valueUnsignedInt = imis_product.max_installments
+            elif value == "start_cycle1":
+                cls.__build_fhir_cycle(extension, value, imis_product.start_cycle_1)
+            elif value == "start_cycle2":
+                cls.__build_fhir_cycle(extension, value, imis_product.start_cycle_2)
+            elif value == "start_cycle3":
+                cls.__build_fhir_cycle(extension, value, imis_product.start_cycle_3)
+            elif value == "start_cycle4":
+                cls.__build_fhir_cycle(extension, value, imis_product.start_cycle_4)
+            elif value == "administration-period":
+                cls.__build_fhir_period_extension(extension, value, imis_product.administration_period)
+            elif value == "payment-grace-period":
+                cls.__build_fhir_period_extension(extension, value, imis_product.grace_period)
+            elif value == "renewal-grace-period":
+                cls.__build_fhir_period_extension(extension, value, imis_product.grace_period_renewal)
+            elif value == "renewal-discount":
+                cls.__build_fhir_discount_extension(
+                    extension=extension,
+                    type_extension=value,
+                    percent_value=imis_product.renewal_discount_perc,
+                    period=imis_product.renewal_discount_period
+                )
+            else:
+                pass
+
+            if type(fhir_insurance_plan.extension) is not list:
+                fhir_insurance_plan.extension = [extension]
+            else:
+                fhir_insurance_plan.extension.append(extension)
+
+        if imis_product.conversion_product is not None:
+            build_extension(fhir_insurance_plan, imis_product, "conversion")
+        if imis_product.max_installments is not None:
+            build_extension(fhir_insurance_plan, imis_product, "max-installments")
+        if imis_product.start_cycle_1 is not None:
+            build_extension(fhir_insurance_plan, imis_product, "start_cycle1")
+        if imis_product.start_cycle_2 is not None:
+            build_extension(fhir_insurance_plan, imis_product, "start_cycle2")
+        if imis_product.start_cycle_3 is not None:
+            build_extension(fhir_insurance_plan, imis_product, "start_cycle3")
+        if imis_product.start_cycle_4 is not None:
+            build_extension(fhir_insurance_plan, imis_product, "start_cycle4")
+        if imis_product.administration_period is not None:
+            build_extension(fhir_insurance_plan, imis_product, "administration-period")
+        if imis_product.grace_period is not None:
+            build_extension(fhir_insurance_plan, imis_product, "payment-grace-period")
+        if imis_product.grace_period_renewal is not None:
+            build_extension(fhir_insurance_plan, imis_product, "renewal-grace-period")
+        if imis_product.renewal_discount_perc is not None and imis_product.renewal_discount_period is not None:
+            build_extension(fhir_insurance_plan, imis_product, "renewal-discount")
 
     @classmethod
     def build_imis_extentions(cls, imis_product, fhir_insurance_plan):
-        pass
+        for extension in fhir_insurance_plan.extension:
+            if "conversion" in extension.url:
+                reference = extension.valueReference.reference
+                code = cls.__get_product_code_reference(code=reference)
+                try:
+                    product = Product.objects.get(code=code, validity_to__isnull=True)
+                    imis_product.conversion_product = product
+                except:
+                    imis_product.conversion_product = None
+            elif "max-installments" in extension.url:
+                    imis_product.max_installments = extension.valueUnsignedInt
+            else:
+                pass
+
+    @classmethod
+    def __get_product_code_reference(cls, code):
+        return code.rsplit('/', 1)[1]
+
+    @classmethod
+    def __build_fhir_cycle(cls, extension, type_extension, start_cycle):
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-{type_extension[0: -1]}"
+        extension.valueString = start_cycle
+
+    @classmethod
+    def __build_fhir_period_extension(cls, extension, type_extension, value):
+        splited_type = type_extension.split('-')
+        index_of_last_element = len(splited_type)-1
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-{splited_type[index_of_last_element]}"
+        extension.valueQuantity = Quantity(
+            **{
+                "value": value,
+                "unit": "months"
+            }
+        )
+
+    @classmethod
+    def __build_fhir_discount_extension(cls, extension, type_extension, percent_value, period):
+        splited_type = type_extension.split('-')
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-{splited_type[1]}"
+        nested_extension = Extension.construct()
+
+        # percentage
+        nested_extension.url = "Percentage"
+        nested_extension.valueDecimal = percent_value
+        extension.extension = [nested_extension]
+
+        # period
+        nested_extension = Extension.construct()
+        nested_extension.url = "Period"
+        nested_extension.valueQuantity = Quantity(
+            **{
+                "value": period,
+                "unit": "months"
+            }
+        )
+        extension.extension.append(nested_extension)
