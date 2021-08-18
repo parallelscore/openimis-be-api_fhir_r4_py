@@ -13,6 +13,7 @@ from fhir.resources.insuranceplan import InsurancePlan, InsurancePlanCoverage, \
 from fhir.resources.period import Period
 from fhir.resources.reference import Reference
 from fhir.resources.quantity import Quantity
+from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 
 
@@ -26,6 +27,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_pk(fhir_insurance_plan, imis_product.uuid)
         cls.build_fhir_name(fhir_insurance_plan, imis_product)
         cls.build_fhir_type(fhir_insurance_plan, imis_product)
+        cls.build_fhir_status(fhir_insurance_plan, imis_product)
         cls.build_fhir_period(fhir_insurance_plan, imis_product)
         cls.build_fhir_coverage_area(fhir_insurance_plan, imis_product)
         cls.build_fhir_coverage(fhir_insurance_plan, imis_product)
@@ -73,8 +75,8 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_imis_identifiers(cls, imis_product, fhir_insurance_plan):
         value = cls.get_fhir_identifier_by_code(fhir_insurance_plan.identifier,
                                                 R4IdentifierConfig.get_fhir_item_code_type())
-        if value:
-            imis_product.code = value
+        cls._validate_fhir_family_identifier_code(value)
+        imis_product.code = value
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
@@ -103,6 +105,19 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if len(type.coding) == 1:
             type.coding[0].display = _("Medical")
         return type
+
+    @classmethod
+    def build_fhir_status(cls, fhir_insurance_plan, imis_product):
+        from core import datetime
+        now = datetime.datetime.now()
+        status = "unknown"
+        if now < imis_product.date_from:
+            status = "draft"
+        elif now >= imis_product.date_from and now <= imis_product.date_to:
+            status = "active"
+        elif now > imis_product.date_to:
+            status = "retired"
+        fhir_insurance_plan.status = status
 
     @classmethod
     def build_fhir_period(cls, fhir_insurance_plan, imis_product):
@@ -471,3 +486,10 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             }
         )
         extension.extension.append(nested_extension)
+
+    @classmethod
+    def _validate_fhir_family_identifier_code(cls, fhir_insurance_plan_identifier_code):
+        if not fhir_insurance_plan_identifier_code:
+            raise FHIRException(
+                _('InsurancePlan FHIR without code - this field is obligatory')
+            )
