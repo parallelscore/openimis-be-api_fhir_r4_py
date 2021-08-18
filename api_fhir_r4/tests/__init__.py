@@ -13,3 +13,4 @@ from api_fhir_r4.tests.mixin.fhirApiReadTestMixin import FhirApiReadTestMixin
 from api_fhir_r4.tests.mixin.fhirApiCreateTestMixin import FhirApiCreateTestMixin
 from api_fhir_r4.tests.mixin.fhirApiUpdateTestMixin import FhirApiUpdateTestMixin
 from api_fhir_r4.tests.mixin.fhirApiDeleteTestMixin import FhirApiDeleteTestMixin
+from api_fhir_r4.tests.mixin.insurancePlanTestMixin import InsurancePlanTestMixin

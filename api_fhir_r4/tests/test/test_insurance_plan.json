@@ -8,7 +8,7 @@
       {
          "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/insurance-plan-period",
          "valueQuantity":{
-            "value":0.0,
+            "value":1.0,
             "unit":"months"
          }
       }

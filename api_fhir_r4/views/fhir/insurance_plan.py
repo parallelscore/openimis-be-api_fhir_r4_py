@@ -1,14 +1,14 @@
 from rest_framework import viewsets
 from product.models import Product
 
-from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin
+from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin, MultiIdentifierUpdateMixin
 from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiGroupPermissions
 from api_fhir_r4.serializers import InsurancePlanSerializer
 from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
 
 
-class ProductViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, viewsets.ModelViewSet):
+class ProductViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, MultiIdentifierUpdateMixin, viewsets.ModelViewSet):
     retrievers = [UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever]
     serializer_class = InsurancePlanSerializer
     permission_classes = (FHIRApiGroupPermissions,)
