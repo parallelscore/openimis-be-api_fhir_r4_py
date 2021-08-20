@@ -1,11 +1,16 @@
+from django.utils.translation import gettext as _
 from medical.models import Item
 from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.models import UsageContextV2 as UsageContext
+from api_fhir_r4.mapping.medicationMapping import ItemTypeMapping
 from fhir.resources.medication import Medication as FHIRMedication
 from fhir.resources.extension import Extension
 from fhir.resources.money import Money
 from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.coding import Coding
+from fhir.resources.quantity import Quantity
+from fhir.resources.ratio import Ratio
+from fhir.resources.timing import Timing, TimingRepeat
 from django.utils.translation import gettext
 from api_fhir_r4.utils import DbManagerUtils
 from api_fhir_r4.configurations import GeneralConfiguration
@@ -20,9 +25,10 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_pk(fhir_medication, imis_medication, reference_type)
         cls.build_fhir_identifiers(fhir_medication, imis_medication)
         cls.build_fhir_package_form(fhir_medication, imis_medication)
-        #cls.build_fhir_package_amount(fhir_medication, imis_medication)
+        cls.build_fhir_package_amount(fhir_medication, imis_medication)
         cls.build_medication_extension(fhir_medication, imis_medication)
         cls.build_fhir_code(fhir_medication, imis_medication)
+        cls.build_fhir_status(fhir_medication, imis_medication)
         cls.build_fhir_frequency_extension(fhir_medication, imis_medication)
         cls.build_fhir_topic_extension(fhir_medication, imis_medication)
         cls.build_fhir_use_context(fhir_medication, imis_medication)
@@ -84,7 +90,6 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         #fhir_medication.form = form
         fhir_medication.form = cls.build_codeable_concept("package", text=imis_medication.package.lstrip())
 
-    """
     @classmethod
     def split_package_form(cls, form):
         form = form.lstrip()
@@ -98,7 +103,11 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_package_amount(cls, fhir_medication, imis_medication):
         amount = cls.split_package_amount(imis_medication.package)
-        fhir_medication.amount = amount
+        ratio = Ratio.construct()
+        numerator = Quantity.construct()
+        numerator.value = amount
+        ratio.numerator = numerator
+        fhir_medication.amount = ratio
 
     @classmethod
     def split_package_amount(cls, amount):
@@ -109,11 +118,12 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
             amount = amount.split(' ', 1)
             amount = amount[0]
             return int(amount)
-    """
 
     @classmethod
     def build_medication_extension(cls, fhir_medication, imis_medication):
         cls.build_unit_price(fhir_medication, imis_medication)
+        cls.build_medication_type(fhir_medication, imis_medication)
+        #cls.build_medication_frequency(fhir_medication, imis_medication)
         return fhir_medication
 
     @classmethod
@@ -136,8 +146,52 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return extension
 
     @classmethod
+    def build_medication_type(cls, fhir_medication, imis_medication):
+        medication_type = cls.build_medication_type_extension(imis_medication.type)
+        if type(fhir_medication.extension) is not list:
+           fhir_medication.extension = [medication_type]
+        else:
+           fhir_medication.extension.append(medication_type)
+
+    @classmethod
+    def build_medication_type_extension(cls, value):
+        extension = Extension.construct()
+        display = ItemTypeMapping.item_type[value]
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/medication-item-type"
+        coding = cls.build_codeable_concept(code=value, system=system, display=_(display))
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/medication-type"
+        extension.valueCodeableConcept = coding
+        return extension
+
+    @classmethod
+    def build_medication_frequency(cls, fhir_medication, imis_medication):
+        medication_frequency = cls.build_medication_frequency_extension(imis_medication.frequency)
+        if type(fhir_medication.extension) is not list:
+            fhir_medication.extension = [medication_frequency]
+        else:
+            fhir_medication.extension.append(medication_frequency)
+
+    @classmethod
+    def build_medication_frequency_extension(cls, value):
+        extension = Extension.construct()
+        timing = Timing.construct()
+        timing_repeat = TimingRepeat.construct()
+        timing_repeat.frequency = str(value)
+        timing_repeat.period = '0'
+        timing_repeat.unit = 'd'
+        timing.repeat = timing_repeat
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/medication-frequency"
+        extension.valueTiming = timing
+        return extension
+
+    @classmethod
     def build_fhir_code(cls, fhir_medication, imis_medication):
         fhir_medication.code = cls.build_codeable_concept(imis_medication.code, text=imis_medication.name)
+        fhir_medication.code.coding[0].system = "http://snomed.info/sct"
+
+    @classmethod
+    def build_fhir_status(cls, fhir_medication, imis_medication):
+        fhir_medication.status = "active"
 
     @classmethod
     def build_imis_item_code(cls, imis_medication, fhir_medication, errors):
