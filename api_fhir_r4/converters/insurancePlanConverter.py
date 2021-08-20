@@ -430,10 +430,11 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             if "conversion" in extension.url:
                 reference = extension.valueReference.reference
                 code = cls.__get_product_code_reference(code=reference)
-                try:
-                    product = Product.objects.get(code=code, validity_to__isnull=True)
+                products = product = Product.objects.filter(code=code, validity_to__isnull=True)
+                if products:
+                    product = products.first()
                     imis_product.conversion_product = product
-                except:
+                else:
                     imis_product.conversion_product = None
             elif "max-installments" in extension.url:
                     imis_product.max_installments = extension.valueUnsignedInt
