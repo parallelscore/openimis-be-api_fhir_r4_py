@@ -430,7 +430,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             if "conversion" in extension.url:
                 reference = extension.valueReference.reference
                 code = cls.__get_product_code_reference(code=reference)
-                products = product = Product.objects.filter(code=code, validity_to__isnull=True)
+                products = Product.objects.filter(code=code, validity_to__isnull=True)
                 if products:
                     product = products.first()
                     imis_product.conversion_product = product
