@@ -75,7 +75,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_imis_identifiers(cls, imis_product, fhir_insurance_plan):
         value = cls.get_fhir_identifier_by_code(fhir_insurance_plan.identifier,
                                                 R4IdentifierConfig.get_fhir_item_code_type())
-        cls._validate_fhir_family_identifier_code(value)
+        cls._validate_fhir_insurance_plan_identifier_code(value)
         imis_product.code = value
 
     @classmethod
@@ -489,7 +489,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
         extension.extension.append(nested_extension)
 
     @classmethod
-    def _validate_fhir_family_identifier_code(cls, fhir_insurance_plan_identifier_code):
+    def _validate_fhir_insurance_plan_identifier_code(cls, fhir_insurance_plan_identifier_code):
         if not fhir_insurance_plan_identifier_code:
             raise FHIRException(
                 _('InsurancePlan FHIR without code - this field is obligatory')
