@@ -10,6 +10,10 @@ imis_modules = openimis_apps()
 
 router = DefaultRouter()
 router.register(r'login', LoginView, basename="login")
+# register endpoint related to Product module if used
+if 'product' in imis_modules:
+    router.register(r'InsurancePlan', fhir_viewsets.ProductViewSet, basename="InsurancePlan_R4")
+
 # register endpoint related to Location module if used
 if 'location' in imis_modules:
     router.register(r'Location', fhir_viewsets.LocationViewSet, basename="Location_R4")

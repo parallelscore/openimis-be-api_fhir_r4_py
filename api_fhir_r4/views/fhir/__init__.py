@@ -14,3 +14,4 @@ from api_fhir_r4.views.fhir.medication import MedicationViewSet
 from api_fhir_r4.views.fhir.organisation import OrganisationViewSet
 from api_fhir_r4.views.fhir.practitioner import PractitionerViewSet
 from api_fhir_r4.views.fhir.practitioner_role import PractitionerRoleViewSet
+from api_fhir_r4.views.fhir.insurance_plan import ProductViewSet

@@ -35,7 +35,6 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
             if data["identifier"][i]["type"]["coding"][0]["code"] == "SB":
                 del data["identifier"][i]
                 return data
-        return data
 
     def update_payload_no_extensions(self, data):
         data["extension"] = []
@@ -46,7 +45,6 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
             if data["address"][i]['use'] == "home":
                 del data["address"][i]
                 return data
-        return data
 
     def update_payload_missing_fhir_address_details(self, data, field, kind_of_address):
         for address in data["address"]:

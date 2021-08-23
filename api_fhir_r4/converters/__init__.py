@@ -204,3 +204,4 @@ from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
+from api_fhir_r4.converters.insurancePlanConverter import InsurancePlanConverter

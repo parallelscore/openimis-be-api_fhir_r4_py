@@ -3,6 +3,7 @@ from insuree.apps import InsureeConfig
 from location.apps import LocationConfig
 from policy.apps import PolicyConfig
 from policyholder.apps import PolicyholderConfig
+from product.apps import ProductConfig
 from medical.apps import MedicalConfig
 from rest_framework import exceptions
 from rest_framework.permissions import DjangoModelPermissions
@@ -131,3 +132,12 @@ class FHIRApiOrganizationPermissions(FHIRApiPermissions):
     permissions_put = PolicyholderConfig.gql_mutation_update_policyholder_perms
     permissions_patch = PolicyholderConfig.gql_mutation_update_policyholder_perms
     permissions_delete = PolicyholderConfig.gql_mutation_delete_policyholder_perms
+
+
+class FHIRApiProductPermissions(FHIRApiPermissions):
+    permissions_get = ProductConfig.gql_query_products_perms
+    permissions_post = ProductConfig.gql_mutation_products_add_perms
+    permissions_put = ProductConfig.gql_mutation_products_edit_perms
+    permissions_patch = ProductConfig.gql_mutation_products_edit_perms
+    permissions_delete = ProductConfig.gql_mutation_products_delete_perms
+
