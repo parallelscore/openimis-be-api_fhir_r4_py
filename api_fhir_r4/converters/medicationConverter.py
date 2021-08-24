@@ -86,9 +86,10 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_package_form(cls, fhir_medication, imis_medication):
-        #form = cls.split_package_form(imis_medication.package)
-        #fhir_medication.form = form
-        fhir_medication.form = cls.build_codeable_concept("package", text=imis_medication.package.lstrip())
+        # TODO - Split medical item ItemPackage into ItemForm and ItemAmount => openIMIS side
+        codeable = CodeableConcept.construct()
+        codeable.text = imis_medication.package.lstrip()
+        fhir_medication.form = codeable
 
     @classmethod
     def split_package_form(cls, form):
@@ -102,6 +103,7 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_package_amount(cls, fhir_medication, imis_medication):
+        # TODO - Split medical item ItemPackage into ItemForm and ItemAmount => openIMIS side
         amount = cls.split_package_amount(imis_medication.package)
         ratio = Ratio.construct()
         numerator = Quantity.construct()
@@ -186,8 +188,9 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_code(cls, fhir_medication, imis_medication):
-        fhir_medication.code = cls.build_codeable_concept(imis_medication.code, text=imis_medication.name)
-        fhir_medication.code.coding[0].system = "http://snomed.info/sct"
+        codeable = CodeableConcept.construct()
+        codeable.text = imis_medication.name
+        fhir_medication.code = codeable
 
     @classmethod
     def build_fhir_status(cls, fhir_medication, imis_medication):

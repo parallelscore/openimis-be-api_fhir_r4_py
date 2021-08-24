@@ -127,11 +127,6 @@
    },
    "status":"active",
    "form":{
-      "coding":[
-         {
-            "code":"package"
-         }
-      ],
       "text":"1000 TABLETS"
    },
    "amount":{
