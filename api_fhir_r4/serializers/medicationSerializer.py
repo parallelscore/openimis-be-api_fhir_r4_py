@@ -21,5 +21,10 @@ class MedicationSerializer(BaseFHIRSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.package = validated_data.get('package', instance.package)
         instance.price = validated_data.get('price', instance.price)
+        instance.type = validated_data.get('type', instance.type)
+        instance.care_type = validated_data.get('care_type', instance.care_type)
+        instance.frequency = validated_data.get('frequency', instance.frequency)
+        instance.patient_category = validated_data.get('patient_category', instance.patient_category)
+        instance.audit_user_id = self.get_audit_user_id()
         instance.save()
         return instance
