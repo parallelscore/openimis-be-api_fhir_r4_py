@@ -34,6 +34,11 @@ class MedicationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirAp
                 del data["identifier"][i]
                 return data
 
+    def update_payload_missing_item_name(self, data):
+        if "code" in data:
+            data.pop("code")
+        return data
+
     def test_post_should_raise_error_no_code_identifier(self):
         self.login()
         self.create_dependencies()
@@ -44,4 +49,16 @@ class MedicationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirAp
         self.assertEqual(
             response_json["issue"][0]["details"]["text"],
             _("The request cannot be processed due to the following issues:\nMissing medication `item_code` attribute")
+        )
+
+    def test_post_should_raise_error_no_item_name(self):
+        self.login()
+        self.create_dependencies()
+        modified_payload = self.update_payload_missing_item_name(data=self._test_request_data)
+        response = self.client.post(self.base_url, data=modified_payload, format='json')
+        response_json = response.json()
+        splited_output = response_json["issue"][0]["details"]["text"].split(" ")
+        self.assertEqual(
+            response_json["issue"][0]["details"]["text"],
+            _("The request cannot be processed due to the following issues:\nMissing medication `item_name` attribute")
         )

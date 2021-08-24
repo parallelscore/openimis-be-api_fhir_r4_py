@@ -206,9 +206,9 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_imis_item_name(cls, imis_medication, fhir_medication, errors):
-        item_name = fhir_medication.code.text
-        if not cls.valid_condition(item_name is None,
+        if not cls.valid_condition(fhir_medication.code is None,
                                    gettext('Missing medication `item_name` attribute'), errors):
+            item_name = fhir_medication.code.text
             imis_medication.name = item_name
 
     @classmethod
