@@ -4,7 +4,7 @@
       {
          "url":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/unit-price",
          "valueMoney":{
-            "value":5.0,
+            "value":5.99,
             "currency":"$"
          }
       },
