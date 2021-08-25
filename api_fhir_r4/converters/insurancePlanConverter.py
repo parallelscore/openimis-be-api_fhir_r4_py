@@ -395,6 +395,13 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
                     percent_value=imis_product.renewal_discount_perc,
                     period=imis_product.renewal_discount_period
                 )
+            elif value == "enrolment-discount":
+                cls.__build_fhir_discount_extension(
+                    extension=extension,
+                    type_extension=value,
+                    percent_value=imis_product.enrolment_discount_perc,
+                    period=imis_product.enrolment_discount_period
+                )
             else:
                 pass
 
@@ -423,9 +430,13 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             build_extension(fhir_insurance_plan, imis_product, "renewal-grace-period")
         if imis_product.renewal_discount_perc is not None and imis_product.renewal_discount_period is not None:
             build_extension(fhir_insurance_plan, imis_product, "renewal-discount")
+        if imis_product.enrolment_discount_perc is not None and imis_product.enrolment_discount_period is not None:
+            build_extension(fhir_insurance_plan, imis_product, "enrolment-discount")
 
     @classmethod
     def build_imis_extentions(cls, imis_product, fhir_insurance_plan):
+        period_exts = []
+        discount_exts = []
         for extension in fhir_insurance_plan.extension:
             if "conversion" in extension.url:
                 reference = extension.valueReference.reference
@@ -440,9 +451,44 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             # TODO - clarify this period extension and the same for discount extension
             #  it is about handling the same extension object and how to assign values to particular one
             elif "plan-period" in extension.url:
-                    imis_product.grace_period = extension.valueQuantity.value
+                period_exts.append(extension)
+            elif "plan-discount" in extension.url:
+                discount_exts.append(extension)
             else:
                 pass
+        cls.__build_period_extensions(imis_product, period_exts)
+        cls.__build_discount_extensions(imis_product, discount_exts)
+
+    @classmethod
+    def __build_period_extensions(cls, imis_product, period_exts):
+        if len(period_exts) > 0:
+            for i in range(len(period_exts)):
+                value = period_exts[i].valueQuantity.value
+                if i == 0:
+                    imis_product.grace_period = value
+                if i == 1:
+                    imis_product.administration_period = value
+                if i == 2:
+                    imis_product.grace_period_renewal = value
+
+    @classmethod
+    def __build_discount_extensions(cls, imis_product, discount_exts):
+        if len(discount_exts) > 0:
+            for i in range(len(discount_exts)):
+                nested_extension = discount_exts[i].extension
+                percent_of_discount = None
+                period = None
+                for ext in nested_extension:
+                    if ext.url == "Percentage":
+                       percent_of_discount = ext.valueDecimal
+                    if ext.url == "Period":
+                       period = ext.valueQuantity.value
+                if i == 0:
+                    imis_product.renewal_discount_perc = percent_of_discount
+                    imis_product.renewal_discount_period = period
+                if i == 1:
+                    imis_product.enrolment_discount_perc = percent_of_discount
+                    imis_product.enrolment_discount_period = period
 
     @classmethod
     def __get_product_code_reference(cls, code):

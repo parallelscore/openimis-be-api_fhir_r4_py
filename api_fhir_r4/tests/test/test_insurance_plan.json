@@ -11,6 +11,38 @@
             "value":1.0,
             "unit":"months"
          }
+      },
+      {
+         "extension":[
+            {
+               "url":"Percentage",
+               "valueDecimal":40
+            },
+            {
+               "url":"Period",
+               "valueQuantity":{
+                  "value":1,
+                  "unit":"months"
+               }
+            }
+         ],
+         "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/insurance-plan-discount"
+      },
+      {
+         "extension":[
+            {
+               "url":"Percentage",
+               "valueDecimal":30
+            },
+            {
+               "url":"Period",
+               "valueQuantity":{
+                  "value":1,
+                  "unit":"months"
+               }
+            }
+         ],
+         "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/insurance-plan-discount"
       }
    ],
    "identifier":[
