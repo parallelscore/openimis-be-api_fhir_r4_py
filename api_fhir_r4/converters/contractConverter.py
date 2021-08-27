@@ -1,16 +1,22 @@
-from django.utils.translation import gettext
-from api_fhir_r4.configurations import R4CoverageConfig
+import core
+
+from django.utils.translation import gettext as _
+from api_fhir_r4.configurations import GeneralConfiguration, R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.mapping.contractMapping import PayTypeMapping
 from api_fhir_r4.models import ContractSignerV2 as ContractSigner
 from fhir.resources.contract import Contract, ContractTermAssetContext, ContractTermAssetValuedItem, \
-    ContractTerm, ContractTermAsset
+    ContractTerm, ContractTermAsset, ContractTermOffer, ContractTermOfferParty
+from fhir.resources.extension import Extension
 from fhir.resources.money import Money
 from fhir.resources.period import Period
+from fhir.resources.reference import Reference
 
 from product.models import Product
 from policy.models import Policy
-from insuree.models import Insuree
+from insuree.models import Insuree, InsureePolicy
 from insuree.models import Family
+from contribution.models import Premium
 from core.models import Officer
 from api_fhir_r4.utils import DbManagerUtils,TimeUtils
 
@@ -20,15 +26,21 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def to_fhir_obj(cls, imis_policy, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_contract = Contract.construct()
         cls.build_contract_identifier(fhir_contract, imis_policy)
-        contractTerm = ContractTerm.construct()
-        contractTermAsset = ContractTermAsset.construct()
-        cls.build_contract_asset_context(contractTermAsset, imis_policy, reference_type)
-        cls.build_contract_asset_type_reference(contractTermAsset, imis_policy, reference_type)
-        cls.build_contract_valued_item_entity(contractTermAsset, imis_policy)
-        cls.build_contract_asset_use_period(contractTermAsset, imis_policy)
-        contractTerm.asset = [contractTermAsset]
+        cls.build_contract_author(fhir_contract, imis_policy, reference_type)
+        cls.build_contract_subject(fhir_contract, imis_policy, reference_type)
+        cls.build_contract_scope(fhir_contract, imis_policy)
+        contract_term = ContractTerm.construct()
+        # new development
+        cls.build_contract_term_offer(contract_term, imis_policy, reference_type)
+        contract_term_asset = ContractTermAsset.construct()
+        cls.build_contract_asset_extension(contract_term_asset, imis_policy, reference_type)
+        #cls.build_contract_asset_context(contract_term_asset, imis_policy, reference_type)
+        cls.build_contract_asset_type_reference(contract_term_asset, imis_policy, reference_type)
+        cls.build_contract_valued_item_entity(contract_term_asset, imis_policy)
+        cls.build_contract_asset_use_period(contract_term_asset, imis_policy)
+        contract_term.asset = [contract_term_asset]
         # TODO - fix commented entries: 'term' and 'signer'
-        #fhir_contract.term = [contractTerm]
+        fhir_contract.term = [contract_term]
         cls.build_contract_status(fhir_contract, imis_policy)
         #cls.build_contract_signer(fhir_contract, imis_policy, reference_type)
         cls.build_contract_state(fhir_contract, imis_policy)
@@ -83,9 +95,115 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return identifiers
 
     @classmethod
+    def build_contract_author(cls, fhir_contract, imis_policy, reference_type):
+        author = cls.build_fhir_resource_reference(
+            imis_policy.officer, "Practitioner", imis_policy.officer.code, reference_type=reference_type)
+        fhir_contract.author = author
+
+    @classmethod
+    def build_contract_subject(cls, fhir_contract, imis_policy, reference_type):
+        subject = cls.build_fhir_resource_reference(
+            imis_policy.family, "Group", imis_policy.family.head_insuree.last_name, reference_type=reference_type)
+        fhir_contract.subject = [subject]
+
+    @classmethod
+    def build_contract_scope(cls, fhir_contract, imis_policy):
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/contract-scope"
+        fhir_contract.scope = cls.build_codeable_concept(code="informal", system=system)
+        if len(fhir_contract.scope.coding) == 1:
+            fhir_contract.scope.coding[0].display = _("Informal Sector")
+
+    @classmethod
+    def build_contract_asset_extension(cls, contract_term_asset, imis_policy, reference_type):
+        cls.build_contract_asset_premium(contract_term_asset, imis_policy)
+
+    @classmethod
+    def build_contract_asset_premium(cls, contract_term_asset, imis_policy):
+        asset_extensions = Extension.construct()
+        asset_extensions.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/contract-premium"
+        if Premium.objects.filter(policy=imis_policy, validity_to__isnull=True).count() > 0:
+            imis_premium = Premium.objects.get(policy=imis_policy, validity_to__isnull=True)
+            fhir_premium = cls.build_contract_asset_premium_extension(asset_extensions, imis_premium)
+            if type(contract_term_asset.extension) is not list:
+                contract_term_asset.extension = [fhir_premium]
+            else:
+                contract_term_asset.extension.append(fhir_premium)
+
+    @classmethod
+    def build_contract_asset_premium_extension(cls,asset_extensions, imis_premium):
+        cls.build_premium_payer_ext(asset_extensions)
+        cls.build_premium_category_ext(asset_extensions)
+        cls.build_premium_amount_ext(asset_extensions, imis_premium)
+        cls.build_premium_receipt_ext(asset_extensions, imis_premium)
+        cls.build_premium_date_ext(asset_extensions, imis_premium)
+        cls.build_premium_type_ext(asset_extensions, imis_premium)
+        return asset_extensions
+
+    @classmethod
+    def build_premium_payer_ext(cls, asset_extensions):
+        extension = Extension.construct()
+        extension.url = "payer"
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/contract-premium-payer"
+        extension.valueCodeableConcept = cls.build_codeable_concept(code="beneficiary", system=system)
+        if len(extension.valueCodeableConcept.coding) == 1:
+            extension.valueCodeableConcept.coding[0].display = _("Beneficiary")
+        asset_extensions.extension = [extension]
+
+    @classmethod
+    def build_premium_category_ext(cls, asset_extensions):
+        extension = Extension.construct()
+        extension.url = "category"
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/contract-premium-category"
+        extension.valueCodeableConcept = cls.build_codeable_concept(code="C", system=system)
+        if len(extension.valueCodeableConcept.coding) == 1:
+            extension.valueCodeableConcept.coding[0].display = _("Contribution and Others")
+        asset_extensions.extension.append(extension)
+
+    @classmethod
+    def build_premium_amount_ext(cls, asset_extensions, imis_premium):
+        # get the currency defined in configs from core module
+        if hasattr(core, 'currency'):
+            currency = core.currency
+        else:
+            currency = "EUR"
+
+        extension = Extension.construct()
+        extension.url = "amount"
+        money = Money(**{
+            "value": imis_premium.amount,
+            "currency": currency
+        })
+        extension.valueMoney = money
+        asset_extensions.extension.append(extension)
+
+    @classmethod
+    def build_premium_receipt_ext(cls, asset_extensions, imis_premium):
+        extension = Extension.construct()
+        extension.url = "receipt"
+        extension.valueString = imis_premium.receipt
+        asset_extensions.extension.append(extension)
+
+    @classmethod
+    def build_premium_date_ext(cls, asset_extensions, imis_premium):
+        extension = Extension.construct()
+        extension.url = "date"
+        extension.valueDate = imis_premium.pay_date
+        asset_extensions.extension.append(extension)
+
+    @classmethod
+    def build_premium_type_ext(cls,asset_extensions, imis_premium):
+        extension = Extension.construct()
+        extension.url = "type"
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/contract-premium-type"
+        extension.valueCodeableConcept = cls.build_codeable_concept(code=imis_premium.pay_type, system=system)
+        if len(extension.valueCodeableConcept.coding) == 1:
+            extension.valueCodeableConcept.coding[0].display = PayTypeMapping.pay_type[imis_premium.pay_type]
+        asset_extensions.extension.append(extension)
+
+    @classmethod
     def build_contract_asset_use_period(cls, contract_asset, imis_policy):
         period_use = Period.construct()
-        period= Period.construct()
+        period = Period.construct()
         if imis_policy.start_date is not None:
             period.start = imis_policy.start_date.strftime("%Y-%m-%d")
             period_use.start = period.start
@@ -136,6 +254,24 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
             else:
                 contract_term_asset.context.append(assetContext)
         return contract_term_asset
+
+    @classmethod
+    def build_contract_term_offer(cls, contract_term_offer, imis_policy, reference_type):
+        offer = ContractTermOffer.construct()
+
+        offer_party = ContractTermOfferParty.construct()
+        reference = Reference.construct()
+        insuree_uuid = imis_policy.family.head_insuree.uuid
+        reference.reference = f"Patient/{insuree_uuid}"
+        offer_party.reference = [reference]
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/contract-resource-party-role"
+        offer_party.role = cls.build_codeable_concept(code="beneficiary", system=system)
+        if len(offer_party.role.coding) == 1:
+            offer_party.role.coding[0].display = _("Beneficiary")
+
+        offer.party = [offer_party]
+        contract_term_offer.offer = offer
+        pass
         
     @classmethod
     def build_contract_status(cls, contract, imis_policy):
@@ -164,7 +300,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_contract_valued_item_entity(cls, contract_asset, imis_policy):
         valued_item = ContractTermAssetValuedItem.construct()
-        typeReference = cls.build_fhir_resource_reference(imis_policy.product, "InsuranceProduct", imis_policy.product.code )
+        typeReference = cls.build_fhir_resource_reference(imis_policy.product, "InsurancePlan", imis_policy.product.code)
         valued_item.entityReference = typeReference
         policy_value = Money.construct()
         policy_value.value = imis_policy.value
@@ -177,9 +313,19 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_contract_asset_type_reference(cls, contract_asset, imis_policy, reference_type):
-        typeReference = cls.build_fhir_resource_reference(
-            imis_policy.product, "InsurancePlan", imis_policy.product.code, reference_type=reference_type)
-        contract_asset.typeReference = [typeReference]
+        # type reference - take incurees covered u a policy patient
+        list_insuree_policy = InsureePolicy.objects.filter(
+            policy=imis_policy,
+            validity_to__isnull=True
+        ).only('insuree')
+        for insuree_policy in list_insuree_policy:
+            insuree = insuree_policy.insuree
+            typeReference = cls.build_fhir_resource_reference(
+                insuree, "Patient", insuree.chf_id, reference_type=reference_type)
+            if type(contract_asset.typeReference) is not list:
+                contract_asset.typeReference = [typeReference]
+            else:
+                contract_asset.typeReference.append(typeReference)
         return contract_asset
 
     @classmethod
@@ -223,14 +369,14 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 for asset in term.asset:
                     if asset.period:
                         for period in asset.period:
-                            if not cls.valid_condition(period.start is None, gettext('Missing  `period start` attribute'),errors):
+                            if not cls.valid_condition(period.start is None, _('Missing  `period start` attribute'),errors):
                                 imis_policy.start_date = TimeUtils.str_to_date(period.start) 
                                 imis_policy.enroll_date = TimeUtils.str_to_date(period.start) 
-                            if not cls.valid_condition(period.end is None, gettext('Missing  `period end` attribute'),errors):
+                            if not cls.valid_condition(period.end is None, _('Missing  `period end` attribute'),errors):
                                 imis_policy.expiry_date = TimeUtils.str_to_date(period.end) 
                                 imis_policy.validity_to = TimeUtils.str_to_date(period.end)
                     else:
-                        cls.valid_condition(not asset.period, gettext('Missing  `period` attribute'),errors)
+                        cls.valid_condition(not asset.period, _('Missing  `period` attribute'),errors)
                         
                         
     @classmethod
@@ -240,12 +386,12 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 for asset in term.asset:
                     if asset.usePeriod:
                         for period in asset.usePeriod:
-                            if not cls.valid_condition(period.start is None, gettext('Missing  `usePeriod start` attribute'),errors):
+                            if not cls.valid_condition(period.start is None, _('Missing  `usePeriod start` attribute'),errors):
                                 imis_policy.effective_date = TimeUtils.str_to_date(period.start)
-                            if not cls.valid_condition(period.end is None, gettext('Missing  `usePeriod end` attribute'),errors):
+                            if not cls.valid_condition(period.end is None, _('Missing  `usePeriod end` attribute'),errors):
                                 imis_policy.expiry_date = TimeUtils.str_to_date(period.end) 
                     else:
-                        cls.valid_condition(not asset.usePeriod, gettext('Missing  `usePeriod` attribute'),errors)
+                        cls.valid_condition(not asset.usePeriod, _('Missing  `usePeriod` attribute'),errors)
     
     @classmethod
     def build_imis_status(cls, fhir_contract, imis_policy,errors):
@@ -261,7 +407,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
             else:
                 pass    
         else:
-            cls.valid_condition(fhir_contract.status is None, gettext('Missing  `status` attribute'),errors)
+            cls.valid_condition(fhir_contract.status is None, _('Missing  `status` attribute'),errors)
 
     @classmethod
     def imis_map_status(cls,code,imis_policy):
@@ -287,18 +433,18 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                                 if insuree.head:
                                     imis_policy.family= Family.objects.filter(head_insuree=insuree).first()
                                 else:
-                                    cls.valid_condition(True, gettext('Missing  `Member details provided belong to a depedant` attribute'),errors)
+                                    cls.valid_condition(True, _('Missing  `Member details provided belong to a depedant` attribute'),errors)
                             except:
-                                cls.valid_condition(True, gettext('Missing  `Family head provided does not exist` attribute'),errors)
+                                cls.valid_condition(True, _('Missing  `Family head provided does not exist` attribute'),errors)
                         elif signer.type.text == 'EnrolmentOfficer':
                             reference = signer.party.reference.split("/", 2)
                             imis_policy.officer = Officer.objects.get(uuid=reference[1])
                         else:
                             pass     
                 else:
-                    cls.valid_condition(signer.type is None, gettext('Missing  `type` attribute'),errors)
+                    cls.valid_condition(signer.type is None, _('Missing  `type` attribute'),errors)
         else:
-            cls.valid_condition(not fhir_contract.signer, gettext('Missing  `signer` attribute'),errors)
+            cls.valid_condition(not fhir_contract.signer, _('Missing  `signer` attribute'),errors)
             
     @classmethod
     def build_imis_insurees(cls,fhir_contract,imis_policy,errors):
@@ -320,20 +466,20 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                                                insurees.append(obj.uuid)
                                        else:
                                             if 'Missing  `Invalid Context reference` attribute' not in errors:
-                                                cls.valid_condition(True, gettext('Missing  `Invalid Context reference` attribute'),errors)
+                                                cls.valid_condition(True, _('Missing  `Invalid Context reference` attribute'),errors)
                             imis_policy.insurees = insurees                    
                         else:
-                            cls.valid_condition(not asset.context, gettext('Missing  `context` attribute'),errors)
+                            cls.valid_condition(not asset.context, _('Missing  `context` attribute'),errors)
                 else:
-                    cls.valid_condition(not term.asset, gettext('Missing  `asset` attribute'),errors)
+                    cls.valid_condition(not term.asset, _('Missing  `asset` attribute'),errors)
                         
         else:
-            cls.valid_condition(not fhir_contract, gettext('Missing  `term` attribute'),errors)
+            cls.valid_condition(not fhir_contract, _('Missing  `term` attribute'),errors)
             
     
     
     @classmethod
-    def build_imis_product(cls,fhir_contract,imis_policy,errors):
+    def build_imis_product(cls,fhir_contract, imis_policy,errors):
         if fhir_contract.term:
             for term in  fhir_contract.term:
                 if term.asset:
@@ -348,12 +494,12 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                                     if item.net.value is not None:
                                         imis_policy.value = item.net.value                                                       
                         else:
-                            cls.valid_condition(not asset.valuedItem, gettext('Missing  `valuedItem` attribute'),errors)
+                            cls.valid_condition(not asset.valuedItem, _('Missing  `valuedItem` attribute'), errors)
                 else:
-                    cls.valid_condition(not term.asset, gettext('Missing  `asset` attribute'),errors)
+                    cls.valid_condition(not term.asset, _('Missing  `asset` attribute'), errors)
                         
         else:
-            cls.valid_condition(not fhir_contract, gettext('Missing  `term` attribute'),errors)
+            cls.valid_condition(not fhir_contract, _('Missing  `term` attribute'), errors)
                         
     @classmethod
     def build_imis_state(cls,fhir_contract, imis_policy,errors):
@@ -366,7 +512,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 else:
                     pass       
         else:
-            cls.valid_condition(fhir_contract.legalState is None, gettext('Missing  `legalState` attribute'),errors)
+            cls.valid_condition(fhir_contract.legalState is None, _('Missing  `legalState` attribute'),errors)
     
     @classmethod
     def imis_map_stage(cls,code,imis_policy):
