@@ -3,9 +3,9 @@ import core
 from django.utils.translation import gettext as _
 from api_fhir_r4.configurations import GeneralConfiguration, R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
-from api_fhir_r4.mapping.contractMapping import PayTypeMapping
-from api_fhir_r4.models import ContractSignerV2 as ContractSigner
-from fhir.resources.contract import Contract, ContractTermAssetContext, ContractTermAssetValuedItem, \
+from api_fhir_r4.mapping.contractMapping import PayTypeMapping, ContractStatus, \
+    ContractState
+from fhir.resources.contract import Contract, ContractTermAssetValuedItem, \
     ContractTerm, ContractTermAsset, ContractTermOffer, ContractTermOfferParty
 from fhir.resources.extension import Extension
 from fhir.resources.money import Money
@@ -18,7 +18,7 @@ from insuree.models import Insuree, InsureePolicy
 from insuree.models import Family
 from contribution.models import Premium
 from core.models import Officer
-from api_fhir_r4.utils import DbManagerUtils,TimeUtils
+from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 
 
 class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
@@ -30,19 +30,15 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_contract_subject(fhir_contract, imis_policy, reference_type)
         cls.build_contract_scope(fhir_contract, imis_policy)
         contract_term = ContractTerm.construct()
-        # new development
         cls.build_contract_term_offer(contract_term, imis_policy, reference_type)
         contract_term_asset = ContractTermAsset.construct()
         cls.build_contract_asset_extension(contract_term_asset, imis_policy, reference_type)
-        #cls.build_contract_asset_context(contract_term_asset, imis_policy, reference_type)
         cls.build_contract_asset_type_reference(contract_term_asset, imis_policy, reference_type)
         cls.build_contract_valued_item_entity(contract_term_asset, imis_policy)
         cls.build_contract_asset_use_period(contract_term_asset, imis_policy)
         contract_term.asset = [contract_term_asset]
-        # TODO - fix commented entries: 'term' and 'signer'
         fhir_contract.term = [contract_term]
         cls.build_contract_status(fhir_contract, imis_policy)
-        #cls.build_contract_signer(fhir_contract, imis_policy, reference_type)
         cls.build_contract_state(fhir_contract, imis_policy)
         return fhir_contract
     
@@ -55,7 +51,8 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_imis_period(imis_policy, fhir_contract.term, errors)
         cls.build_imis_useperiod(imis_policy, fhir_contract.term, errors)
         cls.build_imis_status(fhir_contract,imis_policy, errors)
-        cls.build_imis_signer(fhir_contract, imis_policy, errors)
+        cls.build_imis_author(fhir_contract, imis_policy, errors)
+        cls.build_imis_subject(fhir_contract, imis_policy, errors)
         cls.build_imis_product(fhir_contract, imis_policy, errors)
         cls.build_imis_state(fhir_contract, imis_policy, errors)
         cls.build_imis_insurees(fhir_contract, imis_policy, errors)
@@ -130,7 +127,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 contract_term_asset.extension.append(fhir_premium)
 
     @classmethod
-    def build_contract_asset_premium_extension(cls,asset_extensions, imis_premium):
+    def build_contract_asset_premium_extension(cls, asset_extensions, imis_premium):
         cls.build_premium_payer_ext(asset_extensions)
         cls.build_premium_category_ext(asset_extensions)
         cls.build_premium_amount_ext(asset_extensions, imis_premium)
@@ -226,36 +223,6 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return contract_asset
 
     @classmethod
-    def build_contract_asset_context(cls, contract_term_asset, imis_policy, reference_type):
-        insureePolicies = imis_policy.insuree_policies.all()
-        for insureePolicy in insureePolicies:
-            if insureePolicy.insuree.head is True:
-                party_role = cls.build_simple_codeable_concept(R4CoverageConfig.get_offer_insuree_role_code())
-            else:
-                party_role = cls.build_simple_codeable_concept(R4CoverageConfig.get_offer_dependant_role_code())
-
-            assetContext = ContractTermAssetContext()
-            assetContext.code = [party_role]
-
-            if imis_policy.family.location:
-                display = insureePolicy.insuree.uuid + ":" + imis_policy.family.location.code # used for the DHIS integration
-            else:
-                display = insureePolicy.insuree.uuid
-
-            assetContext.reference = cls.build_fhir_resource_reference(
-                insureePolicy.insuree,
-                "Patient",
-                display,
-                reference_type=reference_type
-            )
-
-            if contract_term_asset.context is None:
-                contract_term_asset.context = [assetContext]
-            else:
-                contract_term_asset.context.append(assetContext)
-        return contract_term_asset
-
-    @classmethod
     def build_contract_term_offer(cls, contract_term_offer, imis_policy, reference_type):
         offer = ContractTermOffer.construct()
 
@@ -271,28 +238,19 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
         offer.party = [offer_party]
         contract_term_offer.offer = offer
-        pass
         
     @classmethod
     def build_contract_status(cls, contract, imis_policy):
-        if imis_policy.status is imis_policy.STATUS_ACTIVE:
-            contract.status = R4CoverageConfig.get_status_policy_code()
-        elif imis_policy.status is imis_policy.STATUS_IDLE:
-            contract.status = R4CoverageConfig.get_status_offered_code()
-        elif imis_policy.status is imis_policy.STATUS_EXPIRED:
-            contract.status = R4CoverageConfig.get_status_terminated_code()
-        elif imis_policy.status is imis_policy.STATUS_SUSPENDED:
-            contract.status = R4CoverageConfig.get_status_disputed_code()
+        if f"{imis_policy.status}" in ContractStatus.contract_status:
+            contract.status = ContractStatus.contract_status[f"{imis_policy.status}"]
         else:
             contract.status = imis_policy.status
         return contract
 
     @classmethod
     def build_contract_state(cls, contract, imis_policy):
-        if imis_policy.stage is imis_policy.STAGE_NEW:
-            contract.legalState = cls.build_simple_codeable_concept(R4CoverageConfig.get_status_offered_code())
-        elif imis_policy.stage is imis_policy.STAGE_RENEWED:
-            contract.legalState = cls.build_simple_codeable_concept(R4CoverageConfig.get_status_renewed_code())
+        if f"{imis_policy.stage}" in ContractState.contract_state:
+            contract.legalState = cls.build_simple_codeable_concept(ContractState.contract_state[f"{imis_policy.stage}"])
         else:
             contract.legalState = cls.build_simple_codeable_concept(imis_policy.stage)
         return contract
@@ -329,40 +287,6 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return contract_asset
 
     @classmethod
-    def build_contract_signer(cls, contract, imis_policy, reference_type):
-        if imis_policy.officer is not None:
-            reference = cls.build_fhir_resource_reference(
-                imis_policy.officer, "Practitioner", reference_type=reference_type)
-            signer = ContractSigner.construct()
-            signer.party = reference
-            eo_codeable_concept_type = cls.build_simple_codeable_concept(R4CoverageConfig.get_signer_eo_type_code())
-            eo_type = cls.get_first_coding_from_codeable_concept(eo_codeable_concept_type)
-            signer.type = eo_type
-            if contract.signer is None:
-                contract.signer = [signer]
-            else:
-                if type(contract.signer) is not list:
-                    contract.signer = [signer]
-                else:
-                    contract.signer.append(signer)
-        if imis_policy.family is not None:
-            if imis_policy.family.head_insuree is not None:
-                reference = cls.build_fhir_resource_reference(
-                    imis_policy.family.head_insuree, "Patient", reference_type=reference_type)
-                signer = ContractSigner.construct()
-                signer.party = reference
-                eo_codeable_concept_type = cls.build_simple_codeable_concept(R4CoverageConfig.get_signer_head_type_code())
-                eo_type = cls.get_first_coding_from_codeable_concept(eo_codeable_concept_type)
-                signer.type = eo_type
-                if contract.signer is None:
-                    contract.signer = [signer]
-                else:
-                    if type(contract.signer) is not list:
-                        contract.signer = [signer]
-                    else:
-                        contract.signer.append(signer)
-
-    @classmethod
     def build_imis_period(cls, imis_policy,fhir_contract,errors):
         for term in  fhir_contract:
             if term.asset:
@@ -396,31 +320,43 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_status(cls, fhir_contract, imis_policy,errors):
         if fhir_contract.status:
+
             if fhir_contract.status == R4CoverageConfig.get_status_idle_code():
-                imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_idle_code(),imis_policy)
+                imis_policy.status = ContractStatus.imis_map_status(R4CoverageConfig.get_status_idle_code(), imis_policy)
             elif fhir_contract.status == R4CoverageConfig.get_status_active_code():
-                imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_active_code(),imis_policy)
+                imis_policy.status = ContractStatus.imis_map_status(R4CoverageConfig.get_status_active_code(), imis_policy)
             elif fhir_contract.status == R4CoverageConfig.get_status_suspended_code():
-                 imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_suspended_code(),imis_policy)
+                 imis_policy.status = ContractStatus.imis_map_status(R4CoverageConfig.get_status_suspended_code(), imis_policy)
             elif fhir_contract.status == R4CoverageConfig.get_status_expired_code():
-                 imis_policy.status = cls.imis_map_status(R4CoverageConfig.get_status_expired_code(),imis_policy)
+                 imis_policy.status = ContractStatus.imis_map_status(R4CoverageConfig.get_status_expired_code(), imis_policy)
             else:
                 pass    
         else:
             cls.valid_condition(fhir_contract.status is None, _('Missing  `status` attribute'),errors)
 
     @classmethod
-    def imis_map_status(cls,code,imis_policy):
-        status={
-            R4CoverageConfig.get_status_idle_code():imis_policy.STATUS_IDLE,
-            R4CoverageConfig.get_status_active_code():imis_policy.STATUS_ACTIVE,
-            R4CoverageConfig.get_status_suspended_code():imis_policy.STATUS_SUSPENDED,
-            R4CoverageConfig.get_status_expired_code():imis_policy.STATUS_EXPIRED,
-        }
-        return status[code]
+    def build_imis_author(cls, fhir_contract, imis_policy, errors):
+        if fhir_contract.author:
+            reference = fhir_contract.author.reference.split("/", 2)
+            imis_policy.officer = Officer.objects.get(uuid=reference[1])
+        else:
+            cls.valid_condition(not fhir_contract.author, _('Missing  `author` attribute'), errors)
 
     @classmethod
-    def build_imis_signer(cls,fhir_contract, imis_policy,errors):
+    def build_imis_subject(cls, fhir_contract, imis_policy, errors):
+        if fhir_contract.subject:
+            for subject in  fhir_contract.subject:
+                if subject.reference is not None:
+                    reference = subject.reference.split("/", 2)
+                    try:
+                        imis_policy.family = Family.objects.filter(uuid=reference[1]).first()
+                    except:
+                        cls.valid_condition(True, _('Missing  `Family head provided does not exist` attribute'), errors)
+        else:
+            cls.valid_condition(not fhir_contract.subject, _('Missing  `subject` attribute'), errors)
+
+    @classmethod
+    def build_imis_signer(cls, fhir_contract, imis_policy, errors):
         if fhir_contract.signer:
             for signer in  fhir_contract.signer:
                 if signer.type:
@@ -453,10 +389,10 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
             for term in  fhir_contract.term:
                 if term.asset:
                     for asset in term.asset:
-                        if asset.context:
-                            for item in asset.context:
+                        if asset.typeReference:
+                            for item in asset.typeReference:
                                if item.reference is not None:
-                                   reference = item.reference.reference.split("/", 2)
+                                   reference = item.reference.split("/", 2)
                                    obj = Insuree.objects.get(uuid=reference[1])
                                    if imis_policy.family_id is not None:
                                        if obj.family == imis_policy.family:
@@ -467,7 +403,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                                        else:
                                             if 'Missing  `Invalid Context reference` attribute' not in errors:
                                                 cls.valid_condition(True, _('Missing  `Invalid Context reference` attribute'),errors)
-                            imis_policy.insurees = insurees                    
+                            imis_policy.insurees = insurees
                         else:
                             cls.valid_condition(not asset.context, _('Missing  `context` attribute'),errors)
                 else:
@@ -475,9 +411,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                         
         else:
             cls.valid_condition(not fhir_contract, _('Missing  `term` attribute'),errors)
-            
-    
-    
+
     @classmethod
     def build_imis_product(cls,fhir_contract, imis_policy,errors):
         if fhir_contract.term:
@@ -506,18 +440,10 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if fhir_contract.legalState:
             if fhir_contract.legalState.text:
                 if fhir_contract.legalState.text == R4CoverageConfig.get_status_offered_code():
-                    imis_policy.stage = cls.imis_map_stage(R4CoverageConfig.get_status_offered_code(),imis_policy)
+                    imis_policy.stage = ContractState.imis_map_stage(R4CoverageConfig.get_status_offered_code(),imis_policy)
                 elif fhir_contract.legalState.text == R4CoverageConfig.get_status_renewed_code():
-                    imis_policy.stage = cls.imis_map_stage(R4CoverageConfig.get_status_renewed_code(),imis_policy)
+                    imis_policy.stage = ContractState.imis_map_stage(R4CoverageConfig.get_status_renewed_code(),imis_policy)
                 else:
                     pass       
         else:
-            cls.valid_condition(fhir_contract.legalState is None, _('Missing  `legalState` attribute'),errors)
-    
-    @classmethod
-    def imis_map_stage(cls,code,imis_policy):
-        codes = {
-            R4CoverageConfig.get_status_offered_code():imis_policy.STAGE_NEW,
-            R4CoverageConfig.get_status_active_code():imis_policy.STAGE_RENEWED
-        }
-        return codes[code]
+            cls.valid_condition(fhir_contract.legalState is None, _('Missing  `legalState` attribute'), errors)

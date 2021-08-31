@@ -115,9 +115,8 @@ class OperationOutcomeConverter(BaseFHIRConverter):
         issue_data["severity"] = severity
         issue_data["code"] = code
         if details_text:
-            if type(details_text) != str and type(details_text) != ErrorDetail:
-                details_text = str(details_text.__dict__)
-            issue_data["details"] = cls.build_simple_codeable_concept(text=str(details_text))
+            # if type(details_text) is str:
+            issue_data["details"] = cls.build_simple_codeable_concept(text=details_text)
         issue = OperationOutcomeIssue(**issue_data)
         if type(outcome.issue) is not list:
            outcome.issue = [issue]
