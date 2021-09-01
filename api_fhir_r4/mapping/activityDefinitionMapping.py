@@ -47,41 +47,6 @@ class UseContextMapping(object):
     }
 
 
-class PatientCategoryMapping(object):
-    GENDER_SYSTEM = "http://hl7.org/fhir/administrative-gender"
-    AGE_SYSTEM = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/usage-context-age-type"
-
-    fhir_patient_category_coding = {
-        "male": {
-            "system": GENDER_SYSTEM,
-            "code": "male",
-            "display": "Male",
-        },
-        "female": {
-            "system": GENDER_SYSTEM,
-            "code": "female",
-            "display": "Female",
-        },
-        "adult": {
-            "system": AGE_SYSTEM,
-            "code": "adult",
-            "display": "Adult",
-        },
-        "child": {
-            "system": AGE_SYSTEM,
-            "code": "child",
-            "display": "Child",
-        },
-    }
-
-    imis_patient_category_flags = {
-        "male": 1,
-        "female": 2,
-        "adult": 4,
-        "child": 8,
-    }
-
-
 class VenueMapping(object):
     SYSTEM = "http://terminology.hl7.org/2.1.0/CodeSystem-v3-ActCode.html"
 

@@ -11,8 +11,9 @@ from api_fhir_r4.configurations import GeneralConfiguration
 from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
 from django.utils.translation import gettext
 
-from api_fhir_r4.mapping.actvityDefinitionMapping import ServiceTypeMapping, PatientCategoryMapping, \
-    UseContextMapping, VenueMapping, WorkflowMapping
+from api_fhir_r4.mapping.activityDefinitionMapping import ServiceTypeMapping, UseContextMapping, VenueMapping, \
+    WorkflowMapping
+from api_fhir_r4.mapping.patientMapping import PatientCategoryMapping
 from api_fhir_r4.utils import DbManagerUtils, TimeUtils
 import core
 
