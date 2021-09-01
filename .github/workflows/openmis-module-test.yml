@@ -49,6 +49,7 @@ jobs:
         working-directory: ./openimis
         run: |
           export OPENIMIS_CONF_JSON="$(jq -c '(.modules[]  | select(.name == "api_fhir_r4") | .pip)|="./current-module"' openimis.json)"
+          printenv OPENIMIS_CONF_JSON
       - name: Install openIMIS Python dependencies
         working-directory: ./openimis
         run: |
