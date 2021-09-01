@@ -1,4 +1,5 @@
 import core
+import decimal
 
 from product.models import Product
 
@@ -31,6 +32,10 @@ class InsurancePlanTestMixin(GenericTestMixin):
     _TEST_LUMPSUM = 0
     _TEST_THRESHOLD = 6
     _TEST_PREMIUM_ADULT = 4000
+    _TEST_RENEWAL_DISCOUNT = 40
+    _TEST_RENEWAL_DISCOUNT_PERIOD = 1
+    _TEST_ENROLMENT_DISCOUNT = 30
+    _TEST_ENROLMENT_DISCOUNT_PERIOD = 1
 
     def create_test_imis_instance(self):
         imis_product = Product()
@@ -45,6 +50,10 @@ class InsurancePlanTestMixin(GenericTestMixin):
         imis_product.lump_sum = self._TEST_LUMPSUM
         imis_product.threshold = self._TEST_THRESHOLD
         imis_product.premium_adult = self._TEST_PREMIUM_ADULT
+        imis_product.renewal_discount_perc = self._TEST_RENEWAL_DISCOUNT
+        imis_product.renewal_discount_period = self._TEST_RENEWAL_DISCOUNT_PERIOD
+        imis_product.enrolment_discount_perc = self._TEST_ENROLMENT_DISCOUNT
+        imis_product.enrolment_discount_period = self._TEST_ENROLMENT_DISCOUNT_PERIOD
         return imis_product
 
     def verify_imis_instance(self, imis_obj):
@@ -165,16 +174,68 @@ class InsurancePlanTestMixin(GenericTestMixin):
         )
         fhir_insurance_plan.extension.append(extension)
 
+        # discount processing - renewal
+        extension = Extension.construct()
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-discount"
+        nested_extension = Extension.construct()
+
+        # percentage
+        nested_extension.url = "Percentage"
+        nested_extension.valueDecimal = self._TEST_RENEWAL_DISCOUNT
+        extension.extension = [nested_extension]
+
+        # period
+        nested_extension = Extension.construct()
+        nested_extension.url = "Period"
+        nested_extension.valueQuantity = Quantity(
+            **{
+                "value": self._TEST_RENEWAL_DISCOUNT_PERIOD,
+                "unit": "months"
+            }
+        )
+        extension.extension.append(nested_extension)
+        fhir_insurance_plan.extension.append(extension)
+
+        # discount processing - enrolment
+        extension = Extension.construct()
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-discount"
+        nested_extension = Extension.construct()
+
+        # percentage
+        nested_extension.url = "Percentage"
+        nested_extension.valueDecimal = self._TEST_ENROLMENT_DISCOUNT
+        extension.extension = [nested_extension]
+
+        # period
+        nested_extension = Extension.construct()
+        nested_extension.url = "Period"
+        nested_extension.valueQuantity = Quantity(
+            **{
+                "value": self._TEST_ENROLMENT_DISCOUNT_PERIOD,
+                "unit": "months"
+            }
+        )
+        extension.extension.append(nested_extension)
+        fhir_insurance_plan.extension.append(extension)
+
         return fhir_insurance_plan
 
     def verify_fhir_instance(self, fhir_obj):
-        self.assertEqual(2, len(fhir_obj.extension))
+        self.assertEqual(4, len(fhir_obj.extension))
         extension_max_installment = fhir_obj.extension[0]
         self.assertTrue(isinstance(extension_max_installment, Extension))
         self.assertEqual(self._TEST_MAX_INSTALLMENTS, extension_max_installment.valueUnsignedInt)
         extension_grace_period = fhir_obj.extension[1].valueQuantity
         self.assertTrue(isinstance(extension_grace_period, Quantity))
         self.assertEqual(self._TEST_GRACE_PERIOD_PAYMENT, extension_grace_period.value)
+        extension_renewal_discounts = fhir_obj.extension[2].extension
+        self.assertAlmostEqual(decimal.Decimal(self._TEST_RENEWAL_DISCOUNT),
+                               extension_renewal_discounts[0].valueDecimal, places=2)
+        self.assertEqual(self._TEST_RENEWAL_DISCOUNT_PERIOD, extension_renewal_discounts[1].valueQuantity.value)
+        extension_enrolment_discounts = fhir_obj.extension[3].extension
+        self.assertAlmostEqual(decimal.Decimal(self._TEST_ENROLMENT_DISCOUNT),
+                               extension_enrolment_discounts[0].valueDecimal, places=2)
+        self.assertEqual(self._TEST_ENROLMENT_DISCOUNT_PERIOD, extension_enrolment_discounts[1].valueQuantity.value)
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = InsurancePlanConverter.get_first_coding_from_codeable_concept(identifier.type).code
@@ -186,7 +247,7 @@ class InsurancePlanTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_MEMBER_COUNT, benefit_limit_member_count.value)
         lumpsum = fhir_obj.plan[0].generalCost[0].cost.value
         self.assertEqual(self._TEST_LUMPSUM, lumpsum)
-        threshold =  fhir_obj.plan[0].generalCost[0].groupSize
+        threshold = fhir_obj.plan[0].generalCost[0].groupSize
         self.assertEqual(self._TEST_THRESHOLD, threshold)
         premium_adult = fhir_obj.plan[0].generalCost[1].cost.value
         self.assertEqual(self._TEST_PREMIUM_ADULT, premium_adult)
