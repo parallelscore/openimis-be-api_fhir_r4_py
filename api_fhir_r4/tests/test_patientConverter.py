@@ -1,3 +1,4 @@
+import json
 import os
 from unittest import mock
 
@@ -28,16 +29,10 @@ class PatientConverterTestCase(PatientTestMixin):
         mock_gender.get.return_value = self._TEST_GENDER
 
         fhir_patient = self.create_test_fhir_instance()
-        imis_insuree = PatientConverter.to_imis_obj(fhir_patient, None)
+        imis_insuree = PatientConverter.to_imis_obj(fhir_patient.dict(), None)
         self.verify_imis_instance(imis_insuree)
 
     def test_create_object_from_json(self):
-        self.setUp()
-        fhir_patient = Patient(**dict(self._test_patient_json_representation))
+        dict_patient = json.loads(self._test_patient_json_representation)
+        fhir_patient = Patient(**dict_patient)
         self.verify_fhir_instance(fhir_patient)
-
-    def test_fhir_object_to_json(self):
-        self.setUp()
-        fhir_patient = self.create_test_fhir_instance()
-        actual_representation = fhir_patient.dumps(format_='json')
-        self.assertEqual(self._test_patient_json_representation, actual_representation)

@@ -6,14 +6,20 @@ from fhir.resources.patient import Patient
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
     FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
 
+from location.models import Location
+from insuree.test_helpers import create_test_insuree, create_test_photo
 
-class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
-                      FhirApiDeleteTestMixin, APITestCase):
+
+class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin, APITestCase):
 
     base_url = '/api_fhir_r4/Patient/'
     _test_json_path = "/test/test_patient.json"
+    _TEST_LAST_NAME = "TEST_LAST_NAME"
+    _TEST_LOCATION_NAME_VILLAGE = "Rachla"
     _TEST_GENDER_CODE = 'M'
     _TEST_EXPECTED_NAME = "UPDATED_NAME"
+    _TEST_INSUREE_MOCKED_UUID = "7240daef-5f8f-4b0f-9042-b221e66f184a"
+    _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
 
     def setUp(self):
         super(PatientAPITests, self).setUp()
@@ -29,6 +35,22 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
         gender = Gender()
         gender.code = self._TEST_GENDER_CODE
         gender.save()
+
+        imis_location = Location.objects.get(
+            name=self._TEST_LOCATION_NAME_VILLAGE, validity_to__isnull=True
+        )
+        # create mocked insuree with family - new insuree as a part of this test of family
+        imis_mocked_insuree = create_test_insuree(with_family=True)
+        imis_mocked_insuree.uuid = self._TEST_INSUREE_MOCKED_UUID
+        imis_mocked_insuree.current_village = imis_location
+        imis_mocked_insuree.last_name = self._TEST_LAST_NAME
+        imis_mocked_insuree.save()
+
+        # update family uuid
+        imis_family = imis_mocked_insuree.family
+        imis_family.uuid = self._TEST_FAMILY_MOCKED_UUID
+        imis_family.location = imis_location
+        imis_family.save()
 
     def update_payload_missing_chfid_identifier(self, data):
         for i in range(len(data["identifier"])):
@@ -91,11 +113,6 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
             name.pop('given')
         return data
 
-    #def update_payload_remove_chf_id_from_it(self, data):
-    #    for member in data["member"]:
-    #        member["entity"]["identifier"].pop("value")
-    #    return data
-
     def test_post_should_raise_error_no_chfid_identifier(self):
         self.login()
         self.create_dependencies()
@@ -127,7 +144,7 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
         response_json = response.json()
         self.assertEqual(
             response_json["issue"][0]["details"]["text"],
-            _('Address must be supported')
+            _('Patient without family address')
         )
 
     def test_post_should_raise_missing_fhir_home_address_details(self):
