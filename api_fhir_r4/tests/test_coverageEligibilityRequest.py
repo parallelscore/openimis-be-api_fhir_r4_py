@@ -1,7 +1,7 @@
 from coverage.annotate import os
 
 from api_fhir_r4.converters import CoverageEligibilityRequestConverter
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.tests import CoverageEligibilityRequestTestMixin
 
 
@@ -32,8 +32,7 @@ class CoverageEligibilityRequestConverterTestCase(CoverageEligibilityRequestTest
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_coverage_eligibility_response = FHIRBaseObject.loads(self._test_coverage_eligibility_response_json_representation,
-                                                         'json')
+        fhir_coverage_eligibility_response = FHIRAbstractModel(**dict(self._test_coverage_eligibility_response_json_representation))
         self.verify_fhir_instance(fhir_coverage_eligibility_response)
 
     def test_fhir_object_to_json_request(self):

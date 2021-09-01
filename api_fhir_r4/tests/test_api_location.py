@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 
-from api_fhir_r4.models import Location
+from fhir.resources.location import Location
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
     FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
 

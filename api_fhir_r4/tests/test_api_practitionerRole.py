@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api_fhir_r4.converters import LocationConverter
-from api_fhir_r4.models import PractitionerRole
+from fhir.resources.practitionerrole import PractitionerRole
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiUpdateTestMixin, \
     FhirApiCreateTestMixin, LocationTestMixin, PractitionerTestMixin, FhirApiDeleteTestMixin
 from api_fhir_r4.utils import TimeUtils

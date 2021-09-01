@@ -66,15 +66,18 @@ class BaseFHIRConverter(ABC):
         return cls.build_codeable_concept(None, None, text)
 
     @classmethod
-    def build_codeable_concept(cls, code, system=None, text=None):
+    def build_codeable_concept(cls, code, system=None, text=None, display=None):
         codeable_concept = CodeableConcept.construct()
         if code or system:
             coding = Coding.construct()
+
             if GeneralConfiguration.show_system():
                 coding.system = system
-            if not isinstance(code, str):
-                code = str(code)
-            coding.code = code
+
+            coding.code = str(code)
+
+            if display:
+                coding.display = str(display)
             codeable_concept.coding = [coding]
 
         if text:
@@ -103,10 +106,11 @@ class BaseFHIRConverter(ABC):
         return result
 
     @classmethod
-    def build_all_identifiers(cls, identifiers, imis_object):
+    def build_all_identifiers(cls, identifiers, imis_object, reference_type=None):
         cls.build_fhir_uuid_identifier(identifiers, imis_object)
         cls.build_fhir_code_identifier(identifiers, imis_object)
-        cls.build_fhir_id_identifier(identifiers, imis_object)
+        if reference_type == ReferenceConverterMixin.DB_ID_REFERENCE_TYPE:
+            cls.build_fhir_id_identifier(identifiers, imis_object)
         return identifiers
 
     @classmethod
@@ -219,3 +223,4 @@ from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
+from api_fhir_r4.converters.insurancePlanConverter import InsurancePlanConverter

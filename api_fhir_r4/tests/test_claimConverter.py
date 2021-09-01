@@ -3,7 +3,7 @@ from unittest import mock
 
 from api_fhir_r4.converters import LocationConverter, PatientConverter, PractitionerConverter
 from api_fhir_r4.converters.claimConverter import ClaimConverter
-from api_fhir_r4.models import FHIRBaseObject
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.tests import ClaimTestMixin
 
 
@@ -51,5 +51,5 @@ class ClaimConverterTestCase(ClaimTestMixin):
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_claim = FHIRBaseObject.loads(self._test_claim_json_representation, 'json')
+        fhir_claim = FHIRAbstractModel(**dict(self._test_claim_json_representation))
         self.verify_fhir_instance(fhir_claim)

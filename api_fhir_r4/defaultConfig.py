@@ -47,6 +47,10 @@ DEFAULT_CFG = {
         "fhir_code_for_ward": "W",
         "fhir_code_for_village": "V"
     },
+    "R4_fhir_location_status_codes": {
+        "fhir_code_for_active": "active",
+        "fhir_code_for_inactive": "inactive",
+    },
     "R4_fhir_hf_service_type": {
         "system": "http://hl7.org/fhir/valueset-service-type.html",
         "fhir_code_for_in_patient": "I",
