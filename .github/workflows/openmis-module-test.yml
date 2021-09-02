@@ -44,11 +44,13 @@ jobs:
       - name: copy current branch
         uses: actions/checkout@v2
         with:
-          path: './openimis/current-module'
+          path: './current-module'
       - name: Update the configuration
         working-directory: ./openimis
         run: |
-          echo "OPENIMIS_CONF_JSON=$(jq -c '(.modules[]  | select(.name == \"api_fhir_r4\") | .pip)|=\"./current-module\"' openimis.json)" >> $GITHUB_ENV
+          export MODULE_NAME="$(echo $GITHUB_REPOSITORY | sed 's#^openimis/openimis-be-\(.*\)_py$#\1#')"
+          echo "the local module called $MODULE_NAME will be injected in openIMIS .json"
+          echo $(jq   '(.modules[]  | select(.name == "${MODULE_NAME}") | .pip)|="../current-module"' openimis.json) > openimis.json
       - name: Install openIMIS Python dependencies
         working-directory: ./openimis
         run: |
@@ -81,7 +83,7 @@ jobs:
           ls -l
           python manage.py migrate
           python init_test_db.py | grep . | uniq -c
-          python manage.py test 
+          python manage.py test
         env:
           SECRET_KEY: secret
           DEBUG: true
