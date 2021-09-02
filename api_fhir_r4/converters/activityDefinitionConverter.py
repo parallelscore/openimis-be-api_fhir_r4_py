@@ -26,7 +26,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         # first to construct is status - obligatory fields
         cls.build_fhir_status(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_pk(fhir_activity_definition, imis_activity_definition, reference_type)
-        cls.build_fhir_identifiers(fhir_activity_definition, imis_activity_definition, reference_type)
+        cls.build_fhir_identifiers(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_date(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_name(fhir_activity_definition, imis_activity_definition)
         cls.build_fhir_title(fhir_activity_definition, imis_activity_definition)
@@ -81,16 +81,13 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return DbManagerUtils.get_object_or_none(Service, code=imis_activity_definition_code)
 
     @classmethod
-    def build_fhir_identifiers(cls, fhir_activity_definition, imis_activity_definition, reference_type):
+    def build_fhir_identifiers(cls, fhir_activity_definition, imis_activity_definition):
         identifiers = []
-        cls.build_fhir_uuid_identifier(identifiers, imis_activity_definition)
-        cls.build_fhir_code_identifier(identifiers, imis_activity_definition)
-        if reference_type == ReferenceConverterMixin.DB_ID_REFERENCE_TYPE:
-            cls.build_fhir_id_identifier(identifiers, imis_activity_definition)
+        cls.build_all_identifiers(identifiers, imis_activity_definition)
         fhir_activity_definition.identifier = identifiers
 
     @classmethod
-    def build_imis_price(cls, imis_activity_definition, fhir_activity_definition, reference_type):
+    def build_imis_price(cls, imis_activity_definition, fhir_activity_definition, errors):
         extension_base_url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/unit-price"
         extension = cls.get_fhir_extension_by_url(fhir_activity_definition.extension,
                                                   extension_base_url)
