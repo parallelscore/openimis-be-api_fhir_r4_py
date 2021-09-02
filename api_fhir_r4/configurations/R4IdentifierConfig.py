@@ -45,6 +45,10 @@ class R4IdentifierConfig(IdentifierConfiguration):
         return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_db_uuid_type', "UUID")
 
     @classmethod
+    def get_fhir_generic_type_code(cls):
+        return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_generic_code', "Code")
+
+    @classmethod
     def get_fhir_location_code_type(cls):
         return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_location_code_type', "Code")
 
