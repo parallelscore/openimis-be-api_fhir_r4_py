@@ -48,7 +48,7 @@ jobs:
       - name: Update the configuration
         working-directory: ./openimis
         run: |
-          export OPENIMIS_CONF_JSON="$(jq -c '(.modules[]  | select(.name == "api_fhir_r4") | .pip)|="./current-module"' openimis.json)"
+          echo "OPENIMIS_CONF_JSON=$(jq -c '(.modules[]  | select(.name == \"api_fhir_r4\") | .pip)|=\"./current-module\"' openimis.json)" >> $GITHUB_ENV
       - name: Install openIMIS Python dependencies
         working-directory: ./openimis
         run: |
