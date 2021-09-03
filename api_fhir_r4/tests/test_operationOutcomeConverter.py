@@ -1,3 +1,4 @@
+import json
 import os
 
 from api_fhir_r4.converters import OperationOutcomeConverter
@@ -19,7 +20,6 @@ class OperationOutcomeConverterTestCase(OperationOutcomeTestMixin):
 
     def test_fhir_object_to_json(self):
         self.setUp()
-        fhir_outcome = self.create_test_fhir_instance()
-        actual_representation = fhir_outcome.dumps(format_='json')
+        fhir_outcome = self.create_test_fhir_instance().dict()
+        actual_representation = json.dumps(fhir_outcome)
         self.assertEqual(self._test_outcome_json_representation, actual_representation)
-
