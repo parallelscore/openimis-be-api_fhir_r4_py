@@ -12,9 +12,10 @@ DEFAULT_CFG = {
     "default_value_of_location_care_type": "B",
     "default_response_page_size": 10,
     "R4_fhir_identifier_type_config": {
-        "system": "https://hl7.org/fhir/valueset-identifier-type.html",
+        "system": "https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
         "fhir_code_for_imis_db_uuid_type": "UUID",
         "fhir_code_for_imis_db_id_type": "ACSN",
+        "fhir_code_for_imis_generic_code": "Code",
         "fhir_code_for_imis_chfid_type": "SB",
         "fhir_code_for_imis_passport_type": "PPN",
         "fhir_code_for_imis_facility_id_type": "FI",

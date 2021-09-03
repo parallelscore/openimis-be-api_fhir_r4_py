@@ -2,7 +2,8 @@ from django.utils.translation import gettext as _
 from medical.models import Item
 from api_fhir_r4.converters import R4IdentifierConfig, BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.models import UsageContextV2 as UsageContext
-from api_fhir_r4.mapping.medicationMapping import ItemTypeMapping, ItemVenueTypeMapping, PatientCategoryMapping
+from api_fhir_r4.mapping.medicationMapping import ItemTypeMapping, ItemVenueTypeMapping
+from api_fhir_r4.mapping.patientMapping import PatientCategoryMapping
 from fhir.resources.medication import Medication as FHIRMedication
 from fhir.resources.extension import Extension
 from fhir.resources.money import Money
@@ -79,7 +80,8 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_imis_identifier(cls, imis_medication, fhir_medication, errors):
-        value = cls.get_fhir_identifier_by_code(fhir_medication.identifier, R4IdentifierConfig.get_fhir_uuid_type_code())
+        value = cls.get_fhir_identifier_by_code(fhir_medication.identifier,
+                                                R4IdentifierConfig.get_fhir_uuid_type_code())
         if value:
             imis_medication.code = value
         cls.valid_condition(imis_medication.code is None, gettext('Missing the item code'), errors)
@@ -132,9 +134,9 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_fhir_unit_price(cls, fhir_medication, imis_medication):
         unit_price = cls.build_fhir_unit_price_extension(imis_medication.price)
         if type(fhir_medication.extension) is not list:
-           fhir_medication.extension = [unit_price]
+            fhir_medication.extension = [unit_price]
         else:
-           fhir_medication.extension.append(unit_price)
+            fhir_medication.extension.append(unit_price)
 
     @classmethod
     def build_fhir_unit_price_extension(cls, value):
@@ -151,9 +153,9 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_fhir_medication_type(cls, fhir_medication, imis_medication):
         medication_type = cls.build_fhir_medication_type_extension(imis_medication.type)
         if type(fhir_medication.extension) is not list:
-           fhir_medication.extension = [medication_type]
+            fhir_medication.extension = [medication_type]
         else:
-           fhir_medication.extension.append(medication_type)
+            fhir_medication.extension.append(medication_type)
 
     @classmethod
     def build_fhir_medication_type_extension(cls, value):
@@ -199,7 +201,7 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_item_code(cls, imis_medication, fhir_medication, errors):
         item_code = cls.get_fhir_identifier_by_code(fhir_medication.identifier,
-                                                R4IdentifierConfig.get_fhir_item_code_type())
+                                                    R4IdentifierConfig.get_fhir_item_code_type())
         if not cls.valid_condition(item_code is None,
                                    gettext('Missing medication `item_code` attribute'), errors):
             imis_medication.code = item_code
@@ -283,7 +285,8 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if imis_medication.patient_category & child_flag:
             coding_child = cls._build_fhir_coding(code="child", display="Child", system=age_type_system)
             cls._append_to_list_codeable_concept(extension, coding_child)
-        extension.valueUsageContext.code = cls._build_fhir_coding(code="age", display="Age", system=usage_context_system)
+        extension.valueUsageContext.code = cls._build_fhir_coding(code="age", display="Age",
+                                                                  system=usage_context_system)
         return extension
 
     @classmethod
