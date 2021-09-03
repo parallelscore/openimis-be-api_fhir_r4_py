@@ -57,7 +57,7 @@ class CommunicationRequestTestMixin(GenericTestMixin):
     def verify_fhir_instance(self, fhir_obj):
         self.assertEqual(self._TEST_FEEDBACK_UUID, fhir_obj.id)
         self.assertEqual(self._TEST_FEEDBACK_UUID, fhir_obj.identifier[0].value)
-        self.assertEqual(self._TEST_FEEDBACK_DATE, fhir_obj.occurrenceDateTime)
+        self.assertEqual(self._TEST_FEEDBACK_DATE, fhir_obj.occurrenceDateTime.isoformat())
         for reason in fhir_obj.reasonCode:
             value = reason.text
             code = reason.coding[0].code

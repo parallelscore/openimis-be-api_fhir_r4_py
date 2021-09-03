@@ -1,7 +1,8 @@
+import json
 import os
 
 from api_fhir_r4.converters.locationConverter import LocationConverter
-from fhir.resources.fhirabstractmodel import FHIRAbstractModel
+from fhir.resources.location import Location
 from api_fhir_r4.tests import LocationTestMixin
 
 
@@ -20,16 +21,11 @@ class LocationConverterTestCase(LocationTestMixin):
 
     def test_to_imis_obj(self):
         fhir_loaction = self.create_test_fhir_instance()
-        imis_hf = LocationConverter.to_imis_obj(fhir_loaction, None)
+        imis_hf = LocationConverter.to_imis_obj(fhir_loaction.dict(), None)
         self.verify_imis_instance(imis_hf)
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_location = FHIRAbstractModel(**dict(self._test_location_json_representation))
+        dict_location = json.loads(self._test_location_json_representation)
+        fhir_location = Location(**dict_location)
         self.verify_fhir_instance(fhir_location)
-
-    def test_fhir_object_to_json(self):
-        self.setUp()
-        fhir_location = self.create_test_fhir_instance()
-        actual_representation = fhir_location.dumps(format_='json')
-        self.assertEqual(self._test_location_json_representation, actual_representation)

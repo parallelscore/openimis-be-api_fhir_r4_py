@@ -1,7 +1,8 @@
+import json
 import os
 
 from api_fhir_r4.converters import CommunicationRequestConverter
-from fhir.resources.fhirabstractmodel import FHIRAbstractModel
+from fhir.resources.communicationrequest import CommunicationRequest
 from api_fhir_r4.tests import CommunicationRequestTestMixin
 
 
@@ -23,10 +24,7 @@ class CommunicationRequestConverterTestCase(CommunicationRequestTestMixin):
         self.verify_fhir_instance(fhir_communication_request)
 
     def test_fhir_object_to_json_request(self):
-        fhir_obj = self.create_test_fhir_instance()
-        actual_representation = fhir_obj.dumps(format_='json')
-        self.assertEqual(self._test_claim_response_json_representation, actual_representation)
-
-    def test_create_object_from_json(self):
-        fhir_claim = FHIRAbstractModel(**dict(self._test_claim_response_json_representation))
-        self.verify_fhir_instance(fhir_claim)
+        self.setUp()
+        dict_communication_request = json.loads(self._test_claim_response_json_representation)
+        fhir_communication_request = CommunicationRequest(**dict_communication_request)
+        self.verify_fhir_instance(fhir_communication_request)

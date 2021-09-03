@@ -1,12 +1,12 @@
 from rest_framework.test import APITestCase
 
 from fhir.resources.location import Location
-from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
+from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, \
+    FhirApiUpdateTestMixin
 
 
-class LocationAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
-                       FhirApiDeleteTestMixin, APITestCase):
+class LocationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
+                       APITestCase):
 
     base_url = '/api_fhir_r4/Location/'
     _test_json_path = "/test/test_location.json"
