@@ -4,10 +4,10 @@ from rest_framework.test import APITestCase, APIRequestFactory
 
 from fhir.resources.patient import Patient
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
+    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, PatientTestMixin
 
 from location.models import Location
-from insuree.test_helpers import create_test_insuree, create_test_photo
+from insuree.test_helpers import create_test_insuree
 
 
 class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin, APITestCase):
@@ -36,9 +36,8 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUp
         gender.code = self._TEST_GENDER_CODE
         gender.save()
 
-        imis_location = Location.objects.get(
-            name=self._TEST_LOCATION_NAME_VILLAGE, validity_to__isnull=True
-        )
+        imis_location = PatientTestMixin().create_mocked_location()
+        imis_location.save()
         # create mocked insuree with family - new insuree as a part of this test of family
         imis_mocked_insuree = create_test_insuree(with_family=True)
         imis_mocked_insuree.uuid = self._TEST_INSUREE_MOCKED_UUID

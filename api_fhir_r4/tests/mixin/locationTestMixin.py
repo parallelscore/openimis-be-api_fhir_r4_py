@@ -8,15 +8,39 @@ from api_fhir_r4.tests import GenericTestMixin
 
 class LocationTestMixin(GenericTestMixin):
 
-    _TEST_CODE = "12345678"
+    _TEST_CODE = "RTDTMTVT"
     _TEST_NAME = "TEST_NAME"
-    _TEST_LOCATION_TYPE = "R"
+    _TEST_LOCATION_TYPE = "V"
+    _TEST_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
 
     def create_test_imis_instance(self):
+        # create level location
+        imis_location_region = Location()
+        imis_location_region.code = "RT"
+        imis_location_region.name = self._TEST_NAME
+        imis_location_region.type = "R"
+        imis_location_region.save()
+
+        imis_location_district = Location()
+        imis_location_district.code = "RTDT"
+        imis_location_district.name = self._TEST_NAME
+        imis_location_district.type = "D"
+        imis_location_district.parent = imis_location_region
+        imis_location_district.save()
+
+        imis_location_municipality = Location()
+        imis_location_municipality.code = "RTDTMT"
+        imis_location_municipality.name = self._TEST_NAME
+        imis_location_municipality.type = "M"
+        imis_location_municipality.parent = imis_location_district
+        imis_location_municipality.uuid = self._TEST_MUNICIPALITY_UUID
+        imis_location_municipality.save()
+
         imis_location = Location()
         imis_location.code = self._TEST_CODE
         imis_location.name = self._TEST_NAME
         imis_location.type = self._TEST_LOCATION_TYPE
+        imis_location.parent = imis_location_municipality
         return imis_location
 
     def verify_imis_instance(self, imis_obj):

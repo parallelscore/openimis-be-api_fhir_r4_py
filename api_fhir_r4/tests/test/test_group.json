@@ -9,21 +9,21 @@
             "extension":[
                {
                   "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-municipality",
-                  "valueString":"Achi"
+                  "valueString":"Test"
                },
                {
                   "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference",
                   "valueReference":{
-                     "reference":"Location/Rachla-village"
+                     "reference":"Location/TEST_NAME-village"
                   }
                }
             ],
             "use":"home",
             "type":"physical",
             "text":"Test Street 7th TownCity",
-            "city":"Rachla",
-            "district":"Rapta",
-            "state":"Ultha"
+            "city":"TEST_NAME",
+            "district":"Test",
+            "state":"Test"
          }
       },
       {

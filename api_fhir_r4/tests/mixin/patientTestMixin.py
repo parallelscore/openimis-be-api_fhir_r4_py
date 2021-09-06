@@ -43,7 +43,10 @@ class PatientTestMixin(GenericTestMixin):
     _TEST_ADDRESS = "TEST_ADDRESS"
     _TEST_INSUREE_MOCKED_UUID = "7240daef-5f8f-4b0f-9042-b221e66f184a"
     _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
-    _TEST_LOCATION_NAME_VILLAGE = "Rachla"
+    _TEST_LOCATION_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
+    _TEST_LOCATION_CODE = "RTDTMTVT"
+    _TEST_LOCATION_NAME = "TEST_NAME"
+    _TEST_LOCATION_TYPE = "V"
     _TEST_PHOTO_FOLDER = "PhotoTest"
     _TEST_MOCKED_PHOTO = "TESTTEST"
     _TEST_MOCKED_PHOTO_TYPE = "png"
@@ -54,12 +57,41 @@ class PatientTestMixin(GenericTestMixin):
         self._TEST_GENDER = Gender()
         self._TEST_GENDER.code = self._TEST_GENDER_CODE
 
+    def create_mocked_location(self):
+        imis_location_region = Location()
+        imis_location_region.code = "RT"
+        imis_location_region.name = "Test"
+        imis_location_region.type = "R"
+        imis_location_region.save()
+
+        imis_location_district = Location()
+        imis_location_district.code = "RTDT"
+        imis_location_district.name = "Test"
+        imis_location_district.type = "D"
+        imis_location_district.parent = imis_location_region
+        imis_location_district.save()
+
+        imis_location_municipality = Location()
+        imis_location_municipality.code = "RTDTMT"
+        imis_location_municipality.name = "Test"
+        imis_location_municipality.type = "M"
+        imis_location_municipality.parent = imis_location_district
+        imis_location_municipality.uuid = self._TEST_LOCATION_MUNICIPALITY_UUID
+        imis_location_municipality.save()
+
+        imis_location = Location()
+        imis_location.code = self._TEST_LOCATION_CODE
+        imis_location.name = self._TEST_LOCATION_NAME
+        imis_location.type = self._TEST_LOCATION_TYPE
+        imis_location.parent = imis_location_municipality
+        
+        return imis_location
+
     def create_test_imis_instance(self):
         self.setUp()
-
-        imis_location = Location.objects.get(
-            name=self._TEST_LOCATION_NAME_VILLAGE, validity_to__isnull=True
-        )
+        # create mocked locations
+        imis_location = self.create_mocked_location()
+        imis_location.save()
 
         imis_insuree = Insuree()
         imis_insuree.last_name = self._TEST_LAST_NAME
@@ -101,7 +133,6 @@ class PatientTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_CHF_ID, imis_obj.chf_id)
         expected_date = TimeUtils.str_to_date(self._TEST_DOB)
         self.assertEqual(expected_date, imis_obj.dob)
-        #self.assertEqual(self._TEST_GENDER_CODE, imis_obj.gender.code)
         self.assertEqual("D", imis_obj.marital)
         self.assertEqual(self._TEST_PHONE, imis_obj.phone)
         self.assertEqual(self._TEST_EMAIL, imis_obj.email)
@@ -112,9 +143,9 @@ class PatientTestMixin(GenericTestMixin):
 
     def create_test_fhir_instance(self):
         # create mocked insuree with family - new insuree as a part of this test of family
-        imis_location = Location.objects.get(
-            name=self._TEST_LOCATION_NAME_VILLAGE, validity_to__isnull=True
-        )
+        # create mocked locations
+        imis_location = self.create_mocked_location()
+        imis_location.save()
 
         # create mocked insuree with family - new insuree as a part of this test of family
         imis_mocked_insuree = create_test_insuree(with_family=True)
@@ -142,10 +173,7 @@ class PatientTestMixin(GenericTestMixin):
                                                         R4IdentifierConfig.get_fhir_chfid_type_code())
 
         identifiers.append(chf_id)
-        #passport = PatientConverter.build_fhir_identifier(self._TEST_PASSPORT,
-        #                                                  R4IdentifierConfig.get_fhir_identifier_type_system(),
-        #                                                  R4IdentifierConfig.get_fhir_passport_type_code())
-        #identifiers.append(passport)
+
         fhir_patient.identifier = identifiers
         fhir_patient.birthDate = self._TEST_DOB
         fhir_patient.gender = "male"
@@ -281,10 +309,10 @@ class PatientTestMixin(GenericTestMixin):
                 no_of_extensions = len(address.extension)
                 self.assertEqual(2, no_of_extensions)
                 self.assertEqual("home", address.use)
-                self.assertEqual(self._TEST_LOCATION_NAME_VILLAGE, address.city)
+                self.assertEqual(self._TEST_LOCATION_NAME, address.city)
             elif address.use == "temp":
                 self.assertEqual("temp", address.use)
-                self.assertEqual(self._TEST_LOCATION_NAME_VILLAGE, address.city)
+                self.assertEqual(self._TEST_LOCATION_NAME, address.city)
         for extension in fhir_obj.extension:
             self.assertTrue(isinstance(extension, Extension))
             if "patient-group-reference" in extension.url:

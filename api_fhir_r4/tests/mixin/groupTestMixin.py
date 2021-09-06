@@ -28,7 +28,40 @@ class GroupTestMixin(GenericTestMixin):
     _TEST_INSUREE_MOCKED_UUID = "7240daef-5f8f-4b0f-9042-b221e66f184a"
     _TEST_INSUREE_MOCKED_CHFID = "TestCfhId1"
     _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
-    _TEST_LOCATION_NAME_VILLAGE = "Rachla"
+    _TEST_LOCATION_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
+    _TEST_LOCATION_CODE = "RTDTMTVT"
+    _TEST_LOCATION_NAME = "TEST_NAME"
+    _TEST_LOCATION_TYPE = "V"
+
+    def create_mocked_location(self):
+        imis_location_region = Location()
+        imis_location_region.code = "RT"
+        imis_location_region.name = "Test"
+        imis_location_region.type = "R"
+        imis_location_region.save()
+
+        imis_location_district = Location()
+        imis_location_district.code = "RTDT"
+        imis_location_district.name = "Test"
+        imis_location_district.type = "D"
+        imis_location_district.parent = imis_location_region
+        imis_location_district.save()
+
+        imis_location_municipality = Location()
+        imis_location_municipality.code = "RTDTMT"
+        imis_location_municipality.name = "Test"
+        imis_location_municipality.type = "M"
+        imis_location_municipality.parent = imis_location_district
+        imis_location_municipality.uuid = self._TEST_LOCATION_MUNICIPALITY_UUID
+        imis_location_municipality.save()
+
+        imis_location = Location()
+        imis_location.code = self._TEST_LOCATION_CODE
+        imis_location.name = self._TEST_LOCATION_NAME
+        imis_location.type = self._TEST_LOCATION_TYPE
+        imis_location.parent = imis_location_municipality
+
+        return imis_location
 
     def create_test_imis_instance(self):
 
@@ -40,9 +73,9 @@ class GroupTestMixin(GenericTestMixin):
         imis_mocked_insuree.chf_id = self._TEST_INSUREE_MOCKED_CHFID
         imis_mocked_insuree.save()
 
-        imis_location = Location.objects.get(
-            name=self._TEST_LOCATION_NAME_VILLAGE, validity_to__isnull=True
-        )
+        # create mocked locations
+        imis_location = self.create_mocked_location()
+        imis_location.save()
 
         imis_family = Family()
         imis_family.head_insuree = imis_mocked_insuree
@@ -73,9 +106,9 @@ class GroupTestMixin(GenericTestMixin):
         imis_mocked_insuree.chf_id = self._TEST_INSUREE_MOCKED_CHFID
         imis_mocked_insuree.save()
 
-        imis_location = Location.objects.get(
-            name=self._TEST_LOCATION_NAME_VILLAGE, validity_to__isnull=True
-        )
+        # create mocked locations
+        imis_location = self.create_mocked_location()
+        imis_location.save()
 
         fhir_family = {}
         fhir_family['actual'] = True
@@ -173,7 +206,7 @@ class GroupTestMixin(GenericTestMixin):
                 no_of_extensions = len(extension.valueAddress.extension)
                 self.assertEqual(2, no_of_extensions)
                 self.assertEqual("home", extension.valueAddress.use)
-                self.assertEqual(self._TEST_LOCATION_NAME_VILLAGE, extension.valueAddress.city)
+                self.assertEqual(self._TEST_LOCATION_NAME, extension.valueAddress.city)
             if "group-poverty-status" in extension.url:
                 self.assertEqual(self._TEST_POVERTY_STATUS, extension.valueBoolean)
             if "group-type" in extension.url:

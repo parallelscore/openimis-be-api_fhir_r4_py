@@ -8,7 +8,7 @@ from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 class ContainedContentHelper(object):
     @staticmethod
-    def build_test_converter(returned_obj=FHIRAbstractModel()):
+    def build_test_converter(returned_obj=FHIRAbstractModel.construct()):
         converter = MagicMock()
         converter.convert_from_source = MagicMock(name='convert_from_source', return_value=[returned_obj])
         return converter
@@ -20,7 +20,7 @@ class ContainedContentSerializerMixinTestCase(TestCase):
         context = {'contained': True}
 
         def to_representation(self, obj):
-            return FHIRAbstractModel().dict()
+            return FHIRAbstractModel.construct().dict()
 
     class TestSerializer(ContainedContentSerializerMixin, BaseTestSerializer):
 

@@ -4,11 +4,11 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from fhir.resources.group import Group
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
+    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, GroupTestMixin
 
 
-class GroupAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
-                      FhirApiDeleteTestMixin, APITestCase):
+class GroupAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
+                       APITestCase):
 
     base_url = '/api_fhir_r4/Group/'
     _test_json_path = "/test/test_group.json"
@@ -44,6 +44,8 @@ class GroupAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreate
                 "other_names": self._TEST_INSUREE_OTHER_NAMES,
             }
         )
+        imis_location = GroupTestMixin().create_mocked_location()
+        imis_location.save()
 
     def update_payload_no_extensions(self, data):
         data["extension"] = []
