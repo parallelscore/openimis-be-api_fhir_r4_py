@@ -13,8 +13,4 @@ class MultiSerializerModelViewSet(
         mixins.MultiSerializerUpdateModelMixin,
         mixins.MultiSerializerListModelMixin, ABC
 ):
-    """
-    A viewset that provides default `create()`, `retrieve()`, `update()`,
-    `partial_update()`, `destroy()` and `list()` actions.
-    """
     serializer_class = MultiSerializerSerializerClass

@@ -68,10 +68,9 @@ class GenericMultiSerializerViewsetMixin(ABC):
 
     def get_object_by_queryset(self, qs):
         """
-        Adjusted GenericAPIView
+        Adjusted Django Rest Framework's GenericAPIView
         """
 
-        # Perform the lookup filtering.
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
 
         assert lookup_url_kwarg in self.kwargs, (
