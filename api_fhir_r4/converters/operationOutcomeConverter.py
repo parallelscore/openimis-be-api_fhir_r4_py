@@ -45,6 +45,8 @@ class OperationOutcomeConverter(BaseFHIRConverter):
             result = cls.build_for_key_error(obj)
         elif isinstance(obj, IntegrityError):
             result = cls.build_for_IntegrityError(obj)
+        elif isinstance(obj, ValidationError):
+            result = cls.build_for_ValidationError(obj)
         else:
             result = cls.build_for_generic_error(obj)
         return result
@@ -54,6 +56,13 @@ class OperationOutcomeConverter(BaseFHIRConverter):
         severity = "error"
         code = R4IssueTypeConfig.get_fhir_code_for_exception()
         details_text = obj.detail
+        return cls.build_outcome(severity, code, details_text)
+
+    @classmethod
+    def build_for_ValidationError(cls, obj):
+        severity = "error"
+        code = R4IssueTypeConfig.get_fhir_code_for_exception()
+        details_text = str(obj)
         return cls.build_outcome(severity, code, details_text)
 
     @classmethod

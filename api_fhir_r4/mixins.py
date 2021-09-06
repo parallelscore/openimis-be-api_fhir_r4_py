@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod, ABC
 from typing import List
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, FieldError
 from django.http import Http404
 
 from rest_framework import mixins
@@ -11,6 +11,8 @@ from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 from api_fhir_r4.model_retrievers import GenericModelRetriever
 from rest_framework.response import Response
+
+from api_fhir_r4.multiserializer.mixins import MultiSerializerUpdateModelMixin, MultiSerializerRetrieveModelMixin
 
 logger = logging.getLogger(__name__)
 
@@ -127,3 +129,62 @@ class MultiIdentifierUpdateMixin(mixins.UpdateModelMixin, GenericMultiIdentifier
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
+class GenericMultiIdentifierForManySerialziers(GenericMultiIdentifierMixin, ABC):
+
+    def _get_object_with_first_valid_retriever(self, queryset, identifier):
+        for retriever in self.retrievers:
+            if retriever.identifier_validator(identifier):
+                try:
+                    queryset = retriever.retriever_additional_queryset_filtering(queryset)
+                    resource = retriever.get_model_object(queryset, identifier)
+
+                    # May raise a permission denied
+                    self.check_object_permissions(self.request, resource)
+                    return retriever.serializer_reference_type, resource
+                except ObjectDoesNotExist:
+                    logger.exception(
+                        F"Failed to retrieve object from queryset {queryset} using"
+                        F"identifier {identifier} for matching retriever: {retriever}"
+                    )
+                except FieldError:
+                    logger.exception(F"Failed to retrieve object from queryset {queryset} using"
+                                     F"{self.lookup_field}, field does not available for given model {queryset.model}")
+        return None, None
+
+
+class MultiIdentifierUpdateManySerializersMixin(MultiSerializerUpdateModelMixin,
+                                                GenericMultiIdentifierForManySerialziers, ABC):
+    def update(self, request, *args, **kwargs):
+        self._validate_update_request()
+        partial = kwargs.pop('partial', False)
+        results = []
+        for serializer, (qs, _) in self.get_eligible_serializers_iterator():
+            ref_type, instance = self._get_object_with_first_valid_retriever(qs, kwargs['identifier'])
+            update_result = self._update_for_serializer(serializer, instance, request.data, partial,
+                                                        reference_type=ref_type)
+            results.append(update_result)
+
+        response = results[0]  # By default there should be only one eligible serializer
+        return Response(response)
+
+
+class MultiIdentifierRetrieveManySerializersMixin(MultiSerializerRetrieveModelMixin,
+                                                  GenericMultiIdentifierForManySerialziers, ABC):
+    def retrieve(self, request, *args, **kwargs):
+        self._validate_retrieve_model_request()
+        retrieved = []
+        for serializer, (qs, _) in self.get_eligible_serializers_iterator():
+            ref_type, instance = self._get_object_with_first_valid_retriever(qs, kwargs['identifier'])
+            if instance:
+                serializer = serializer(instance, reference_type=ref_type)
+                if serializer.data:
+                    retrieved.append(serializer.data)
+
+        if len(retrieved) > 1:
+            raise ValueError("Ambiguous retrieve result, object found for multiple serializers.")
+        if len(retrieved) == 0:
+            raise Http404(f"Resource for identifier {kwargs['identifier']} not found")
+
+        return Response(retrieved[0])

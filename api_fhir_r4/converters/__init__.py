@@ -174,11 +174,14 @@ class BaseFHIRConverter(ABC):
         return next(iter([entry for entry in use_context if entry.code.code == code]), None)
 
     @classmethod
-    def build_fhir_contact_point(cls, value, contact_point_system, contact_point_use):
+    def build_fhir_contact_point(cls, value, contact_point_system=None, contact_point_use=None):
         contact_point = ContactPoint.construct()
-        if GeneralConfiguration.show_system():
+        if GeneralConfiguration.show_system() and contact_point_system:
             contact_point.system = contact_point_system
-        contact_point.use = contact_point_use
+
+        if contact_point_use:
+            contact_point.use = contact_point_use
+
         contact_point.value = value
         return contact_point
 
@@ -207,7 +210,7 @@ from api_fhir_r4.converters.referenceConverterMixin import ReferenceConverterMix
 from api_fhir_r4.converters.contractConverter import ContractConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.groupConverter import GroupConverter
-from api_fhir_r4.converters.organisationConverter import OrganisationConverter
+from api_fhir_r4.converters.policyHolderOrganisationConverter import PolicyHolderOrganisationConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.converters.locationSiteConverter import LocationSiteConverter
 from api_fhir_r4.converters.operationOutcomeConverter import OperationOutcomeConverter
@@ -224,3 +227,4 @@ from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitio
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.converters.insurancePlanConverter import InsurancePlanConverter
+from api_fhir_r4.converters.healthFacilityOrganisationConverter import HealthFacilityOrganisationConverter
