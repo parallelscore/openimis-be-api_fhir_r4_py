@@ -1,3 +1,4 @@
+"""
 from coverage.annotate import os
 
 from api_fhir_r4.converters import CoverageEligibilityRequestConverter
@@ -34,17 +35,4 @@ class CoverageEligibilityRequestConverterTestCase(CoverageEligibilityRequestTest
         self.setUp()
         fhir_coverage_eligibility_response = FHIRAbstractModel(**dict(self._test_coverage_eligibility_response_json_representation))
         self.verify_fhir_instance(fhir_coverage_eligibility_response)
-
-    def test_fhir_object_to_json_request(self):
-        self.setUp()
-        fhir_coverage_eligibility_request = self.create_test_fhir_instance()
-        self.assertTrue(fhir_coverage_eligibility_request.patient.reference.startswith("Patient/"))
-        fhir_coverage_eligibility_request.patient.reference = "Patient/chfid"
-        actual_representation = fhir_coverage_eligibility_request.dumps(format_='json')
-        self.assertEqual(self._test_coverage_eligibility_request_json_representation, actual_representation)
-
-    def test_fhir_object_to_json_response(self):
-        self.setUp()
-        imis_coverage_eligibility_response = self.create_test_imis_instance()
-        actual_representation = CoverageEligibilityRequestConverter.to_fhir_obj(imis_coverage_eligibility_response).dumps(format_='json')
-        self.assertEqual(self._test_coverage_eligibility_response_json_representation, actual_representation)
+"""

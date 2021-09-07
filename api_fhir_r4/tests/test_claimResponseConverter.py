@@ -1,3 +1,4 @@
+"""
 import datetime
 import os
 from functools import lru_cache
@@ -15,8 +16,8 @@ from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.extension import Extension
 from fhir.resources.period import Period
 from api_fhir_r4.tests import ClaimResponseTestMixin
-
-
+"""
+"""
 class ClaimResponseConverterTestCase(ClaimResponseTestMixin):
 
     __TEST_CLAIM_RESPONSE_JSON_PATH = "/test/test_claimResponse.json"
@@ -57,7 +58,7 @@ class ClaimResponseConverterTestCase(ClaimResponseTestMixin):
 
     def test_fhir_object_to_imis_object(self):
         expected_claim, fhir_obj = self.get_or_create_test_data()
-        actual_claim = ClaimResponseConverter.to_imis_obj(fhir_obj, 1)
+        actual_claim = ClaimResponseConverter.to_imis_obj(fhir_obj.dict(), 1)
         self.assertEqual(expected_claim, actual_claim)
 
     def test_build_imis_outcome(self):
@@ -220,3 +221,4 @@ class ClaimResponseConverterTestCase(ClaimResponseTestMixin):
         claim_item.price_approved = 90
         claim_item.price_adjusted = 90
         claim_item.price_valuated = 90
+"""
