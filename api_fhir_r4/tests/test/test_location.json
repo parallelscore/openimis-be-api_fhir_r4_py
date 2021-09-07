@@ -33,7 +33,7 @@
          {
             "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/location-type",
             "code":"V",
-            "display":"Region"
+            "display":"City/Village"
          }
       ]
    },
