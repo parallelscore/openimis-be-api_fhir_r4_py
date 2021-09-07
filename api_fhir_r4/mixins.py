@@ -131,7 +131,7 @@ class MultiIdentifierUpdateMixin(mixins.UpdateModelMixin, GenericMultiIdentifier
         return Response(serializer.data)
 
 
-class GenericMultiIdentifierForManySerialziers(GenericMultiIdentifierMixin, ABC):
+class GenericMultiIdentifierForManySerializers(GenericMultiIdentifierMixin, ABC):
 
     def _get_object_with_first_valid_retriever(self, queryset, identifier):
         for retriever in self.retrievers:
@@ -155,7 +155,7 @@ class GenericMultiIdentifierForManySerialziers(GenericMultiIdentifierMixin, ABC)
 
 
 class MultiIdentifierUpdateManySerializersMixin(MultiSerializerUpdateModelMixin,
-                                                GenericMultiIdentifierForManySerialziers, ABC):
+                                                GenericMultiIdentifierForManySerializers, ABC):
     def update(self, request, *args, **kwargs):
         self._validate_update_request()
         partial = kwargs.pop('partial', False)
@@ -171,7 +171,7 @@ class MultiIdentifierUpdateManySerializersMixin(MultiSerializerUpdateModelMixin,
 
 
 class MultiIdentifierRetrieveManySerializersMixin(MultiSerializerRetrieveModelMixin,
-                                                  GenericMultiIdentifierForManySerialziers, ABC):
+                                                  GenericMultiIdentifierForManySerializers, ABC):
     def retrieve(self, request, *args, **kwargs):
         self._validate_retrieve_model_request()
         retrieved = []
