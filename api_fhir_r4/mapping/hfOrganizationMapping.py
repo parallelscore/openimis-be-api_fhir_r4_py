@@ -1,5 +1,5 @@
 from api_fhir_r4.configurations import R4LocationConfig
-from api_fhir_r4.models.imisModelEnums import ImisLocationType
+from api_fhir_r4.models.imisModelEnums import ImisLocationType, ContactPointSystem
 
 
 class HealthFacilityOrganizationTypeMapping:
@@ -10,9 +10,9 @@ class HealthFacilityOrganizationTypeMapping:
 
     ORGANIZATION_TYPE = 'prov'
 
-    EMAIL_CONTACT_POINT_SYSTEM = 'email'
-    PHONE_CONTACT_POINT_SYSTEM = 'phone'
-    FAX_CONTACT_POINT_SYSTEM = 'fax'
+    EMAIL_CONTACT_POINT_SYSTEM = ContactPointSystem.EMAIL
+    PHONE_CONTACT_POINT_SYSTEM = ContactPointSystem.PHONE
+    FAX_CONTACT_POINT_SYSTEM = ContactPointSystem.FAX
 
     ADDRESS_LOCATION_REFERENCE_URL = \
         'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference'
