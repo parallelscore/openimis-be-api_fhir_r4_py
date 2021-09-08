@@ -68,7 +68,7 @@ class BaseFHIRSerializer(serializers.Serializer):
 
 from api_fhir_r4.serializers.patientSerializer import PatientSerializer
 from api_fhir_r4.serializers.groupSerializer import GroupSerializer
-from api_fhir_r4.serializers.organisationSerializer import OrganisationSerializer
+from api_fhir_r4.serializers.policyHolderOrganisationSerializer import PolicyHolderOrganisationSerializer
 from api_fhir_r4.serializers.contractSerializer import ContractSerializer
 from api_fhir_r4.serializers.locationSerializer import LocationSerializer
 from api_fhir_r4.serializers.locationSiteSerializer import LocationSiteSerializer
@@ -85,3 +85,4 @@ from api_fhir_r4.serializers.activityDefinitionSerializer import ActivityDefinit
 from api_fhir_r4.serializers.healthcareServiceSerializer import HealthcareServiceSerializer
 from api_fhir_r4.serializers.insurancePlanSerializer import InsurancePlanSerializer
 from api_fhir_r4.serializers.codeSystemSerializer import CodeSystemSerializer
+from api_fhir_r4.serializers.healthFacilityOrganisationSerializer import HealthFacilityOrganisationSerializer
