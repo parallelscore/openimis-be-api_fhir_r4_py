@@ -70,8 +70,6 @@ if 'medical' in imis_modules:
     router.register(r'Medication', fhir_viewsets.MedicationViewSet, basename="Medication_R4")
     router.register(r'Condition', fhir_viewsets.ConditionViewSet, basename="Condition_R4")
     router.register(r'ActivityDefinition', fhir_viewsets.ActivityDefinitionViewSet, basename="ActivityDefinition_R4")
-    # code system for openimis medication
-    router.register(r'CodeSystem/diagnosis', fhir_viewsets.CodeSystemOpenIMISDiagnosisViewSet, basename="CodeSystem/diagnosis_R4")
 
 # register all endpoints related to c based on c
 if 'claim' in imis_modules:
@@ -80,6 +78,9 @@ if 'claim' in imis_modules:
     router.register(r'PractitionerRole', fhir_viewsets.PractitionerRoleViewSet, basename="PractitionerRole_R4")
     router.register(r'Practitioner', fhir_viewsets.PractitionerViewSet, basename="Practitioner_R4")
     router.register(r'CommunicationRequest', fhir_viewsets.CommunicationRequestViewSet, basename="CommunicationRequest_R4")
+    # code system for openimis medication
+    router.register(r'CodeSystem/diagnosis', fhir_viewsets.CodeSystemOpenIMISDiagnosisViewSet,
+                    basename="CodeSystem/diagnosis_R4")
 
 # register endpoint for policy if used
 if 'policy' in imis_modules:
