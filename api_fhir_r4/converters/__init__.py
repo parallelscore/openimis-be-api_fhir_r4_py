@@ -224,3 +224,4 @@ from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitio
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.converters.insurancePlanConverter import InsurancePlanConverter
+from api_fhir_r4.converters.codeSystemConverter import CodeSystemConverter
