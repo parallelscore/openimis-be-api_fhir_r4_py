@@ -1,20 +1,13 @@
 from django.utils.translation import gettext
 from policyholder.models import PolicyHolder
-from location.models import Location
-from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration
-from api_fhir_r4.converters import BaseFHIRConverter,ReferenceConverterMixin
-from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
-from api_fhir_r4.converters.locationConverter import LocationConverter
-from fhir.resources.extension import Extension
-from fhir.resources.attachment import Attachment
-from fhir.resources.coding import Coding
-from fhir.resources.contactpoint import ContactPoint
-from fhir.resources.organization import Organization, OrganizationContact
+from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from fhir.resources.organization import Organization
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
 
-class OrganisationConverter(BaseFHIRConverter):
-    
+class PolicyHolderOrganisationConverter(BaseFHIRConverter, ReferenceConverterMixin):
+
     @classmethod
     def to_fhir_obj(cls, imis_organisation, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         # TODO reshape this fhir object and imis, fix BankAccount
@@ -215,7 +208,6 @@ class OrganisationConverter(BaseFHIRConverter):
         else:
             fhir_organisation.address.append(addresses)
 
-
     @classmethod
     def build_fhir_contact_name(cls,imis_organisation,fhir_organisation):
         contacts =[]
@@ -227,4 +219,11 @@ class OrganisationConverter(BaseFHIRConverter):
             fhir_organisation.contact = contacts
         else:
             fhir_organisation.contact.append(contacts)
-        
+
+    @classmethod
+    def get_reference_obj_uuid(cls, obj):
+        return obj.uuid
+
+    @classmethod
+    def get_reference_obj_code(cls, obj):
+        return obj.code

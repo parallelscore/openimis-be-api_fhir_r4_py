@@ -10,6 +10,7 @@ from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration,
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
+from api_fhir_r4.converters.policyHolderOrganisationConverter import PolicyHolderOrganisationConverter
 from api_fhir_r4.mapping.patientMapping import RelationshipMapping, EducationLevelMapping, \
     PatientProfessionMapping, IdentificationTypeMapping, MaritalStatusMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
@@ -21,6 +22,7 @@ from fhir.resources.reference import Reference
 from fhir.resources.identifier import Identifier
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
+from location.models import HealthFacility
 
 
 class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
@@ -562,9 +564,10 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_general_practitioner(cls, fhir_patient, imis_insuree):
+        imis_insuree.health_facility = HealthFacility.objects.filter(level='H', validity_to__isnull=True).first()
         if imis_insuree.health_facility:
             fhir_patient.generalPractitioner = [
-                HealthcareServiceConverter.build_fhir_resource_reference(imis_insuree.health_facility, 'Practitioner')
+                PolicyHolderOrganisationConverter.build_fhir_resource_reference(imis_insuree.health_facility, 'Practitioner')
             ]
 
     @classmethod
