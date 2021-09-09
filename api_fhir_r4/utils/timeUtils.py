@@ -21,4 +21,3 @@ class TimeUtils(object):
     def str_iso_to_date(cls, str_iso_datetime):
         py_date = parser.parse(f"{str_iso_datetime}")
         return core.datetime.datetime.from_ad_datetime(py_date)
-
