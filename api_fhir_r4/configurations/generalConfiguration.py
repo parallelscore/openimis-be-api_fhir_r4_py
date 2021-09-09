@@ -1,5 +1,6 @@
 from api_fhir_r4.configurations import BaseConfiguration
 from api_fhir_r4.defaultConfig import DEFAULT_CFG
+from django.conf.settings import SITE_ROOT
 
 
 class GeneralConfiguration(BaseConfiguration):
@@ -58,4 +59,7 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
     def get_system_base_url(cls):
-        return cls.get_config_attribute("base_url")
+        if SITE_ROOT is not None:       
+            return join(cls.get_config_attribute("base_url"),'/',SITE_ROOT)
+        else:
+            return cls.get_config_attribute("base_url")
