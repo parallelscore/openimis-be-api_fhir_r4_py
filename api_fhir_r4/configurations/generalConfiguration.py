@@ -1,6 +1,6 @@
 from api_fhir_r4.configurations import BaseConfiguration
 from api_fhir_r4.defaultConfig import DEFAULT_CFG
-
+from django.conf import settings
 
 class GeneralConfiguration(BaseConfiguration):
 
