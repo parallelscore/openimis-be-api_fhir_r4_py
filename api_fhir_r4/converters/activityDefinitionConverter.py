@@ -114,7 +114,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
             imis_activity_definition.uuid = value
 
         value = cls.get_fhir_identifier_by_code(fhir_activity_definition.identifier,
-                                                R4IdentifierConfig.get_fhir_generic_type_code())
+                                                ActivityDefinitionConverter.get_fhir_code_identifier_type())
         if value:
             imis_activity_definition.code = value
 
@@ -134,7 +134,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         validity_from = fhir_activity_definition.date
         if not cls.valid_condition(not validity_from,
                                    gettext('Missing activity definition `validity from` attribute'), errors):
-            imis_activity_definition.validity_from = TimeUtils.str_to_date(validity_from)
+            imis_activity_definition.validity_from = TimeUtils.str_iso_to_date(validity_from)
 
     @classmethod
     def build_fhir_name(cls, fhir_activity_definition, imis_activity_definition):
