@@ -59,7 +59,11 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
     def get_system_base_url(cls):
-        if SITE_ROOT is not None:       
-            return join(cls.get_config_attribute("base_url"),'/',settings.SITE_ROOT())
+        site_root = settings.SITE_ROOT()
+        if site_root is not None:
+            if  site_root.endswith('/'):
+                return join(cls.get_config_attribute("base_url"),'/',site_root[:-1])
+            else:
+                return join(cls.get_config_attribute("base_url"),'/',site_root)
         else:
             return cls.get_config_attribute("base_url")
