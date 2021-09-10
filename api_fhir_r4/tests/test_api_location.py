@@ -4,12 +4,12 @@ from location.models import Location
 from fhir.resources.location import Location as FHIRLocation
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, \
     FhirApiUpdateTestMixin
-
+from api_fhir_r4.configurations import  GeneralConfiguration
 
 class LocationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
                        APITestCase):
 
-    base_url = '/api_fhir_r4/Location/'
+    base_url = GeneralConfiguration.get_base_url()+'Location/'
     _test_json_path = "/test/test_location.json"
     _TEST_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
     _TEST_EXPECTED_NAME = "UPDATED_NAME"

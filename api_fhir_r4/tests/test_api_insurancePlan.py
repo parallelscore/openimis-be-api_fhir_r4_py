@@ -2,12 +2,12 @@ from django.utils.translation import gettext as _
 from rest_framework.test import APITestCase
 from fhir.resources.insuranceplan import InsurancePlan
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin
-
+from api_fhir_r4.configurations import  GeneralConfiguration
 
 class InsurancePlanAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin,
                             FhirApiUpdateTestMixin, APITestCase):
 
-    base_url = '/api_fhir_r4/InsurancePlan/'
+    base_url = GeneralConfiguration.get_base_url()+'InsurancePlan/'
     _test_json_path = "/test/test_insurance_plan.json"
     _TEST_PRODUCT_CODE = "Test0001"
     _TEST_MAX_INSTALLMENTS = 4

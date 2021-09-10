@@ -8,11 +8,11 @@ from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, Fhi
 
 from location.models import Location
 from insuree.test_helpers import create_test_insuree
-
+from api_fhir_r4.configurations import  GeneralConfiguration
 
 class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin, APITestCase):
 
-    base_url = '/api_fhir_r4/Patient/'
+    base_url = GeneralConfiguration.get_base_url()+'Patient/'
     _test_json_path = "/test/test_patient.json"
     _TEST_LAST_NAME = "TEST_LAST_NAME"
     _TEST_LOCATION_NAME_VILLAGE = "Rachla"

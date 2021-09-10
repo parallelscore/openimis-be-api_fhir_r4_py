@@ -8,11 +8,11 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from api_fhir_r4.tests import GenericFhirAPITestMixin
 from api_fhir_r4.utils import DbManagerUtils
-
+from api_fhir_r4.configurations import  GeneralConfiguration
 
 class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
 
-    base_url = '/api_fhir_r4/login/'
+    base_url = GeneralConfiguration.get_base_url()+'login/'
     url_to_test_authorization = '/api_fhir_r4/Group/'
     _test_json_path = "/test/test_login.json"
     _test_json_path_credentials = "/tests/test/test_login.json"
