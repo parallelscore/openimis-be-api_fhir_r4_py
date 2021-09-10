@@ -13,7 +13,7 @@ from api_fhir_r4.configurations import  GeneralConfiguration
 
 class LoginAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, APITestCase):
 
-     base_url = GeneralConfiguration.get_base_url()+'login/'
+    base_url = GeneralConfiguration.get_base_url()+'login/'
     _test_json_path = "/test/test_login.json"
     _test_json_path_wrong_credentials = "/tests/test/test_login_bad_credentials.json"
     _test_json_path_wrong_payload = "/tests/test/test_login_bad_payload.json"
