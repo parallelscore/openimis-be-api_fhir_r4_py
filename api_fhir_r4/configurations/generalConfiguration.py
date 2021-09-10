@@ -62,8 +62,8 @@ class GeneralConfiguration(BaseConfiguration):
         site_root = settings.SITE_ROOT()
         if site_root is not None:
             if  site_root.endswith('/'):
-                return join(cls.get_config_attribute("base_url"),'/',site_root[:-1])
+                return cls.get_config_attribute("base_url") + '/' + site_root[:-1]
             else:
-                return join(cls.get_config_attribute("base_url"),'/',site_root)
+                return cls.get_config_attribute("base_url") + '/' + site_root
         else:
             return cls.get_config_attribute("base_url")
