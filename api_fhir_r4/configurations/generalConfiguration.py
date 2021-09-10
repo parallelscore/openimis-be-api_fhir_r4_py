@@ -66,7 +66,6 @@ class GeneralConfiguration(BaseConfiguration):
         site_root = settings.SITE_ROOT()
         if site_root is not None:
             base_url = '/' + site_root
-        else 
         if  base_url.endswith('/'):
             return base_url + MODULE_NAME + '/'
         else:
