@@ -62,8 +62,8 @@ class GeneralConfiguration(BaseConfiguration):
 
     @classmethod        
     def get_base_url(cls):
-       MODULE_NAME = 'api_fhir_r4'
-       site_root = settings.SITE_ROOT()
+        MODULE_NAME = 'api_fhir_r4'
+        site_root = settings.SITE_ROOT()
         if site_root is not None:
             base_url = '/' + site_root
         else 
