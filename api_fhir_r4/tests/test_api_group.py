@@ -1,16 +1,15 @@
 from django.utils.translation import gettext as _
 from insuree.test_helpers import *
-from rest_framework import status
 from rest_framework.test import APITestCase
 from fhir.resources.group import Group
-from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, GroupTestMixin
+from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, \
+    FhirApiUpdateTestMixin, GroupTestMixin
+from api_fhir_r4.configurations import  GeneralConfiguration
 
-
-class GroupAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
+class GroupAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin,
                        APITestCase):
 
-    base_url = '/api_fhir_r4/Group/'
+    base_url = GeneralConfiguration.get_base_url()+'Group/'
     _test_json_path = "/test/test_group.json"
     _TEST_INSUREE_CHFID = "TestCfhId1"
     _TEST_INSUREE_LAST_NAME = "Test"

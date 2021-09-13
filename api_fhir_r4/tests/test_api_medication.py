@@ -6,11 +6,11 @@ from fhir.resources.medication import Medication as FHIRMedication
 from api_fhir_r4.converters import MedicationConverter
 from api_fhir_r4.tests import GenericFhirAPITestMixin, \
     FhirApiCreateTestMixin, FhirApiUpdateTestMixin
-
+from api_fhir_r4.configurations import  GeneralConfiguration
 
 class MedicationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin, APITestCase):
 
-    base_url = '/api_fhir_r4/Medication/'
+    base_url = GeneralConfiguration.get_base_url()+'Medication/'
     _test_json_path = "/test/test_medication.json"
     _TEST_EXPECTED_CODE = "TESTT"
 
