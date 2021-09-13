@@ -1,16 +1,16 @@
 from django.utils.translation import gettext as _
 from insuree.models import Gender
-from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework.test import APITestCase
 
 from fhir.resources.patient import Patient
-from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, PatientTestMixin
+from api_fhir_r4.tests import GenericFhirAPITestMixin, \
+    FhirApiCreateTestMixin, PatientTestMixin
 
 from location.models import Location
 from insuree.test_helpers import create_test_insuree
 from api_fhir_r4.configurations import  GeneralConfiguration
 
-class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin, APITestCase):
+class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'Patient/'
     _test_json_path = "/test/test_patient.json"

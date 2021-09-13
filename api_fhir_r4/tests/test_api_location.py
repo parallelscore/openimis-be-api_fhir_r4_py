@@ -2,11 +2,10 @@ from rest_framework.test import APITestCase
 
 from location.models import Location
 from fhir.resources.location import Location as FHIRLocation
-from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin
-from api_fhir_r4.configurations import  GeneralConfiguration
+from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin
+from api_fhir_r4.configurations import GeneralConfiguration
 
-class LocationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
+class LocationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin,
                        APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'Location/'

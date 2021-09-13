@@ -18,6 +18,7 @@ from fhir.resources.humanname import HumanName
 from fhir.resources.identifier import Identifier
 from fhir.resources.patient import Patient
 from fhir.resources.reference import Reference
+from api_fhir_r4.models.imisModelEnums import ContactPointSystem, ContactPointUse
 from api_fhir_r4.tests import GenericTestMixin
 from api_fhir_r4.utils import TimeUtils
 
@@ -181,11 +182,11 @@ class PatientTestMixin(GenericTestMixin):
             R4MaritalConfig.get_fhir_divorced_code(),
             R4MaritalConfig.get_fhir_marital_status_system())
         telecom = []
-        phone = PatientConverter.build_fhir_contact_point(self._TEST_PHONE, "phone",
-                                                          "home")
+        phone = PatientConverter.build_fhir_contact_point(self._TEST_PHONE, ContactPointSystem.PHONE,
+                                                          ContactPointUse.HOME)
         telecom.append(phone)
-        email = PatientConverter.build_fhir_contact_point(self._TEST_EMAIL, "email",
-                                                          "home")
+        email = PatientConverter.build_fhir_contact_point(self._TEST_EMAIL, ContactPointSystem.EMAIL,
+                                                          ContactPointUse.HOME)
         telecom.append(email)
         fhir_patient.telecom = telecom
 

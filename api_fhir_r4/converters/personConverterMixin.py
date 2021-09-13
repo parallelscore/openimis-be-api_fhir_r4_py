@@ -50,8 +50,8 @@ class PersonConverterMixin(object):
         email = None
         if telecom is not None:
             for contact_point in telecom:
-                if contact_point.system == ContactPointSystem.PHONE:
+                if contact_point.system == ContactPointSystem.PHONE.value:
                     phone = contact_point.value
-                elif contact_point.system == ContactPointSystem.EMAIL:
+                elif contact_point.system == ContactPointSystem.EMAIL.value:
                     email = contact_point.value
         return phone, email

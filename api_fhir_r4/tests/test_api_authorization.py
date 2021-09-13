@@ -73,7 +73,7 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
         self.assertEqual(response_json["issue"][0]["details"]["text"], "Authentication credentials were not provided.")
 
     def test_post_should_raise_error_decode_token(self):
-        response = self.client.post(self.base_url, data=self._test_request_data_credentials, format='json')
+        response = self.client.post(self.base_url+'login/', data=self._test_request_data_credentials, format='json')
         response_json = response.json()
         token = response_json["token"]
         headers = {
@@ -109,7 +109,7 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
         response = self.client.get(self.url_to_test_authorization, format='json', **headers)
         response_json = response.json()
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response_json["issue"][0]["details"]["text"], "Improper structure of token")
+        self.assertEqual(response_json["issue"][0]["details"]["text"], "Unproper structure of token")
 
     def test_post_should_raise_forbidden(self):
         response = self.client.post(self.base_url+'login/', data=self._test_request_data_credentials, format='json')
