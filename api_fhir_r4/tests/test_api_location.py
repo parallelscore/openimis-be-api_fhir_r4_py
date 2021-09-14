@@ -5,6 +5,7 @@ from fhir.resources.location import Location as FHIRLocation
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin
 from api_fhir_r4.configurations import GeneralConfiguration
 
+
 class LocationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin,
                        APITestCase):
 

@@ -3,10 +3,11 @@ from insuree.test_helpers import *
 from rest_framework.test import APITestCase
 from fhir.resources.group import Group
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, GroupTestMixin
-from api_fhir_r4.configurations import  GeneralConfiguration
+    FhirApiUpdateTestMixin, GroupTestMixin, FhirApiReadTestMixin
+from api_fhir_r4.configurations import GeneralConfiguration
 
-class GroupAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin,
+
+class GroupAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin,
                        APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'Group/'

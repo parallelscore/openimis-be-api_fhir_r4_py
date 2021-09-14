@@ -1,9 +1,9 @@
 from claim.models import ClaimAdmin
-from django.utils.translation import gettext
+from django.utils.translation import gettext as _
 
-from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
-from fhir.resources.practitioner import Practitioner
+from fhir.resources.practitioner import Practitioner, PractitionerQualification
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
 
@@ -17,6 +17,7 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
         cls.build_human_names(fhir_practitioner, imis_claim_admin)
         cls.build_fhir_birth_date(fhir_practitioner, imis_claim_admin)
         cls.build_fhir_telecom(fhir_practitioner, imis_claim_admin)
+        cls.build_fhir_qualification(fhir_practitioner)
         return fhir_practitioner
 
     @classmethod
@@ -83,7 +84,7 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
                                                 R4IdentifierConfig.get_fhir_claim_admin_code_type())
         if value:
             imis_claim_admin.code = value
-        cls.valid_condition(imis_claim_admin.code is None, gettext('Missing the claim admin code'), errors)
+        cls.valid_condition(imis_claim_admin.code is None, _('Missing the claim admin code'), errors)
 
     @classmethod
     def build_human_names(cls, fhir_practitioner, imis_claim_admin):
@@ -119,3 +120,14 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
     @classmethod
     def build_imis_contacts(cls, imis_claim_admin, fhir_practitioner):
         imis_claim_admin.phone, imis_claim_admin.email_id = cls.build_imis_phone_num_and_email(fhir_practitioner.telecom)
+
+    @classmethod
+    def build_fhir_qualification(cls, fhir_practitioner):
+        system = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/practitioner-qualification-type"
+        qualification = PractitionerQualification.construct()
+        qualification.code = cls.build_codeable_concept(
+            system=system,
+            code="CA",
+            display=_("Claim Administrator")
+        )
+        fhir_practitioner.qualification = [qualification]

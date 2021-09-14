@@ -1,12 +1,12 @@
-"""
+import json
 import os
 
 from api_fhir_r4.converters import PractitionerConverter
 
-from fhir.resources.fhirabstractmodel import FHIRAbstractModel
+from fhir.resources.practitioner import Practitioner
 from api_fhir_r4.tests import PractitionerTestMixin
-"""
-"""
+
+
 class PractitionerConverterTestCase(PractitionerTestMixin):
 
     __TEST_PRACTITIONER_JSON_PATH = "/test/test_practitioner.json"
@@ -22,17 +22,11 @@ class PractitionerConverterTestCase(PractitionerTestMixin):
 
     def test_to_imis_obj(self):
         fhir_practitioner = self.create_test_fhir_instance()
-        imis_claim_admin = PractitionerConverter.to_imis_obj(fhir_practitioner, None)
+        imis_claim_admin = PractitionerConverter.to_imis_obj(fhir_practitioner.dict(), None)
         self.verify_imis_instance(imis_claim_admin)
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_practitioner = FHIRAbstractModel(**dict(self._test_practitioner_json_representation))
+        dict_practitioner = json.loads(self._test_practitioner_json_representation)
+        fhir_practitioner = Practitioner(**dict_practitioner)
         self.verify_fhir_instance(fhir_practitioner)
-
-    def test_fhir_object_to_json(self):
-        self.setUp()
-        fhir_practitioner = self.create_test_fhir_instance()
-        actual_representation = fhir_practitioner.dumps(format_='json')
-        self.assertEqual(self._test_practitioner_json_representation, actual_representation)
-"""

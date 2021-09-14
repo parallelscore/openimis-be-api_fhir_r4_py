@@ -6,7 +6,8 @@ from fhir.resources.medication import Medication as FHIRMedication
 from api_fhir_r4.converters import MedicationConverter
 from api_fhir_r4.tests import GenericFhirAPITestMixin, \
     FhirApiCreateTestMixin, FhirApiUpdateTestMixin
-from api_fhir_r4.configurations import  GeneralConfiguration
+from api_fhir_r4.configurations import GeneralConfiguration
+
 
 class MedicationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin, APITestCase):
 

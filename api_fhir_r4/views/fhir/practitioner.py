@@ -22,5 +22,9 @@ class PractitionerViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, viewsets.
         serializer = PractitionerSerializer(self.paginate_queryset(queryset), many=True)
         return self.get_paginated_response(serializer.data)
 
+    def retrieve(self, *args, **kwargs):
+        response = super().retrieve(self, *args, **kwargs)
+        return response
+
     def get_queryset(self):
         return ClaimAdmin.get_queryset(None, self.request.user)

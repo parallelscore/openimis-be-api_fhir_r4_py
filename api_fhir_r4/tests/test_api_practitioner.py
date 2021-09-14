@@ -1,14 +1,11 @@
-"""
+from rest_framework import status
 from rest_framework.test import APITestCase
 
 from fhir.resources.practitioner import Practitioner
-from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
-"""
+from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirApiReadTestMixin
 
-"""
-class PractitionerAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin,
-                           FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, APITestCase):
+
+class PractitionerAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, APITestCase):
 
     base_url = '/api_fhir_r4/Practitioner/'
     _test_json_path = "/test/test_practitioner.json"
@@ -23,4 +20,3 @@ class PractitionerAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirAp
 
     def update_resource(self, data):
         data['name'][0]['family'] = self._TEST_EXPECTED_NAME
-"""
