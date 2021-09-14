@@ -44,11 +44,7 @@ class PatientAPITests(GenericFhirAPITestMixin, APITestCase):
         dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         json_representation = open(dir_path + self._test_json_path_credentials).read()
         self._test_request_data_credentials = json.loads(json_representation)
-        print('after test')
-        print(User.objects.filter(username=self._TEST_USER_NAME).count())
         self.get_or_create_user_api()
-        print('before test')
-        print(User.objects.filter(username=self._TEST_USER_NAME).count())
 
     def get_or_create_user_api(self):
         user = DbManagerUtils.get_object_or_none(User, username=self._TEST_USER_NAME)
