@@ -10,6 +10,7 @@ from location.models import Location
 from insuree.test_helpers import create_test_insuree
 from api_fhir_r4.configurations import  GeneralConfiguration
 
+
 class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'Patient/'
@@ -36,8 +37,12 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, APITestCa
         gender.code = self._TEST_GENDER_CODE
         gender.save()
 
+        print("before test")
+        print(Location.objects.filter(code="RTDTMTVT").count())
         imis_location = PatientTestMixin().create_mocked_location()
         imis_location.save()
+        print("after test")
+        print(Location.objects.filter(code="RTDTMTVT").count())
         # create mocked insuree with family - new insuree as a part of this test of family
         imis_mocked_insuree = create_test_insuree(with_family=True)
         imis_mocked_insuree.uuid = self._TEST_INSUREE_MOCKED_UUID
