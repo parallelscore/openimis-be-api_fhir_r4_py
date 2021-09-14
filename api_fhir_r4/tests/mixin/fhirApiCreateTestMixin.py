@@ -18,6 +18,7 @@ class FhirApiCreateTestMixin(object):
         self.login()
         self.create_dependencies()
         response = self.client.post(self.base_url, data=self._test_request_data, format='json')
+        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(response.content)
 
