@@ -177,10 +177,10 @@ class BaseFHIRConverter(ABC):
     def build_fhir_contact_point(cls, value, contact_point_system=None, contact_point_use=None):
         contact_point = ContactPoint.construct()
         if GeneralConfiguration.show_system() and contact_point_system:
-            contact_point.system = contact_point_system
+            contact_point.system = contact_point_system.value
 
         if contact_point_use:
-            contact_point.use = contact_point_use
+            contact_point.use = contact_point_use.value
 
         contact_point.value = value
         return contact_point

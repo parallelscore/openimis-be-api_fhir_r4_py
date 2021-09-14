@@ -1,3 +1,4 @@
+"""
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -6,8 +7,9 @@ from fhir.resources.practitionerrole import PractitionerRole
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiUpdateTestMixin, \
     FhirApiCreateTestMixin, LocationTestMixin, PractitionerTestMixin, FhirApiDeleteTestMixin
 from api_fhir_r4.utils import TimeUtils
+"""
 
-
+"""
 class PractitionerRoleAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin,
                                FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, APITestCase):
 
@@ -64,4 +66,4 @@ class PractitionerRoleAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, Fh
         practitioner_role = self.get_fhir_obj_from_json_response(response)
         self.assertTrue(isinstance(practitioner_role, PractitionerRole))
         self.assertEqual(0, len(practitioner_role.location))
-
+"""

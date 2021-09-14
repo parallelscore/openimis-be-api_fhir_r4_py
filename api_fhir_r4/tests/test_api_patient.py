@@ -1,22 +1,63 @@
+import json
+import os
+
 from django.utils.translation import gettext as _
+from api_fhir_r4.utils import DbManagerUtils
 from insuree.models import Gender
-from rest_framework.test import APITestCase, APIRequestFactory
-
+from insuree.test_helpers import create_test_insuree
+from rest_framework.test import APITestCase
+from rest_framework import status
+from core.models import User
+from core.services import create_or_update_interactive_user, create_or_update_core_user
 from fhir.resources.patient import Patient
-from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
-    FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
+from api_fhir_r4.tests import GenericFhirAPITestMixin, PatientTestMixin
+from api_fhir_r4.configurations import GeneralConfiguration
 
 
-class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, FhirApiUpdateTestMixin,
-                      FhirApiDeleteTestMixin, APITestCase):
+class PatientAPITests(GenericFhirAPITestMixin, APITestCase):
 
-    base_url = '/api_fhir_r4/Patient/'
+    base_url = GeneralConfiguration.get_base_url()+'Patient/'
     _test_json_path = "/test/test_patient.json"
+    _TEST_LAST_NAME = "TEST_LAST_NAME"
+    _TEST_LOCATION_NAME_VILLAGE = "Rachla"
     _TEST_GENDER_CODE = 'M'
     _TEST_EXPECTED_NAME = "UPDATED_NAME"
+    _TEST_INSUREE_MOCKED_UUID = "7240daef-5f8f-4b0f-9042-b221e66f184a"
+    _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
+
+    _test_json_path_credentials = "/tests/test/test_login.json"
+    _TEST_USER_NAME = "TestUserTest2"
+    _TEST_USER_PASSWORD = "TestPasswordTest2"
+    _TEST_DATA_USER = {
+        "username": _TEST_USER_NAME,
+        "last_name": _TEST_USER_NAME,
+        "password": _TEST_USER_PASSWORD,
+        "other_names": _TEST_USER_NAME,
+        "user_types": "INTERACTIVE",
+        "language": "en",
+        "roles": [1],
+    }
+    _test_request_data_credentials = None
 
     def setUp(self):
         super(PatientAPITests, self).setUp()
+        dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        json_representation = open(dir_path + self._test_json_path_credentials).read()
+        self._test_request_data_credentials = json.loads(json_representation)
+        self.get_or_create_user_api()
+
+    def get_or_create_user_api(self):
+        user = DbManagerUtils.get_object_or_none(User, username=self._TEST_USER_NAME)
+        if user is None:
+            user = self.__create_user_interactive_core()
+        return user
+
+    def __create_user_interactive_core(self):
+        i_user, i_user_created = create_or_update_interactive_user(
+            user_id=None, data=self._TEST_DATA_USER, audit_user_id=999, connected=False)
+        create_or_update_core_user(
+            user_uuid=None, username=self._TEST_DATA_USER["username"], i_user=i_user)
+        return DbManagerUtils.get_object_or_none(User, username=self._TEST_USER_NAME)
 
     def verify_updated_obj(self, updated_obj):
         self.assertTrue(isinstance(updated_obj, Patient))
@@ -29,6 +70,21 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
         gender = Gender()
         gender.code = self._TEST_GENDER_CODE
         gender.save()
+
+        imis_location = PatientTestMixin().create_mocked_location()
+        imis_location.save()
+        # create mocked insuree with family - new insuree as a part of this test of family
+        imis_mocked_insuree = create_test_insuree(with_family=True)
+        imis_mocked_insuree.uuid = self._TEST_INSUREE_MOCKED_UUID
+        imis_mocked_insuree.current_village = imis_location
+        imis_mocked_insuree.last_name = self._TEST_LAST_NAME
+        imis_mocked_insuree.save()
+
+        # update family uuid
+        imis_family = imis_mocked_insuree.family
+        imis_family.uuid = self._TEST_FAMILY_MOCKED_UUID
+        imis_family.location = imis_location
+        imis_family.save()
 
     def update_payload_missing_chfid_identifier(self, data):
         for i in range(len(data["identifier"])):
@@ -91,16 +147,36 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
             name.pop('given')
         return data
 
-    #def update_payload_remove_chf_id_from_it(self, data):
-    #    for member in data["member"]:
-    #        member["entity"]["identifier"].pop("value")
-    #    return data
+    def test_post_should_create_correctly(self):
+        self.create_dependencies()
+        response = self.client.post(
+            GeneralConfiguration.get_base_url() + 'login/', data=self._test_request_data_credentials, format='json'
+        )
+        response_json = response.json()
+        token = response_json["token"]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        headers = {
+            "Content-Type": "application/json",
+            'HTTP_AUTHORIZATION': f"Bearer {token}"
+        }
+        response = self.client.post(self.base_url, data=self._test_request_data, format='json', **headers)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(response.content)
 
     def test_post_should_raise_error_no_chfid_identifier(self):
-        self.login()
         self.create_dependencies()
+        response = self.client.post(
+            GeneralConfiguration.get_base_url() + 'login/', data=self._test_request_data_credentials, format='json'
+        )
+        response_json = response.json()
+        token = response_json["token"]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        headers = {
+            "Content-Type": "application/json",
+            'HTTP_AUTHORIZATION': f"Bearer {token}"
+        }
         modified_payload = self.update_payload_missing_chfid_identifier(data=self._test_request_data)
-        response = self.client.post(self.base_url, data=modified_payload, format='json')
+        response = self.client.post(self.base_url, data=modified_payload, format='json', **headers)
         response_json = response.json()
         splited_output = response_json["issue"][0]["details"]["text"].split(" ")
         self.assertEqual(
@@ -127,7 +203,7 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCrea
         response_json = response.json()
         self.assertEqual(
             response_json["issue"][0]["details"]["text"],
-            _('Address must be supported')
+            _('Patient without family address')
         )
 
     def test_post_should_raise_missing_fhir_home_address_details(self):

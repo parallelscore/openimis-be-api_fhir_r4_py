@@ -4,7 +4,8 @@ from medical.models import Item
 
 from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
 from api_fhir_r4.converters import MedicationConverter
-from api_fhir_r4.mapping.medicationMapping import ItemVenueTypeMapping, PatientCategoryMapping
+from api_fhir_r4.mapping.medicationMapping import ItemVenueTypeMapping
+from api_fhir_r4.mapping.patientMapping import PatientCategoryMapping
 from api_fhir_r4.tests import GenericTestMixin
 from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.extension import Extension

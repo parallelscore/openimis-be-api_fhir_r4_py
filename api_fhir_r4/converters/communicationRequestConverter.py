@@ -68,3 +68,7 @@ class CommunicationRequestConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_status(cls, fhir_claim_response):
         fhir_claim_response.status = "active"
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_claim):
+        return imis_claim.uuid

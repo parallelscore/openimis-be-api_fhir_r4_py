@@ -144,11 +144,11 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     
     
     @classmethod
-    def build_fhir_member(cls,fhir_family,imis_family):
+    def build_fhir_member(cls,fhir_family, imis_family):
         fhir_family.member = cls.build_fhir_members(imis_family.uuid)
 
     @classmethod
-    def build_fhir_quantity(cls,fhir_family,imis_family):
+    def build_fhir_quantity(cls,fhir_family, imis_family):
         quantity = Insuree.objects.filter(family__uuid=imis_family.uuid).count()
         fhir_family.quantity = quantity
 
@@ -220,7 +220,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
 
             elif extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-type":
                 try:
-                    imis_family.family_type = FamilyType.objects.get(id=extension.valueCodeableConcept.coding[0].code)
+                    imis_family.family_type = FamilyType.objects.get(code=extension.valueCodeableConcept.coding[0].code)
                 except:
                     imis_family.family_type = None
 

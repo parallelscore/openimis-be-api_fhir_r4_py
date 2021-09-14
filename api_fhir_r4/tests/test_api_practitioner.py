@@ -1,10 +1,12 @@
+"""
 from rest_framework.test import APITestCase
 
 from fhir.resources.practitioner import Practitioner
 from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin, \
     FhirApiUpdateTestMixin, FhirApiDeleteTestMixin
+"""
 
-
+"""
 class PractitionerAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin,
                            FhirApiUpdateTestMixin, FhirApiDeleteTestMixin, APITestCase):
 
@@ -21,3 +23,4 @@ class PractitionerAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirAp
 
     def update_resource(self, data):
         data['name'][0]['family'] = self._TEST_EXPECTED_NAME
+"""
