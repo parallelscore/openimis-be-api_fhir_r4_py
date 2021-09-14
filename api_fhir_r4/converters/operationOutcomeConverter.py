@@ -11,8 +11,6 @@ from api_fhir_r4.models import OperationOutcomeV2
 from fhir.resources.operationoutcome import OperationOutcomeIssue
 from pydantic.error_wrappers import ValidationError
 
-import traceback
-
 
 class OperationOutcomeConverter(BaseFHIRConverter):
 
@@ -35,8 +33,6 @@ class OperationOutcomeConverter(BaseFHIRConverter):
     @classmethod
     def build_for_exception(cls, obj):
         result = None
-        tb_str = ''.join(traceback.format_exception(None, obj, obj.__traceback__))
-        print(tb_str)
         if isinstance(obj, FHIRException):
             result = cls.build_for_fhir_exception(obj)
         elif isinstance(obj, ClaimSubmitError):

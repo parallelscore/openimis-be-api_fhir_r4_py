@@ -119,7 +119,6 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, APITestCa
         modified_payload = self.update_payload_missing_chfid_identifier(data=self._test_request_data)
         response = self.client.post(self.base_url, data=modified_payload, format='json')
         response_json = response.json()
-        print(response_json)
         splited_output = response_json["issue"][0]["details"]["text"].split(" ")
         self.assertEqual(
             splited_output[2] + " " + splited_output[3],
