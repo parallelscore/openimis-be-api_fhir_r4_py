@@ -1,13 +1,13 @@
 from claim.models import ClaimAdmin
 from django.utils.translation import gettext as _
 
-from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration
+from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from fhir.resources.practitioner import Practitioner, PractitionerQualification
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 
 
-class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
+class ClaimAdminPractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_claim_admin, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
@@ -24,7 +24,7 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
     def to_imis_obj(cls, fhir_practitioner, audit_user_id):
         errors = []
         fhir_practitioner = Practitioner(**fhir_practitioner)
-        imis_claim_admin = PractitionerConverter.create_default_claim_admin(audit_user_id)
+        imis_claim_admin = ClaimAdminPractitionerConverter.create_default_claim_admin(audit_user_id)
         cls.build_imis_identifiers(imis_claim_admin, fhir_practitioner, errors)
         cls.build_imis_names(imis_claim_admin, fhir_practitioner)
         cls.build_imis_birth_date(imis_claim_admin, fhir_practitioner)
@@ -123,7 +123,7 @@ class PractitionerConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceCo
 
     @classmethod
     def build_fhir_qualification(cls, fhir_practitioner):
-        system = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/practitioner-qualification-type"
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/practitioner-qualification-type"
         qualification = PractitionerQualification.construct()
         qualification.code = cls.build_codeable_concept(
             system=system,

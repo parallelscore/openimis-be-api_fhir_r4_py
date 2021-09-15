@@ -1,6 +1,6 @@
 from django.utils.translation import gettext
 from api_fhir_r4.configurations import R4CoverageConfig
-from api_fhir_r4.converters import BaseFHIRConverter, PractitionerConverter, ContractConverter,  ReferenceConverterMixin
+from api_fhir_r4.converters import BaseFHIRConverter, ClaimAdminPractitionerConverter, ContractConverter,  ReferenceConverterMixin
 from api_fhir_r4.models import CoverageV2 as Coverage, CoverageClassV2 as CoverageClass
 from fhir.resources.money import Money
 from fhir.resources.period import Period
@@ -146,7 +146,7 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def build_contract_party(cls, contract, imis_coverage, reference_type):
         if imis_coverage.officer is not None:
             party = ContractTermOfferParty.construct()
-            reference = PractitionerConverter\
+            reference = ClaimAdminPractitionerConverter\
                 .build_fhir_resource_reference(imis_coverage.officer, reference_type=reference_type)
             party.reference.append(reference)
             if contract.term is None:

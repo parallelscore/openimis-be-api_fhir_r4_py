@@ -41,7 +41,7 @@
          "code":{
             "coding":[
                {
-                  "system":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/practitioner-qualification-type",
+                  "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/practitioner-qualification-type",
                   "code":"CA",
                   "display":"Claim Administrator"
                }

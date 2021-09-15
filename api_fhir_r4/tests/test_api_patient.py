@@ -10,11 +10,11 @@ from rest_framework import status
 from core.models import User
 from core.services import create_or_update_interactive_user, create_or_update_core_user
 from fhir.resources.patient import Patient
-from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, PatientTestMixin
+from api_fhir_r4.tests import GenericFhirAPITestMixin, PatientTestMixin
 from api_fhir_r4.configurations import GeneralConfiguration
 
 
-class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase):
+class PatientAPITests(GenericFhirAPITestMixin, APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'Patient/'
     _test_json_path = "/test/test_patient.json"

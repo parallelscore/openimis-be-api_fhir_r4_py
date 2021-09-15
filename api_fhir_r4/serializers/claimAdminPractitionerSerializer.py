@@ -2,14 +2,14 @@ import copy
 
 from claim.models import ClaimAdmin
 
-from api_fhir_r4.converters import PractitionerConverter
+from api_fhir_r4.converters import ClaimAdminPractitionerConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
-class PractitionerSerializer(BaseFHIRSerializer):
+class ClaimAdminPractitionerSerializer(BaseFHIRSerializer):
 
-    fhirConverter = PractitionerConverter()
+    fhirConverter = ClaimAdminPractitionerConverter()
 
     def create(self, validated_data):
         code = validated_data.get('code')
