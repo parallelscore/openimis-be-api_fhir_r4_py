@@ -4,6 +4,7 @@ from api_fhir_r4.converters.healthFacilityOrganisationConverter import LocationC
 from api_fhir_r4.utils import DbManagerUtils
 from core.models import Officer
 from django.utils.translation import gettext as _
+from fhir.resources.extension import Extension
 from fhir.resources.practitionerrole import PractitionerRole
 
 
@@ -14,8 +15,9 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
         fhir_practitioner_role = PractitionerRole.construct()
         cls.build_fhir_pk(fhir_practitioner_role, imis_officer, reference_type)
         cls.build_fhir_identifiers(fhir_practitioner_role, imis_officer)
+        cls.build_fhir_extension(fhir_practitioner_role, imis_officer, reference_type)
         cls.build_fhir_practitioner_reference(fhir_practitioner_role, imis_officer, reference_type)
-        cls.build_fhir_healthcare_service_references(fhir_practitioner_role, imis_officer, reference_type)
+        cls.build_fhir_location_references(fhir_practitioner_role, imis_officer, reference_type)
         cls.build_fhir_code(fhir_practitioner_role)
         cls.build_fhir_telecom(fhir_practitioner_role, imis_officer)
         return fhir_practitioner_role
@@ -26,11 +28,11 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
         fhir_practitioner_role = PractitionerRole(**fhir_practitioner_role)
         practitioner = fhir_practitioner_role.practitioner
         imis_officer = EnrolmentOfficerPractitionerConverter.get_imis_obj_by_fhir_reference(practitioner, errors)
-        hf_references = fhir_practitioner_role.organization
-        health_facility = cls.get_healthcare_service_by_reference(hf_references, errors)
+        location_references = fhir_practitioner_role.location
+        location = cls.get_location_by_reference(location_references, errors)
 
         if not cls.valid_condition(imis_officer is None, "Practitioner doesn't exists", errors):
-            imis_officer.location = health_facility
+            imis_officer.location = location
         cls.check_errors(errors)
         return imis_officer
 
@@ -60,6 +62,19 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
         return DbManagerUtils.get_object_or_none(Officer, code=imis_officer_code)
 
     @classmethod
+    def build_fhir_extension(cls, fhir_practitioner_role, imis_officer, reference_type):
+        if imis_officer.substitution_officer:
+            extension = Extension.construct()
+            extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/practitioner-role-substitution-reference"
+
+            reference = EnrolmentOfficerPractitionerConverter.build_fhir_resource_reference(
+                imis_officer.substitution_officer,
+                reference_type=reference_type
+            )
+            extension.valueReference = reference
+            fhir_practitioner_role.extension = [extension]
+
+    @classmethod
     def build_fhir_identifiers(cls, fhir_practitioner_role, imis_officer):
         identifiers = []
         cls.build_all_identifiers(identifiers, imis_officer)
@@ -71,14 +86,14 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
             .build_fhir_resource_reference(imis_officer, reference_type=reference_type)
 
     @classmethod
-    def build_fhir_healthcare_service_references(cls, fhir_practitioner_role, imis_officer, reference_type):
-        if imis_officer.health_facility:
+    def build_fhir_location_references(cls, fhir_practitioner_role, imis_officer, reference_type):
+        if imis_officer.location:
             reference = LocationConverter.build_fhir_resource_reference(
-                imis_officer.health_facility, reference_type=reference_type)
-            fhir_practitioner_role.organization = reference
+                imis_officer.location, reference_type=reference_type)
+            fhir_practitioner_role.location = [reference]
 
     @classmethod
-    def get_healthcare_service_by_reference(cls, location_references, errors):
+    def get_location_by_reference(cls, location_references, errors):
         location = None
         if location_references:
             loc = cls.get_first_location(location_references)
@@ -87,7 +102,7 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
 
     @classmethod
     def get_first_location(cls, location_references):
-        return location_references
+        return location_references[0]
 
     @classmethod
     def build_fhir_code(cls, fhir_practitioner_role):
@@ -102,5 +117,5 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
     def build_fhir_telecom(cls, fhir_practitioner_role, imis_officer):
         fhir_practitioner_role.telecom = cls.build_fhir_telecom_for_person(
             phone=imis_officer.phone,
-            email=imis_officer.email_id
+            email=imis_officer.email
         )
