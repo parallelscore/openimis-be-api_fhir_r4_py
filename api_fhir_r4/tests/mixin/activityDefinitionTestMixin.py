@@ -222,7 +222,7 @@ class ActivityDefinitionTestMixin(GenericTestMixin):
                                      [WorkflowMapping.fhir_workflow_coding[self._TEST_SERVICE_CATEGORY]])
         self.verify_fhir_use_context(fhir_obj, UseContextMapping.fhir_use_context_coding["venue"],
                                      [VenueMapping.fhir_venue_coding[Service.CARE_TYPE_IN_PATIENT],
-                                     VenueMapping.fhir_venue_coding[Service.CARE_TYPE_OUT_PATIENT]])
+                                      VenueMapping.fhir_venue_coding[Service.CARE_TYPE_OUT_PATIENT]])
 
     def verify_fhir_identifier(self, fhir_obj, identifier_type, expected_identifier_value):
         identifiers = [identifier for identifier in fhir_obj.identifier

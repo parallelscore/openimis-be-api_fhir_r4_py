@@ -165,9 +165,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         try:
             for use_context_code in use_context_codes:
                 use_context = cls.get_use_context_by_code(fhir_activity_definition.useContext, use_context_code)
-                if not use_context or len(use_context.valueCodeableConcept.coding) == 0:
-                    errors.append(gettext('Missing activity definition `use context - age/gender` attribute'))
-                else:
+                if use_context and len(use_context.valueCodeableConcept.coding) > 0:
                     for coding in use_context.valueCodeableConcept.coding:
                         pat_cat_flag = pat_cat_flag | PatientCategoryMapping.imis_patient_category_flags[coding.code]
         except AttributeError or TypeError or KeyError:
@@ -180,9 +178,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         use_context = cls.get_use_context_by_code(fhir_activity_definition.useContext, "workflow")
         service_category = None
         try:
-            if not use_context or len(use_context.valueCodeableConcept.coding) == 0:
-                errors.append(gettext('Missing activity definition `use context - workflow` attribute'))
-            else:
+            if use_context and len(use_context.valueCodeableConcept.coding) > 0:
                 service_category = use_context.valueCodeableConcept.coding[0].code
         except AttributeError or TypeError or KeyError:
             errors.append(gettext('Invalid activity definition `use context - workflow` attribute'))
@@ -253,12 +249,16 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_use_context(cls, fhir_activity_definition, imis_activity_definition):
-        usage_context_gender = cls.build_fhir_gender_usage_context(imis_activity_definition)
-        usage_context_age = cls.build_fhir_age_usage_context(imis_activity_definition)
-        usage_context_workflow = cls.build_fhir_workflow_usage_context(imis_activity_definition)
-        usage_context_venue = cls.build_fhir_venue_usage_context(imis_activity_definition)
+        usage = []
+        if imis_activity_definition.patient_category:
+            usage.append(cls.build_fhir_gender_usage_context(imis_activity_definition))
+            usage.append(cls.build_fhir_age_usage_context(imis_activity_definition))
 
-        usage = [usage_context_gender, usage_context_age, usage_context_workflow, usage_context_venue]
+        if imis_activity_definition.category and not imis_activity_definition.category.isspace():
+            usage.append(cls.build_fhir_workflow_usage_context(imis_activity_definition))
+
+        usage.append(cls.build_fhir_venue_usage_context(imis_activity_definition))
+
         usage = [usage_item for usage_item in usage if len(usage_item.valueCodeableConcept.coding) > 0]
         fhir_activity_definition.useContext = usage
 
