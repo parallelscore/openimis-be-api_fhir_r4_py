@@ -18,6 +18,12 @@ if 'product' in imis_modules:
 if 'location' in imis_modules:
     router.register(r'Location', fhir_viewsets.LocationViewSet, basename="Location_R4")
     router.register(r'HealthcareService', fhir_viewsets.HealthcareServiceViewSet, basename="HealthcareService_R4")
+    # code system for openimis organization legal form
+    router.register(
+        r'CodeSystem/organization-legal-form',
+        fhir_viewsets.CodeSystemOpenIMISOrganizationLegalFormViewSet,
+        basename="CodeSystem/organization-legal-form_R4"
+    )
 
 # register endpoint for insuree if used
 if 'insuree' in imis_modules:
@@ -25,6 +31,38 @@ if 'insuree' in imis_modules:
     router.register(r'Group', fhir_viewsets.GroupViewSet, basename="Group_R4")
     router.register(
         r'CoverageEligibilityRequest', fhir_viewsets.CoverageEligibilityRequestViewSet, basename="CoverageEligibilityRequest_R4"
+    )
+    # code system for openimis patient
+    router.register(
+        r'CodeSystem/patient-education-level',
+        fhir_viewsets.CodeSystemOpenIMISPatientEducationLevelViewSet,
+        basename="CodeSystem/patient-education-level_R4"
+    )
+    router.register(
+        r'CodeSystem/patient-profession',
+        fhir_viewsets.CodeSystemOpenIMISPatientProfessionViewSet,
+        basename="CodeSystem/patient-profession_R4"
+    )
+    router.register(
+        r'CodeSystem/patient-identification-types',
+        fhir_viewsets.CodeSystemOpenIMISPatientIdentificationTypeViewSet,
+        basename="CodeSystem/patient-identification-types_R4"
+    )
+    router.register(
+        r'CodeSystem/patient-contact-relationship',
+        fhir_viewsets.CodeSystemOpenIMISPatientRelationshipViewSet,
+        basename="CodeSystem/patient-contact-relationship_R4"
+    )
+    # code system for openimis group
+    router.register(
+        r'CodeSystem/group-types',
+        fhir_viewsets.CodeSystemOpenIMISGroupTypeViewSet,
+        basename="CodeSystem/group-types_R4"
+    )
+    router.register(
+        r'CodeSystem/group-confirmation-type',
+        fhir_viewsets.CodeSystemOpenIMISGroupConfirmationTypeViewSet,
+        basename="CodeSystem/group-confirmation-type_R4"
     )
 
 # register endpoints related to medical module
@@ -40,6 +78,9 @@ if 'claim' in imis_modules:
     router.register(r'PractitionerRole', fhir_viewsets.PractitionerRoleViewSet, basename="PractitionerRole_R4")
     router.register(r'Practitioner', fhir_viewsets.PractitionerViewSet, basename="Practitioner_R4")
     router.register(r'CommunicationRequest', fhir_viewsets.CommunicationRequestViewSet, basename="CommunicationRequest_R4")
+    # code system for openimis medication
+    router.register(r'CodeSystem/diagnosis', fhir_viewsets.CodeSystemOpenIMISDiagnosisViewSet,
+                    basename="CodeSystem/diagnosis_R4")
 
 # register endpoint for policy if used
 if 'policy' in imis_modules:
@@ -51,4 +92,6 @@ if 'policyholder' in imis_modules:
     router.register(r'Organisation', fhir_viewsets.OrganisationViewSet, basename="Organisation_R4")
 
 
-urlpatterns = [path('', include(router.urls))]
+urlpatterns = [
+    path('', include(router.urls))
+]
