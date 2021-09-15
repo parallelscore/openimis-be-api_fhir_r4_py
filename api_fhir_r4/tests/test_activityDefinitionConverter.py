@@ -30,6 +30,7 @@ class ActivityDefinitionConverterTestCase(ActivityDefinitionTestMixin):
         self.verify_imis_instance(imis_service)
 
     def test_create_object_from_json(self):
-        dict_activity_definition = json.loads(ActivityDefinitionConverterTestCase.__TEST_ACTIVITY_DEFINITION_JSON_TEXT__)
+        dict_activity_definition = json.loads(
+            ActivityDefinitionConverterTestCase.__TEST_ACTIVITY_DEFINITION_JSON_TEXT__)
         fhir_activity_definition = ActivityDefinition(**dict_activity_definition)
         self.verify_fhir_instance(fhir_activity_definition)
