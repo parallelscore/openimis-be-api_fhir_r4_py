@@ -75,7 +75,7 @@ class EnrolmentOfficerPractitionerConverter(BaseFHIRConverter, PersonConverterMi
         if imis_officer.code:
             identifier = cls.build_fhir_identifier(imis_officer.code,
                                                    R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                   R4IdentifierConfig.get_fhir_claim_admin_code_type())
+                                                   R4IdentifierConfig.get_fhir_generic_type_code())
             identifiers.append(identifier)
 
     @classmethod

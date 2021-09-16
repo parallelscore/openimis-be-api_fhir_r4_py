@@ -88,6 +88,14 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
         fhir_practitioner_role.identifier = identifiers
 
     @classmethod
+    def build_fhir_code_identifier(cls, identifiers, imis_officer):
+        if imis_officer.code:
+            identifier = cls.build_fhir_identifier(imis_officer.code,
+                                                   R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                                   R4IdentifierConfig.get_fhir_generic_type_code())
+            identifiers.append(identifier)
+
+    @classmethod
     def build_fhir_practitioner_reference(cls, fhir_practitioner_role, imis_officer, reference_type):
         fhir_practitioner_role.practitioner = EnrolmentOfficerPractitionerConverter\
             .build_fhir_resource_reference(imis_officer, reference_type=reference_type)
