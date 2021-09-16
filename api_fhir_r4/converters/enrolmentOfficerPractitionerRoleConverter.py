@@ -30,9 +30,16 @@ class EnrolmentOfficerPractitionerRoleConverter(BaseFHIRConverter, PersonConvert
         imis_officer = EnrolmentOfficerPractitionerConverter.get_imis_obj_by_fhir_reference(practitioner, errors)
         location_references = fhir_practitioner_role.location
         location = cls.get_location_by_reference(location_references, errors)
-
+        substitution_officer = None
+        if fhir_practitioner_role.extension and len(fhir_practitioner_role.extension) > 0:
+            substitution_officer_reference = fhir_practitioner_role.extension[0].valueReference
+            substitution_officer = EnrolmentOfficerPractitionerConverter.get_imis_obj_by_fhir_reference(
+                substitution_officer_reference,
+            )
         if not cls.valid_condition(imis_officer is None, "Practitioner doesn't exists", errors):
             imis_officer.location = location
+            if substitution_officer:
+                imis_officer.substitution_officer = substitution_officer
         cls.check_errors(errors)
         return imis_officer
 
