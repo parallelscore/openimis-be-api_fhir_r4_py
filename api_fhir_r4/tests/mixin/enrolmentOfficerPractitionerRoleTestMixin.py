@@ -59,6 +59,13 @@ class EnrolmentOfficerPractitionerRoleTestMixin(GenericTestMixin):
     def create_test_fhir_instance(self):
         self.create_test_imis_instance()
         fhir_practitioner_role = PractitionerRole.construct()
+        identifiers = []
+        code = EnrolmentOfficerPractitionerRoleConverter.build_fhir_identifier(
+            self._TEST_OFFICER.code,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_claim_admin_code_type()
+        )
+        identifiers.append(code)
         location_reference = Reference.construct()
         location_reference.reference = self._TEST_LOCATION_REFERENCE
         fhir_practitioner_role.location = [location_reference]

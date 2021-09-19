@@ -66,12 +66,12 @@ class ClaimAdminPractitionerRoleTestMixin(GenericTestMixin):
     def create_test_fhir_instance(self):
         fhir_practitioner_role = PractitionerRole.construct()
         identifiers = []
-        chf_id = ClaimAdminPractitionerRoleConverter.build_fhir_identifier(
+        code = ClaimAdminPractitionerRoleConverter.build_fhir_identifier(
             self._TEST_CODE,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
             R4IdentifierConfig.get_fhir_generic_type_code()
         )
-        identifiers.append(chf_id)
+        identifiers.append(code)
         fhir_practitioner_role.identifier = identifiers
         organization_reference = Reference.construct()
         organization_reference.reference = self._TEST_ORGANIZATION_REFERENCE

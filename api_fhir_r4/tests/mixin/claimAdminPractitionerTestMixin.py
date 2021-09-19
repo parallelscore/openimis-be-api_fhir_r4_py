@@ -51,10 +51,10 @@ class ClaimAdminPractitionerTestMixin(GenericTestMixin):
         name.use = "usual"
         fhir_practitioner.name = [name]
         identifiers = []
-        chf_id = ClaimAdminPractitionerConverter.build_fhir_identifier(self._TEST_CODE,
+        code = ClaimAdminPractitionerConverter.build_fhir_identifier(self._TEST_CODE,
                                                              R4IdentifierConfig.get_fhir_identifier_type_system(),
                                                              R4IdentifierConfig.get_fhir_generic_type_code())
-        identifiers.append(chf_id)
+        identifiers.append(code)
         fhir_practitioner.identifier = identifiers
         fhir_practitioner.birthDate = self._TEST_DOB
         telecom = []
