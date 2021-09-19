@@ -86,7 +86,7 @@ class ClaimAdminPractitionerRoleTestMixin(GenericTestMixin):
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = ClaimAdminPractitionerRoleConverter.get_first_coding_from_codeable_concept(identifier.type).code
-            if code == R4IdentifierConfig.get_fhir_claim_admin_code_type():
+            if code == R4IdentifierConfig.get_fhir_generic_type_code():
                 self.assertEqual(self._TEST_CODE, identifier.value)
             elif code == R4IdentifierConfig.get_fhir_uuid_type_code():
                 self.assertEqual(self._TEST_UUID, identifier.value)

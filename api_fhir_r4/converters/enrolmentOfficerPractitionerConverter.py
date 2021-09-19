@@ -81,7 +81,7 @@ class EnrolmentOfficerPractitionerConverter(BaseFHIRConverter, PersonConverterMi
     @classmethod
     def build_imis_identifiers(cls, imis_officer, fhir_practitioner, errors):
         value = cls.get_fhir_identifier_by_code(fhir_practitioner.identifier,
-                                                R4IdentifierConfig.get_fhir_claim_admin_code_type())
+                                                R4IdentifierConfig.get_fhir_generic_type_code())
         if value:
             imis_officer.code = value
         cls.valid_condition(imis_officer.code is None, _('Missing the claim admin code'), errors)

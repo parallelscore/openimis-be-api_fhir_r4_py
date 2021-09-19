@@ -63,7 +63,7 @@ class EnrolmentOfficerPractitionerRoleTestMixin(GenericTestMixin):
         code = EnrolmentOfficerPractitionerRoleConverter.build_fhir_identifier(
             self._TEST_OFFICER.code,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
-            R4IdentifierConfig.get_fhir_claim_admin_code_type()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
         identifiers.append(code)
         location_reference = Reference.construct()
@@ -86,7 +86,7 @@ class EnrolmentOfficerPractitionerRoleTestMixin(GenericTestMixin):
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = EnrolmentOfficerPractitionerRoleConverter.get_first_coding_from_codeable_concept(identifier.type).code
-            if code == R4IdentifierConfig.get_fhir_claim_admin_code_type():
+            if code == R4IdentifierConfig.get_fhir_generic_type_code():
                 self.assertEqual(self._TEST_OFFICER.code, identifier.value)
             elif code == R4IdentifierConfig.get_fhir_uuid_type_code():
                 self.assertEqual(self._TEST_OFFICER.uuid, identifier.value)

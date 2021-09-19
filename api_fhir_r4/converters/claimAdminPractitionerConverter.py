@@ -34,7 +34,7 @@ class ClaimAdminPractitionerConverter(BaseFHIRConverter, PersonConverterMixin, R
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
-        return R4IdentifierConfig.get_fhir_claim_admin_code_type()
+        return R4IdentifierConfig.get_fhir_generic_type_code()
 
     @classmethod
     def get_reference_obj_uuid(cls, claim_admin: ClaimAdmin):
