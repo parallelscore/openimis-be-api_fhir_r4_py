@@ -53,7 +53,7 @@ class ClaimAdminPractitionerTestMixin(GenericTestMixin):
         identifiers = []
         chf_id = ClaimAdminPractitionerConverter.build_fhir_identifier(self._TEST_CODE,
                                                              R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                             R4IdentifierConfig.get_fhir_claim_admin_code_type())
+                                                             R4IdentifierConfig.get_fhir_generic_type_code())
         identifiers.append(chf_id)
         fhir_practitioner.identifier = identifiers
         fhir_practitioner.birthDate = self._TEST_DOB

@@ -36,7 +36,7 @@ class ClaimAdminPractitionerRoleConverter(BaseFHIRConverter, PersonConverterMixi
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
-        return R4IdentifierConfig.get_fhir_claim_admin_code_type()
+        return R4IdentifierConfig.get_fhir_generic_type_code()
 
     @classmethod
     def get_reference_obj_uuid(cls, imis_obj):
@@ -64,6 +64,14 @@ class ClaimAdminPractitionerRoleConverter(BaseFHIRConverter, PersonConverterMixi
         identifiers = []
         cls.build_all_identifiers(identifiers, imis_claim_admin)
         fhir_practitioner_role.identifier = identifiers
+
+    @classmethod
+    def build_fhir_code_identifier(cls, identifiers, imis_claim_admin):
+        if imis_claim_admin.code:
+            identifier = cls.build_fhir_identifier(imis_claim_admin.code,
+                                                   R4IdentifierConfig.get_fhir_identifier_type_system(),
+                                                   R4IdentifierConfig.get_fhir_generic_type_code())
+            identifiers.append(identifier)
 
     @classmethod
     def build_fhir_practitioner_reference(cls, fhir_practitioner_role, imis_claim_admin, reference_type):

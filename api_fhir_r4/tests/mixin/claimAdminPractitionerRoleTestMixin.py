@@ -1,3 +1,6 @@
+from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.converters import ClaimAdminPractitionerRoleConverter
+from fhir.resources.identifier import Identifier
 from fhir.resources.practitionerrole import PractitionerRole
 from fhir.resources.reference import Reference
 from api_fhir_r4.tests import GenericTestMixin, ClaimAdminPractitionerTestMixin, LocationTestMixin
@@ -62,6 +65,14 @@ class ClaimAdminPractitionerRoleTestMixin(GenericTestMixin):
 
     def create_test_fhir_instance(self):
         fhir_practitioner_role = PractitionerRole.construct()
+        identifiers = []
+        chf_id = ClaimAdminPractitionerRoleConverter.build_fhir_identifier(
+            self._TEST_CODE,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_generic_type_code()
+        )
+        identifiers.append(chf_id)
+        fhir_practitioner_role.identifier = identifiers
         organization_reference = Reference.construct()
         organization_reference.reference = self._TEST_ORGANIZATION_REFERENCE
         fhir_practitioner_role.organization = organization_reference
@@ -72,6 +83,13 @@ class ClaimAdminPractitionerRoleTestMixin(GenericTestMixin):
 
     def verify_fhir_instance(self, fhir_obj):
         self.assertEqual(self._TEST_ORGANIZATION_REFERENCE, fhir_obj.organization.reference)
+        for identifier in fhir_obj.identifier:
+            self.assertTrue(isinstance(identifier, Identifier))
+            code = ClaimAdminPractitionerRoleConverter.get_first_coding_from_codeable_concept(identifier.type).code
+            if code == R4IdentifierConfig.get_fhir_claim_admin_code_type():
+                self.assertEqual(self._TEST_CODE, identifier.value)
+            elif code == R4IdentifierConfig.get_fhir_uuid_type_code():
+                self.assertEqual(self._TEST_UUID, identifier.value)
         self.assertEqual(self._TEST_PRACTITIONER_REFERENCE, fhir_obj.practitioner.reference)
         self.assertEqual(1, len(fhir_obj.code))
         self.assertEqual(1, len(fhir_obj.code[0].coding))

@@ -6,7 +6,7 @@
          "type":{
             "coding":[
                {
-                  "code":"FILL",
+                  "code":"Code",
                   "system":"https://hl7.org/fhir/valueset-identifier-type.html"
                }
             ]
