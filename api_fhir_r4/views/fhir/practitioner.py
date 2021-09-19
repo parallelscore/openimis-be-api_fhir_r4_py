@@ -10,7 +10,7 @@ from api_fhir_r4.multiserializer import modelViewset
 
 from api_fhir_r4.permissions import FHIRApiPractitionerPermissions
 from api_fhir_r4.serializers import ClaimAdminPractitionerSerializer, EnrolmentOfficerPractitionerSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView, BaseMultiserializerFHIRView
+from api_fhir_r4.views.fhir.fhir_base_viewset import BaseMultiserializerFHIRView
 
 
 class PractitionerViewSet(BaseMultiserializerFHIRView,
