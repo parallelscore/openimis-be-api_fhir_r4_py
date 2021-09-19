@@ -2,6 +2,7 @@ from api_fhir_r4.configurations import BaseConfiguration
 from api_fhir_r4.defaultConfig import DEFAULT_CFG
 from django.conf import settings
 
+
 class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
@@ -9,6 +10,7 @@ class GeneralConfiguration(BaseConfiguration):
         config = cls.get_config()
         config.default_audit_user_id = cfg['default_audit_user_id']
         config.gender_codes = cfg['gender_codes']
+        config.host_domain = cfg['host_domain']
         config.base_url = cfg['base_url']
         config.default_value_of_patient_head_attribute = cfg['default_value_of_patient_head_attribute']
         config.default_value_of_patient_card_issued_attribute = cfg['default_value_of_patient_card_issued_attribute']
@@ -60,13 +62,21 @@ class GeneralConfiguration(BaseConfiguration):
     def get_system_base_url(cls):
         return cls.get_config_attribute("base_url")
 
+    @classmethod
+    def get_host_domain(cls):
+        url = cls.get_base_url()
+        if url.startswith('/'):
+            return cls.get_config_attribute("host_domain")
+        else:
+            return ''
+
     @classmethod        
     def get_base_url(cls):
         MODULE_NAME = 'api_fhir_r4'
         site_root = settings.SITE_ROOT()
         if site_root is not None:
             base_url = '/' + site_root
-        if  base_url.endswith('/'):
+        if base_url.endswith('/'):
             return base_url + MODULE_NAME + '/'
         else:
             return base_url + '/'+MODULE_NAME+'/'

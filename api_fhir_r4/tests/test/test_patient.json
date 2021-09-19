@@ -58,7 +58,7 @@
          "valueCodeableConcept":{
             "coding":[
                {
-                  "system":"/api/api_fhir_r4/CodeSystem/patient-profession",
+                  "system":"http://127.0.0.1:8000/api/api_fhir_r4/CodeSystem/patient-profession",
                   "code":"4",
                   "display":"Others"
                }
@@ -80,7 +80,7 @@
                "valueCodeableConcept":{
                   "coding":[
                      {
-                        "system":"/api/api_fhir_r4/CodeSystem/patient-identification-types",
+                        "system":"http://127.0.0.1:8000/api/api_fhir_r4/CodeSystem/patient-identification-types",
                         "code":"P"
                      }
                   ]

@@ -169,7 +169,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-type"
                 if hasattr(imis_family, "family_type") and imis_family.family_type is not None:
                     display = GroupTypeMapping.group_type[str(imis_family.family_type.code)]
-                    system = f"{GeneralConfiguration.get_base_url()}CodeSystem/group-types"
+                    system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/group-types"
                     extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_family.family_type.code),
                                                                                 system=system)
                     if len(extension.valueCodeableConcept.coding) == 1:
@@ -279,7 +279,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 # add identifier extension
                 nested_extension = Extension.construct()
                 nested_extension.url = "type"
-                system = f"{GeneralConfiguration.get_base_url()}CodeSystem/group-confirmation-type"
+                system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/group-confirmation-type"
                 display = ConfirmationTypeMapping.confirmation_type[str(imis_family.confirmation_type.code)]
                 nested_extension.valueCodeableConcept = cls.build_codeable_concept(
                     code=imis_family.confirmation_type.code, system=system)

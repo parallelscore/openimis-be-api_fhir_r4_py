@@ -35,7 +35,7 @@
          "valueCodeableConcept":{
             "coding":[
                {
-                  "system":"/api/api_fhir_r4/CodeSystem/group-types",
+                  "system":"http://127.0.0.1:8000/api/api_fhir_r4/CodeSystem/group-types",
                   "code":"H",
                   "display":"Household"
                }

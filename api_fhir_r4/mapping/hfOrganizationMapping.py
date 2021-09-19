@@ -5,7 +5,7 @@ from api_fhir_r4.models.imisModelEnums import ContactPointSystem
 class HealthFacilityOrganizationTypeMapping:
     LEGAL_FORM_CODE = 'D'
     LEGAL_FORM_DISPLAY = 'District organization'
-    LEGAL_FORM_SYSTEM = f'{GeneralConfiguration.get_base_url()}CodeSystem/organization-legal-form'
+    LEGAL_FORM_SYSTEM = f'{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/organization-legal-form'
     LEGAL_FORM_URL = 'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/organization-legal-form'
 
     ORGANIZATION_TYPE = 'prov'

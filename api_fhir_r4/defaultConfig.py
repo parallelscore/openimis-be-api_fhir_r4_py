@@ -5,6 +5,7 @@ DEFAULT_CFG = {
         "female": "F",
         "other": "O"
     },
+    "host_domain": "http://127.0.0.1:8000",
     "base_url": "https://openimis.github.io/openimis_fhir_r4_ig/",
     "default_value_of_patient_head_attribute": False,
     "default_value_of_patient_card_issued_attribute": False,
