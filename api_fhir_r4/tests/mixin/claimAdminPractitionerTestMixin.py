@@ -1,20 +1,22 @@
 from claim.models import ClaimAdmin
+from django.utils.translation import gettext as _
 
-from api_fhir_r4.configurations import R4IdentifierConfig
-from api_fhir_r4.converters import PractitionerConverter
+from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
+from api_fhir_r4.converters import ClaimAdminPractitionerConverter
 from fhir.resources.contactpoint import ContactPoint
 from fhir.resources.humanname import HumanName
 from fhir.resources.identifier import Identifier
-from fhir.resources.practitioner import Practitioner
+from fhir.resources.practitioner import Practitioner, PractitionerQualification
+from api_fhir_r4.models.imisModelEnums import ContactPointSystem, ContactPointUse
 from api_fhir_r4.tests import GenericTestMixin
 from api_fhir_r4.utils import TimeUtils
 
 
-class PractitionerTestMixin(GenericTestMixin):
+class ClaimAdminPractitionerTestMixin(GenericTestMixin):
 
     _TEST_LAST_NAME = "Smith"
     _TEST_OTHER_NAME = "John"
-    _TEST_DOB = "1990-03-24T00:00:00"
+    _TEST_DOB = "1990-03-24"
     _TEST_ID = 1
     _TEST_UUID = "254f6268-964b-4d8d-aa26-20081f22235e"
     _TEST_CODE = "1234abcd"
@@ -37,8 +39,7 @@ class PractitionerTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_LAST_NAME, imis_obj.last_name)
         self.assertEqual(self._TEST_OTHER_NAME, imis_obj.other_names)
         self.assertEqual(self._TEST_CODE, imis_obj.code)
-        expected_date = TimeUtils.str_to_date(self._TEST_DOB)
-        self.assertEqual(expected_date, imis_obj.dob)
+        self.assertEqual(self._TEST_DOB+"T00:00:00", imis_obj.dob.isoformat())
         self.assertEqual(self._TEST_PHONE, imis_obj.phone)
         self.assertEqual(self._TEST_EMAIL, imis_obj.email_id)
 
@@ -50,20 +51,38 @@ class PractitionerTestMixin(GenericTestMixin):
         name.use = "usual"
         fhir_practitioner.name = [name]
         identifiers = []
-        chf_id = PractitionerConverter.build_fhir_identifier(self._TEST_CODE,
-                                                             R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                             R4IdentifierConfig.get_fhir_claim_admin_code_type())
-        identifiers.append(chf_id)
+        code = ClaimAdminPractitionerConverter.build_fhir_identifier(
+            self._TEST_CODE,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_generic_type_code()
+        )
+        identifiers.append(code)
         fhir_practitioner.identifier = identifiers
         fhir_practitioner.birthDate = self._TEST_DOB
         telecom = []
-        phone = PractitionerConverter.build_fhir_contact_point(self._TEST_PHONE, "phone",
-                                                               "home")
+        phone = ClaimAdminPractitionerConverter.build_fhir_contact_point(
+            self._TEST_PHONE,
+            ContactPointSystem.PHONE,
+            ContactPointUse.HOME
+        )
         telecom.append(phone)
-        email = PractitionerConverter.build_fhir_contact_point(self._TEST_EMAIL, "email",
-                                                               "home")
+        email = ClaimAdminPractitionerConverter.build_fhir_contact_point(
+            self._TEST_EMAIL,
+            ContactPointSystem.EMAIL,
+            ContactPointUse.HOME
+        )
         telecom.append(email)
         fhir_practitioner.telecom = telecom
+
+        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/practitioner-qualification-type"
+        qualification = PractitionerQualification.construct()
+        qualification.code = ClaimAdminPractitionerConverter.build_codeable_concept(
+            system=system,
+            code="CA",
+            display=_("Claim Administrator")
+        )
+        fhir_practitioner.qualification = [qualification]
+
         return fhir_practitioner
 
     def verify_fhir_instance(self, fhir_obj):
@@ -75,12 +94,12 @@ class PractitionerTestMixin(GenericTestMixin):
         self.assertEqual("usual", human_name.use)
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
-            code = PractitionerConverter.get_first_coding_from_codeable_concept(identifier.type).code
-            if code == R4IdentifierConfig.get_fhir_claim_admin_code_type():
+            code = ClaimAdminPractitionerConverter.get_first_coding_from_codeable_concept(identifier.type).code
+            if code == R4IdentifierConfig.get_fhir_generic_type_code():
                 self.assertEqual(self._TEST_CODE, identifier.value)
             elif code == R4IdentifierConfig.get_fhir_uuid_type_code():
                 self.assertEqual(self._TEST_UUID, identifier.value)
-        self.assertEqual(self._TEST_DOB, fhir_obj.birthDate)
+        self.assertEqual(self._TEST_DOB, fhir_obj.birthDate.isoformat())
         self.assertEqual(2, len(fhir_obj.telecom))
         for telecom in fhir_obj.telecom:
             self.assertTrue(isinstance(telecom, ContactPoint))
@@ -88,3 +107,6 @@ class PractitionerTestMixin(GenericTestMixin):
                 self.assertEqual(self._TEST_PHONE, telecom.value)
             elif telecom.system == "email":
                 self.assertEqual(self._TEST_EMAIL, telecom.value)
+        self.assertEqual(1, len(fhir_obj.qualification))
+        self.assertEqual("CA", fhir_obj.qualification[0].code.coding[0].code)
+        self.assertEqual("Claim Administrator", fhir_obj.qualification[0].code.coding[0].display)

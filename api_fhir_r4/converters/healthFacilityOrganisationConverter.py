@@ -10,6 +10,7 @@ from fhir.resources.organization import Organization
 from fhir.resources.organization import OrganizationContact
 from fhir.resources.extension import Extension
 from api_fhir_r4.mapping.hfOrganizationMapping import HealthFacilityOrganizationTypeMapping
+from api_fhir_r4.utils import DbManagerUtils
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,15 @@ class HealthFacilityOrganisationConverter(BaseFHIRConverter, PersonConverterMixi
             'HF Organisation to_imis_obj() not implemented. '
             'Instance should be created/updated using Practitioner resource.'
         )
+
+    @classmethod
+    def get_fhir_resource_type(cls):
+        return Organization
+
+    @classmethod
+    def get_imis_obj_by_fhir_reference(cls, reference, errors=None):
+        healthfacility_uuid = cls.get_resource_id_from_reference(reference)
+        return DbManagerUtils.get_object_or_none(HealthFacility, uuid=healthfacility_uuid)
 
     @classmethod
     def build_fhir_extensions(cls, fhir_organisation: Organization, imis_organisation: HealthFacility):

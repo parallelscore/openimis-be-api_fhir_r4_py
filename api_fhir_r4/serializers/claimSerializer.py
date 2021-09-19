@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 
 from api_fhir_r4.configurations import R4ClaimConfig
 from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, PatientConverter, \
-    ConditionConverter, MedicationConverter, HealthcareServiceConverter, PractitionerConverter, \
+    ConditionConverter, MedicationConverter, HealthcareServiceConverter, ClaimAdminPractitionerConverter, \
     ActivityDefinitionConverter, ReferenceConverterMixin as r
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from fhir.resources.fhirabstractmodel import FHIRAbstractModel
@@ -27,7 +27,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
         ContainedResourceConverter('icd', ConditionConverter),
         *[ContainedResourceConverter('icd_{}'.format(n), ConditionConverter) for n in range(1, 5)],
         ContainedResourceConverter('health_facility', HealthcareServiceConverter),
-        ContainedResourceConverter('admin', PractitionerConverter),
+        ContainedResourceConverter('admin', ClaimAdminPractitionerConverter),
         ContainedResourceConverter('items', MedicationConverter,
                                    lambda model, field: [
                                        item.item

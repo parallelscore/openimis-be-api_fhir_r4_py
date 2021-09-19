@@ -8,7 +8,6 @@ from fhir.resources.location import Location as FHIRLocation
 
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.mapping.locationMapping import LocationTypeMapping
-from api_fhir_r4.models.imisModelEnums import ImisLocationType
 from api_fhir_r4.utils import DbManagerUtils
 
 
