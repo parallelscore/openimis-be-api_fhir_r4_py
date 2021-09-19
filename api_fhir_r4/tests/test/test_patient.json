@@ -58,7 +58,7 @@
          "valueCodeableConcept":{
             "coding":[
                {
-                  "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/patient-profession",
+                  "system":"/api/api_fhir_r4/CodeSystem/patient-profession",
                   "code":"4",
                   "display":"Others"
                }
@@ -80,7 +80,7 @@
                "valueCodeableConcept":{
                   "coding":[
                      {
-                        "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/patient-identification-types",
+                        "system":"/api/api_fhir_r4/CodeSystem/patient-identification-types",
                         "code":"P"
                      }
                   ]

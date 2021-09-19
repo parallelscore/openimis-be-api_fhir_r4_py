@@ -169,9 +169,11 @@ class PatientTestMixin(GenericTestMixin):
         name.use = "usual"
         fhir_patient.name = [name]
         identifiers = []
-        chf_id = PatientConverter.build_fhir_identifier(self._TEST_CHF_ID,
-                                                        R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                        R4IdentifierConfig.get_fhir_chfid_type_code())
+        chf_id = PatientConverter.build_fhir_identifier(
+            self._TEST_CHF_ID,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_chfid_type_code()
+        )
 
         identifiers.append(chf_id)
 
@@ -182,11 +184,17 @@ class PatientTestMixin(GenericTestMixin):
             R4MaritalConfig.get_fhir_divorced_code(),
             R4MaritalConfig.get_fhir_marital_status_system())
         telecom = []
-        phone = PatientConverter.build_fhir_contact_point(self._TEST_PHONE, ContactPointSystem.PHONE,
-                                                          ContactPointUse.HOME)
+        phone = PatientConverter.build_fhir_contact_point(
+            self._TEST_PHONE,
+            ContactPointSystem.PHONE,
+            ContactPointUse.HOME
+        )
         telecom.append(phone)
-        email = PatientConverter.build_fhir_contact_point(self._TEST_EMAIL, ContactPointSystem.EMAIL,
-                                                          ContactPointUse.HOME)
+        email = PatientConverter.build_fhir_contact_point(
+            self._TEST_EMAIL,
+            ContactPointSystem.EMAIL,
+            ContactPointUse.HOME
+        )
         telecom.append(email)
         fhir_patient.telecom = telecom
 
@@ -263,7 +271,7 @@ class PatientTestMixin(GenericTestMixin):
         extension = Extension.construct()
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-profession"
         display = PatientProfessionMapping.patient_profession[str(self._TEST_PROFESSION.id)]
-        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-profession"
+        system = f"{GeneralConfiguration.get_base_url()}CodeSystem/patient-profession"
         extension.valueCodeableConcept = PatientConverter.build_codeable_concept(code=str(self._TEST_PROFESSION.id), system=system)
         if len(extension.valueCodeableConcept.coding) == 1:
             extension.valueCodeableConcept.coding[0].display = display

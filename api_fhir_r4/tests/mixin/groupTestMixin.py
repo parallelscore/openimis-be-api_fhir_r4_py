@@ -121,15 +121,19 @@ class GroupTestMixin(GenericTestMixin):
         name.use = "usual"
 
         identifiers = []
-        chf_id = GroupConverter.build_fhir_identifier(self._TEST_CHF_ID,
-                                                        R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                        R4IdentifierConfig.get_fhir_chfid_type_code())
+        chf_id = GroupConverter.build_fhir_identifier(
+            self._TEST_CHF_ID,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_chfid_type_code()
+        )
 
         identifiers.append(chf_id)
 
-        uuid = GroupConverter.build_fhir_identifier(self._TEST_UUID,
-                                                      R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                      R4IdentifierConfig.get_fhir_uuid_type_code())
+        uuid = GroupConverter.build_fhir_identifier(
+            self._TEST_UUID,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_uuid_type_code()
+        )
         identifiers.append(uuid)
 
         fhir_family.identifier = identifiers
@@ -154,7 +158,7 @@ class GroupTestMixin(GenericTestMixin):
         extension = Extension.construct()
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-type"
         display = GroupTypeMapping.group_type[str(self._TEST_FAMILY_TYPE.code)]
-        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/group-types"
+        system = f"{GeneralConfiguration.get_base_url()}CodeSystem/group-types"
         extension.valueCodeableConcept = GroupConverter.build_codeable_concept(code=str(self._TEST_FAMILY_TYPE.code), system=system)
         if len(extension.valueCodeableConcept.coding) == 1:
             extension.valueCodeableConcept.coding[0].display = display
