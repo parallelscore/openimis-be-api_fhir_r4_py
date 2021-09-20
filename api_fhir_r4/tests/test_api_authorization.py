@@ -8,7 +8,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from api_fhir_r4.tests import GenericFhirAPITestMixin
 from api_fhir_r4.utils import DbManagerUtils
-from api_fhir_r4.configurations import  GeneralConfiguration
+from api_fhir_r4.configurations import GeneralConfiguration
+
 
 class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
 

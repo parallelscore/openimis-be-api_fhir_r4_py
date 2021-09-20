@@ -3,12 +3,12 @@ from medical.models import Diagnosis
 from medical.models import Item, Service
 
 from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
-from api_fhir_r4.converters import PatientConverter, LocationConverter, PractitionerConverter
+from api_fhir_r4.converters import PatientConverter, LocationConverter, ClaimAdminPractitionerConverter
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.models import ClaimV2 as FHIRClaim
 from fhir.resources.period import Period
 from fhir.resources.money import Money
-from api_fhir_r4.tests import GenericTestMixin, PatientTestMixin, LocationTestMixin, PractitionerTestMixin
+from api_fhir_r4.tests import GenericTestMixin, PatientTestMixin, LocationTestMixin, ClaimAdminPractitionerTestMixin
 from api_fhir_r4.utils import TimeUtils
 
 
@@ -41,7 +41,7 @@ class ClaimTestMixin(GenericTestMixin):
     def setUp(self):
         self._TEST_DIAGNOSIS_CODE = Diagnosis()
         self._TEST_DIAGNOSIS_CODE.code = self._TEST_MAIN_ICD_CODE
-        self._TEST_CLAIM_ADMIN = PractitionerTestMixin().create_test_imis_instance()
+        self._TEST_CLAIM_ADMIN = ClaimAdminPractitionerTestMixin().create_test_imis_instance()
         self._TEST_HF = LocationTestMixin().create_test_imis_instance()
         self._TEST_INSUREE = PatientTestMixin().create_test_imis_instance()
         self._TEST_ITEM = self.create_test_claim_item()
@@ -80,7 +80,7 @@ class ClaimTestMixin(GenericTestMixin):
         imis_claim.date_claimed = TimeUtils.str_to_date(self._TEST_DATE_CLAIMED)
         imis_claim.health_facility = LocationTestMixin().create_test_imis_instance()
         imis_claim.guarantee_id = self._TEST_GUARANTEE_ID
-        imis_claim.admin = PractitionerTestMixin().create_test_imis_instance()
+        imis_claim.admin = ClaimAdminPractitionerTestMixin().create_test_imis_instance()
         imis_claim.icd_1 = Diagnosis(code=self._TEST_ICD_1)
         imis_claim.icd_2 = Diagnosis(code=self._TEST_ICD_2)
         imis_claim.icd_3 = Diagnosis(code=self._TEST_ICD_3)
@@ -134,7 +134,7 @@ class ClaimTestMixin(GenericTestMixin):
         explanation_code = R4ClaimConfig.get_fhir_claim_information_explanation_code()
         ClaimConverter.build_fhir_string_information(supportingInfo, explanation_code, self._TEST_EXPLANATION)
         fhir_claim.supportingInfo = supportingInfo
-        fhir_claim.enterer = PractitionerConverter.build_fhir_resource_reference(self._TEST_CLAIM_ADMIN)
+        fhir_claim.enterer = ClaimAdminPractitionerConverter.build_fhir_resource_reference(self._TEST_CLAIM_ADMIN)
         fhir_claim.type = ClaimConverter.build_simple_codeable_concept(self._TEST_VISIT_TYPE)
         type = R4ClaimConfig.get_fhir_claim_item_code()
         ClaimConverter.build_fhir_item(fhir_claim, self._TEST_ITEM_CODE, type, self._TEST_ITEM)

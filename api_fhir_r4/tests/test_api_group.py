@@ -7,13 +7,14 @@ from insuree.test_helpers import *
 from rest_framework.test import APITestCase
 from rest_framework import status
 from fhir.resources.group import Group
-from api_fhir_r4.tests import GenericFhirAPITestMixin, GroupTestMixin
+
+from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiReadTestMixin, GroupTestMixin
 from api_fhir_r4.configurations import GeneralConfiguration
 from core.models import User
 from core.services import create_or_update_interactive_user, create_or_update_core_user
 
 
-class GroupAPITests(GenericFhirAPITestMixin, APITestCase):
+class GroupAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'Group/'
     _test_json_path = "/test/test_group.json"

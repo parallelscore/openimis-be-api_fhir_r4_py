@@ -2,8 +2,8 @@ from api_fhir_r4.tests.mixin.genericTestMixin import GenericTestMixin
 from api_fhir_r4.tests.mixin.locationTestMixin import LocationTestMixin
 from api_fhir_r4.tests.mixin.operationOutcomeTestMixin import OperationOutcomeTestMixin
 from api_fhir_r4.tests.mixin.patientTestMixin import PatientTestMixin
-from api_fhir_r4.tests.mixin.practitionerTestMixin import PractitionerTestMixin
-from api_fhir_r4.tests.mixin.practitionerRoleTestMixin import PractitionerRoleTestMixin
+from api_fhir_r4.tests.mixin.claimAdminPractitionerTestMixin import ClaimAdminPractitionerTestMixin
+from api_fhir_r4.tests.mixin.claimAdminPractitionerRoleTestMixin import ClaimAdminPractitionerRoleTestMixin
 from api_fhir_r4.tests.mixin.claimTestMixin import ClaimTestMixin
 from api_fhir_r4.tests.mixin.claimResponseTestMixin import ClaimResponseTestMixin
 from api_fhir_r4.tests.mixin.coverageEligibilityRequestTestMixin import CoverageEligibilityRequestTestMixin
@@ -17,4 +17,6 @@ from api_fhir_r4.tests.mixin.insurancePlanTestMixin import InsurancePlanTestMixi
 from api_fhir_r4.tests.mixin.medicationTestMixin import MedicationTestMixin
 from api_fhir_r4.tests.mixin.contractTestMixin import ContractTestMixin
 from api_fhir_r4.tests.mixin.groupTestMixin import GroupTestMixin
+from api_fhir_r4.tests.mixin.enrolmentOfficerPractitionerTestMixin import EnrolmentOfficerPractitionerTestMixin
+from api_fhir_r4.tests.mixin.enrolmentOfficerPractitionerRoleTestMixin import EnrolmentOfficerPractitionerRoleTestMixin
 from api_fhir_r4.tests.testCodeSystem import *

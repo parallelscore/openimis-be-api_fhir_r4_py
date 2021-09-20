@@ -1,14 +1,14 @@
 from claim.models import ClaimAdmin
 from django.utils.translation import gettext
 
-from api_fhir_r4.converters import PractitionerRoleConverter
+from api_fhir_r4.converters import ClaimAdminPractitionerRoleConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from api_fhir_r4.serializers import BaseFHIRSerializer
 
 
-class PractitionerRoleSerializer(BaseFHIRSerializer):
+class ClaimAdminPractitionerRoleSerializer(BaseFHIRSerializer):
 
-    fhirConverter = PractitionerRoleConverter()
+    fhirConverter = ClaimAdminPractitionerRoleConverter()
 
     def create(self, validated_data):
         claim_admin_id = validated_data.get('id')

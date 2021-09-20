@@ -10,8 +10,8 @@ from django.utils.translation import gettext
 import core
 
 from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
-from api_fhir_r4.converters import BaseFHIRConverter, LocationConverter, PatientConverter, PractitionerConverter, \
-    ReferenceConverterMixin, PractitionerRoleConverter
+from api_fhir_r4.converters import BaseFHIRConverter, LocationConverter, PatientConverter, ClaimAdminPractitionerConverter, \
+    ReferenceConverterMixin, ClaimAdminPractitionerRoleConverter
 from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
@@ -309,7 +309,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_claim_admin(cls, imis_claim, fhir_claim, errors):
         if fhir_claim.enterer:
-            admin = PractitionerConverter.get_imis_obj_by_fhir_reference(fhir_claim.enterer)
+            admin = ClaimAdminPractitionerConverter.get_imis_obj_by_fhir_reference(fhir_claim.enterer)
             if admin:
                 imis_claim.admin = admin
                 imis_claim.claim_admin_code = admin.code
@@ -514,7 +514,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_provider(cls, fhir_claim, imis_claim, reference_type):
         if imis_claim.admin is not None:
-            fhir_claim.provider = PractitionerRoleConverter\
+            fhir_claim.provider = ClaimAdminPractitionerRoleConverter\
                 .build_fhir_resource_reference(imis_claim.admin, reference_type=reference_type)
 
     @classmethod
@@ -681,7 +681,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 F'Failed to create FHIR instance for claim {imis_claim.uuid}: Claim Admin field not found'
             ])
         else:
-            return PractitionerConverter\
+            return ClaimAdminPractitionerConverter\
                 .build_fhir_resource_reference(imis_claim.admin,
                                                type='Practitioner',
                                                reference_type=reference_type)
