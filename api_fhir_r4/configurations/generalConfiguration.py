@@ -10,7 +10,6 @@ class GeneralConfiguration(BaseConfiguration):
         config = cls.get_config()
         config.default_audit_user_id = cfg['default_audit_user_id']
         config.gender_codes = cfg['gender_codes']
-        config.host_domain = cfg['host_domain']
         config.base_url = cfg['base_url']
         config.default_value_of_patient_head_attribute = cfg['default_value_of_patient_head_attribute']
         config.default_value_of_patient_card_issued_attribute = cfg['default_value_of_patient_card_issued_attribute']
@@ -66,7 +65,7 @@ class GeneralConfiguration(BaseConfiguration):
     def get_host_domain(cls):
         url = cls.get_base_url()
         if url.startswith('/'):
-            return cls.get_config_attribute("host_domain")
+            return f'http://{settings.SITE_URL()}'
         else:
             return ''
 

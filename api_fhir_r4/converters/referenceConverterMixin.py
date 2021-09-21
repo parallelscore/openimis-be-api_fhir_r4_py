@@ -4,7 +4,7 @@ import logging
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from fhir.resources.reference import Reference
 
-from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,8 @@ class ReferenceConverterMixin(object):
 
     @classmethod
     def build_fhir_resource_reference(cls, obj, type=None, display=None, reference_type=UUID_REFERENCE_TYPE):
+        # build absolute url
+        absolute_url = f'{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}'
         reference = Reference.construct()
 
         resource_type = type if type else cls.__get_fhir_resource_type_as_string()
@@ -44,7 +46,7 @@ class ReferenceConverterMixin(object):
 
         reference.type = resource_type
         reference.identifier = cls.build_reference_identifier(obj, reference_type)
-        reference.reference = resource_type + '/' + resource_id
+        reference.reference = f'{absolute_url}{resource_type}/{resource_id}'
 
         if display:
             reference.display = display
