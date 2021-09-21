@@ -389,9 +389,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 # address location reference extension
                 extension = Extension.construct()
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-                reference_location = Reference.construct()
-                reference_location.reference = F"Location/{imis_insuree.current_village.name}-village"
-                extension.valueReference = reference_location
+                extension.valueReference = LocationConverter.build_fhir_resource_reference(imis_insuree.current_village, 'Location')
                 current_address.extension.append(extension)
 
                 current_address.city = imis_insuree.current_village.name
