@@ -1,6 +1,5 @@
 from django.utils.translation import gettext
 from insuree.models import Insuree
-from api_fhir_r4.configurations import GeneralConfiguration
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from fhir.resources.humanname import HumanName
 from fhir.resources.group import GroupMember
@@ -24,7 +23,7 @@ class GroupConverterMixin(object):
         for insuree in Insuree.objects.filter(family__uuid=family_id, validity_to__isnull=True):
             member = GroupMember.construct()
             member.entity = {
-                "reference": f'{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}Patient/{insuree.uuid}',
+                "reference": f'Patient/{insuree.chf_id}',
                 "type": "Patient",
             }
             members.append(member)

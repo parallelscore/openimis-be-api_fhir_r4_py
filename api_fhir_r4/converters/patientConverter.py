@@ -440,7 +440,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-education-level"
                 if hasattr(imis_insuree, "education") and imis_insuree.education is not None:
                     display = EducationLevelMapping.education_level[str(imis_insuree.education.id)]
-                    system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/patient-education-level"
+                    system = "CodeSystem/patient-education-level"
                     extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_insuree.education.id), system=system)
                     if len(extension.valueCodeableConcept.coding) == 1:
                         extension.valueCodeableConcept.coding[0].display = display
@@ -465,7 +465,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                         # add identifier extension
                         nested_extension = Extension.construct()
                         nested_extension.url = "type"
-                        system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/patient-identification-types"
+                        system = "CodeSystem/patient-identification-types"
                         nested_extension.valueCodeableConcept = cls.build_codeable_concept(code=imis_insuree.type_of_id.code, system=system)
                         extension.extension.append(nested_extension)
 
@@ -473,7 +473,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-profession"
                 if hasattr(imis_insuree, "profession") and imis_insuree.profession is not None:
                     display = PatientProfessionMapping.patient_profession[str(imis_insuree.profession.id)]
-                    system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/patient-profession"
+                    system = "CodeSystem/patient-profession"
                     extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_insuree.profession.id), system=system)
                     if len(extension.valueCodeableConcept.coding) == 1:
                         extension.valueCodeableConcept.coding[0].display = display
@@ -502,7 +502,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         fhir_contact = PatientContact.construct()
         if imis_insuree.relationship is not None and imis_insuree.family is not None \
                 and imis_insuree.family.head_insuree is not None:
-            system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/patient-contact-relationship"
+            system = "CodeSystem/patient-contact-relationship"
             # map to the fhir value from imis one
             display = RelationshipMapping.relationship[str(imis_insuree.relationship.id)]
             fhir_contact.relationship = [cls.build_codeable_concept(code=imis_insuree.relationship.id, system=system)]
