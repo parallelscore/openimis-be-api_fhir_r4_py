@@ -377,17 +377,6 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return cls.build_fhir_mapped_coding(ServiceTypeMapping.fhir_service_type_coding[topic])
 
     @classmethod
-    def build_fhir_mapped_coding(cls, mapping):
-        coding = Coding.construct()
-
-        if GeneralConfiguration.show_system():
-            coding.system = mapping["system"]
-        coding.code = mapping["code"]
-        coding.display = mapping["display"]
-
-        return coding
-
-    @classmethod
     def build_fhir_timing(cls, fhir_activity_definition, imis_activity_definition):
         timing = Timing.construct()
         timing_repeat = TimingRepeat.construct()

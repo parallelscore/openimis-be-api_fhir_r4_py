@@ -63,7 +63,7 @@ DEFAULT_CFG = {
         "fhir_code_for_informational": "informational"
     },
     "R4_fhir_claim_config": {
-        "fhir_claim_information_guarantee_id_code": "guarantee_id",
+        "fhir_claim_information_guarantee_id_code": "guarantee",
         "fhir_claim_information_explanation_code": "explanation",
         "fhir_claim_item_explanation_code": "item_explanation",
         "fhir_claim_item_code": "item",
@@ -80,7 +80,9 @@ DEFAULT_CFG = {
         "fhir_claim_item_rejected_reason_adjudication_code": "rejected_reason",
         "fhir_claim_organization_code": "openIMIS",
         "fhir_claim_attachment_code": "attachment",
-        "fhir_claim_information_category_system": "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+        "fhir_claim_supporting_info_category_system": 'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/claim-supporting-info-category',
+        'fhir_claim_item_reference_extension_system': 'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/claim-item-reference',
+        'fhir_claim_visit_type_system': 'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem-claim-visit-type.html',
         "fhir_claim_allowed_mime_types_regex":
             '|'.join(['text\/.*', 'image\/png', 'image\/jpe?g', 'application\/msword', '.*doc.*'])
     },
@@ -115,14 +117,14 @@ DEFAULT_CFG = {
         "fhir_asessment_code": "asessment"
     },
     "R4_fhir_contract_config": {
-        "fhir_contract_eo_signer_type":"EnrolmentOfficer",
-        "fhir_contract_head_signer_type":"HeadOfFamily",
-        "fhir_contract_insuree_role":"Insuree",
-        "fhir_contract_dependant_role":"Dependant",
-        "fhir_contract_executable_status":"Executable",
-        "fhir_contract_renewed_status":"Renewed",
-        "fhir_contract_policy_status":"Policy",
-        "fhir_contract_Terminated_status":"Terminated"
+        "fhir_contract_eo_signer_type": "EnrolmentOfficer",
+        "fhir_contract_head_signer_type": "HeadOfFamily",
+        "fhir_contract_insuree_role": "Insuree",
+        "fhir_contract_dependant_role": "Dependant",
+        "fhir_contract_executable_status": "Executable",
+        "fhir_contract_renewed_status": "Renewed",
+        "fhir_contract_policy_status": "Policy",
+        "fhir_contract_Terminated_status": "Terminated"
     },
     "R4_fhir_coverage_config": {
         "fhir_family_refereence_code": "FamilyReference",
