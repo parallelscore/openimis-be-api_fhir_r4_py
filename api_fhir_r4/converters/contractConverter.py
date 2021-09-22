@@ -11,7 +11,6 @@ from fhir.resources.contract import Contract, ContractTermAssetValuedItem, \
 from fhir.resources.extension import Extension
 from fhir.resources.money import Money
 from fhir.resources.period import Period
-from fhir.resources.reference import Reference
 
 from product.models import Product
 from policy.models import Policy

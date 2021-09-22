@@ -1,4 +1,3 @@
-import os
 import urllib
 from urllib.parse import urlparse
 
@@ -17,10 +16,8 @@ from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
 from fhir.resources.patient import Patient, PatientContact
 from fhir.resources.extension import Extension
 from fhir.resources.attachment import Attachment
-from fhir.resources.reference import Reference
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
-from location.models import HealthFacility
 
 
 class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
