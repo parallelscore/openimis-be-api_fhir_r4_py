@@ -14,6 +14,7 @@ from api_fhir_r4.converters.claimAdminPractitionerConverter import ClaimAdminPra
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
+from api_fhir_r4.mapping.claimMapping import ClaimMapping
 from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse, ClaimV2 as FHIRClaim
 from api_fhir_r4.models.imisModelEnums import ImisClaimIcdTypes
 from fhir.resources.money import Money
@@ -79,10 +80,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
     @classmethod
     def build_fhir_outcome(cls, fhir_claim_response, imis_claim):
-        code = imis_claim.status
-        if code is not None:
-            display = cls.get_status_display_by_code(code)
-            fhir_claim_response["outcome"] = display
+        status = imis_claim.status
+        outcome = ClaimMapping.claim_outcome[f'{status}']
+        fhir_claim_response["outcome"] = outcome
 
     @classmethod
     def build_imis_outcome(cls, imis_claim, fhir_claim_response):
@@ -99,22 +99,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
             raise FHIRRequestProcessException(F"Claim Response cannot be created from scratch, "
                                               f"IMIS instance for reference {claim_uuid} was not found.")
 
-    _CODE_DISPLAY_STATUS = {
-        1: R4ClaimConfig.get_fhir_claim_status_rejected_code(),
-        2: R4ClaimConfig.get_fhir_claim_status_entered_code(),
-        4: R4ClaimConfig.get_fhir_claim_status_checked_code(),
-        8: R4ClaimConfig.get_fhir_claim_status_processed_code(),
-        16: R4ClaimConfig.get_fhir_claim_status_valuated_code()
-    }
-
-    @classmethod
-    def get_status_display_by_code(cls, code):
-        display = cls._CODE_DISPLAY_STATUS.get(code, None)
-        return display
-
     @classmethod
     def get_status_code_by_display(cls, claim_response_display):
-        for code, display in cls._CODE_DISPLAY_STATUS.items():
+        for code, display in ClaimMapping.claim_outcome.items():
             if display == claim_response_display:
                 return code
         return None
@@ -272,15 +259,19 @@ class ClaimResponseConverter(BaseFHIRConverter):
     @classmethod
     def build_fhir_type(cls, fhir_claim_response, imis_claim):
         if imis_claim.visit_type:
-            fhir_claim_response.type = cls.build_simple_codeable_concept(imis_claim.visit_type)
-            if fhir_claim_response.type.coding:
-                fhir_claim_response.type.coding[0].system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/claim-visit-type"
+            fhir_claim_response.type = cls.build_codeable_concept(
+                system=ClaimMapping.visit_type_system,
+                code=imis_claim.visit_type,
+                display=ClaimMapping.visit_type[f'{imis_claim.visit_type}']
+            )
 
     @classmethod
     def build_imis_type(cls, imis_claim, fhir_claim_response):
         if fhir_claim_response.type:
-            visit_type = fhir_claim_response.type.text
-            imis_claim.visit_type = visit_type
+            coding = fhir_claim_response.type.coding
+            if coding and len(coding) > 0:
+                visit_type = fhir_claim_response.type.coding[0].code
+                imis_claim.visit_type = visit_type
 
     _REVIEW_STATUS_DISPLAY = {
         1: "Idle",
@@ -292,7 +283,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
     @classmethod
     def build_fhir_status(cls, fhir_claim_response, imis_claim):
-        fhir_claim_response["status"] = cls._REVIEW_STATUS_DISPLAY[imis_claim.review_status]
+        fhir_claim_response["status"] = "active"
 
     @classmethod
     def build_imis_status(cls, imis_claim, fhir_claim_response):
