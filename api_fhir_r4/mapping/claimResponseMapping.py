@@ -3,7 +3,7 @@ from claim.models import Claim
 from django.utils.translation import gettext as _
 
 
-class ClaimMapping(object):
+class ClaimResponseMapping(object):
 
     claim_status_system = f'{GeneralConfiguration.get_system_base_url()}CodeSystem/claim-status'
     claim_status = {
