@@ -3,6 +3,7 @@ import core
 from django.utils.translation import gettext as _
 from api_fhir_r4.configurations import GeneralConfiguration, R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.mapping.contractMapping import PayTypeMapping, ContractStatus, \
     ContractState
 from fhir.resources.contract import Contract, ContractTermAssetValuedItem, \
@@ -227,10 +228,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         offer = ContractTermOffer.construct()
 
         offer_party = ContractTermOfferParty.construct()
-        reference = Reference.construct()
-        insuree_uuid = imis_policy.family.head_insuree.uuid
-        reference.reference = f"Patient/{insuree_uuid}"
-        offer_party.reference = [reference]
+        offer_party.reference = [PatientConverter.build_fhir_resource_reference(imis_policy.family.head_insuree, 'Patient')]
         system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/contract-resource-party-role"
         offer_party.role = cls.build_codeable_concept(code="beneficiary", system=system)
         if len(offer_party.role.coding) == 1:
@@ -337,7 +335,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_author(cls, fhir_contract, imis_policy, errors):
         if fhir_contract.author:
-            reference = fhir_contract.author.reference.split("/", 2)
+            reference = fhir_contract.author.reference.split("Practitioner/", 2)
             imis_policy.officer = Officer.objects.get(uuid=reference[1])
         else:
             cls.valid_condition(not fhir_contract.author, _('Missing  `author` attribute'), errors)
@@ -347,7 +345,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if fhir_contract.subject:
             for subject in  fhir_contract.subject:
                 if subject.reference is not None:
-                    reference = subject.reference.split("/", 2)
+                    reference = subject.reference.split("Group/", 2)
                     try:
                         imis_policy.family = Family.objects.filter(uuid=reference[1]).first()
                     except:
@@ -392,7 +390,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                         if asset.typeReference:
                             for item in asset.typeReference:
                                if item.reference is not None:
-                                   reference = item.reference.split("/", 2)
+                                   reference = item.reference.split("Patient/", 2)
                                    obj = Insuree.objects.get(uuid=reference[1])
                                    if imis_policy.family_id is not None:
                                        if obj.family == imis_policy.family:
@@ -422,7 +420,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                             for item in asset.valuedItem:
                                 if item.entityReference is not None:
                                     if item.entityReference.reference is not None:
-                                        reference = item.entityReference.reference.split("/", 2)
+                                        reference = item.entityReference.reference.split("InsurancePlan/", 2)
                                         imis_policy.product = Product.objects.get(uuid=reference[1])
                                 if item.net is not None:
                                     if item.net.value is not None:

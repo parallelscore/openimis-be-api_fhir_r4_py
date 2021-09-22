@@ -1,16 +1,15 @@
 from django.db.models.query import Q
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext
 from insuree.models import Insuree, InsureePolicy, Gender, Education, \
     Profession, Family, FamilyType, ConfirmationType
 from policy.models import Policy
 from location.models import Location
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration
-from api_fhir_r4.converters import BaseFHIRConverter,GroupConverterMixin, ReferenceConverterMixin
+from api_fhir_r4.converters import BaseFHIRConverter, GroupConverterMixin, ReferenceConverterMixin
+from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.mapping.groupMapping import GroupTypeMapping, ConfirmationTypeMapping
 from fhir.resources.extension import Extension
-from fhir.resources.group import Group
-from fhir.resources.reference import Reference
+from fhir.resources.group import Group, GroupMember
 from api_fhir_r4.utils import DbManagerUtils
 from api_fhir_r4.exceptions import FHIRException
 
@@ -141,15 +140,14 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
             Q(validity_to__isnull=True)
         ).count()
         fhir_family.active = True if number_of_active_policy > 0 else False
-    
-    
+
     @classmethod
     def build_fhir_member(cls,fhir_family, imis_family):
         fhir_family.member = cls.build_fhir_members(imis_family.uuid)
 
     @classmethod
     def build_fhir_quantity(cls,fhir_family, imis_family):
-        quantity = Insuree.objects.filter(family__uuid=imis_family.uuid).count()
+        quantity = Insuree.objects.filter(family__uuid=imis_family.uuid, validity_to__isnull=True).count()
         fhir_family.quantity = quantity
 
     @classmethod
@@ -169,7 +167,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-type"
                 if hasattr(imis_family, "family_type") and imis_family.family_type is not None:
                     display = GroupTypeMapping.group_type[str(imis_family.family_type.code)]
-                    system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/group-types"
+                    system = "CodeSystem/group-types"
                     extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_family.family_type.code),
                                                                                 system=system)
                     if len(extension.valueCodeableConcept.coding) == 1:
@@ -209,9 +207,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                                     value = cls.get_location_reference(ext.valueReference.reference)
                                     if value:
                                         try:
-                                            # split 'viilage'
-                                            value = value.split('-')[0]
-                                            imis_family.location = Location.objects.get(name=value, validity_to__isnull=True)
+                                            imis_family.location = Location.objects.get(uuid=value, validity_to__isnull=True)
                                         except:
                                             imis_family.location = None
 
@@ -241,7 +237,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
 
     @classmethod
     def get_location_reference(cls, location):
-        return location.rsplit('/', 1)[1]
+        return location.rsplit('Location/', 1)[1]
 
     @classmethod
     def _build_extension_address(cls, extension, fhir_family, imis_family):
@@ -259,9 +255,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
             # address location reference extension
             extension_address = Extension.construct()
             extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-            reference_location = Reference.construct()
-            reference_location.reference = F"Location/{imis_family.location.name}-village"
-            extension_address.valueReference = reference_location
+            extension_address.valueReference = LocationConverter.build_fhir_resource_reference(imis_family.location, 'Location')
             family_address.extension.append(extension_address)
             family_address.city = imis_family.location.name
         extension.valueAddress = family_address
@@ -279,13 +273,17 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 # add identifier extension
                 nested_extension = Extension.construct()
                 nested_extension.url = "type"
-                system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/group-confirmation-type"
+                system = "CodeSystem/group-confirmation-type"
                 display = ConfirmationTypeMapping.confirmation_type[str(imis_family.confirmation_type.code)]
                 nested_extension.valueCodeableConcept = cls.build_codeable_concept(
                     code=imis_family.confirmation_type.code, system=system)
                 if len(nested_extension.valueCodeableConcept.coding) == 1:
                     nested_extension.valueCodeableConcept.coding[0].display = display
                 extension.extension.append(nested_extension)
+
+    @classmethod
+    def get_reference_obj_uuid(cls, imis_family: Family):
+        return imis_family.uuid
 
     # fhir validations
     @classmethod

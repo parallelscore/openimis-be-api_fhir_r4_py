@@ -30,6 +30,7 @@ class GroupTestMixin(GenericTestMixin):
     _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
     _TEST_LOCATION_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
     _TEST_LOCATION_CODE = "RTDTMTVT"
+    _TEST_LOCATION_UUID = "637f05cf-d8e8-4135-8250-7f01f01936bc"
     _TEST_LOCATION_NAME = "TEST_NAME"
     _TEST_LOCATION_TYPE = "V"
 
@@ -57,6 +58,7 @@ class GroupTestMixin(GenericTestMixin):
 
         imis_location = Location()
         imis_location.code = self._TEST_LOCATION_CODE
+        imis_location.uuid = self._TEST_LOCATION_UUID
         imis_location.name = self._TEST_LOCATION_NAME
         imis_location.type = self._TEST_LOCATION_TYPE
         imis_location.parent = imis_location_municipality
@@ -180,7 +182,7 @@ class GroupTestMixin(GenericTestMixin):
         extension_address = Extension.construct()
         extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
         reference_location = Reference.construct()
-        reference_location.reference = F"Location/{imis_location.name}-village"
+        reference_location.reference = F"Location/{imis_location.uuid}"
         extension_address.valueReference = reference_location
         family_address.extension.append(extension_address)
         family_address.city = imis_location.name

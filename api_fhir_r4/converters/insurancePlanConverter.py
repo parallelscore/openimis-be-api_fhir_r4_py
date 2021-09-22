@@ -5,6 +5,7 @@ from location.models import Location
 from product.models import Product
 from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.converters.locationConverter import LocationConverter
 from fhir.resources.extension import Extension
 from fhir.resources.money import Money
 from fhir.resources.insuranceplan import InsurancePlan, InsurancePlanCoverage, \
@@ -150,9 +151,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_coverage_area(cls, fhir_insurance_plan, imis_product):
         if imis_product.location:
-            coverage_area = Reference.construct()
-            coverage_area.reference = F"Location/{imis_product.location.uuid}"
-            fhir_insurance_plan.coverageArea = [coverage_area]
+            fhir_insurance_plan.coverageArea = [LocationConverter.build_fhir_resource_reference(imis_product.location, 'Location')]
 
     @classmethod
     def build_imis_coverage_area(cls, imis_product, fhir_insurance_plan):
@@ -361,6 +360,10 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 imis_product.general_assembly_fee = cost.cost.value
 
     @classmethod
+    def get_reference_obj_uuid(cls, imis_product: Product):
+        return imis_product.uuid
+
+    @classmethod
     def build_fhir_extentions(cls, fhir_insurance_plan, imis_product):
         fhir_insurance_plan.extension = []
 
@@ -368,9 +371,11 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             extension = Extension.construct()
             if value == "conversion":
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-{value}"
+
                 reference_conversion = Reference.construct()
                 reference_conversion.reference = F"InsurancePlan/{imis_product.code}"
-                extension.valueReference = reference_conversion
+                extension.valueReference = cls.build_fhir_resource_reference(imis_product, 'InsurancePlan')
+                extension.valueReference.display = imis_product.code
             elif value == "max-installments":
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/insurance-plan-{value}"
                 extension.valueUnsignedInt = imis_product.max_installments
@@ -411,7 +416,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 fhir_insurance_plan.extension.append(extension)
 
         if imis_product.conversion_product is not None:
-            build_extension(fhir_insurance_plan, imis_product, "conversion")
+            build_extension(fhir_insurance_plan, imis_product.conversion_product, "conversion")
         if imis_product.max_installments is not None:
             build_extension(fhir_insurance_plan, imis_product, "max-installments")
         if imis_product.start_cycle_1 is not None:

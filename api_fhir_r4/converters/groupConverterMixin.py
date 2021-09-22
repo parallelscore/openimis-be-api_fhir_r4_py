@@ -1,5 +1,5 @@
 from django.utils.translation import gettext
-from insuree.models import Insuree, Gender, Education, Profession, Family
+from insuree.models import Insuree
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from fhir.resources.humanname import HumanName
 from fhir.resources.group import GroupMember
@@ -16,14 +16,15 @@ class GroupConverterMixin(object):
         head.family = person_obj.last_name
         head.given = [person_obj.other_names]
         return head
-    
+
     @classmethod
     def build_fhir_members(cls, family_id):
         members = []
-        for insuree in Insuree.objects.filter(family__uuid=family_id):
+        for insuree in Insuree.objects.filter(family__uuid=family_id, validity_to__isnull=True):
             member = GroupMember.construct()
             member.entity = {
-            "reference":"Patient"+'/'+insuree.other_names.lower()+'-'+insuree.last_name.lower()
+                "reference": f'Patient/{insuree.chf_id}',
+                "type": "Patient",
             }
             members.append(member)
         return members

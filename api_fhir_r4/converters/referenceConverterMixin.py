@@ -4,8 +4,6 @@ import logging
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from fhir.resources.reference import Reference
 
-from api_fhir_r4.configurations import R4IdentifierConfig
-
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +42,7 @@ class ReferenceConverterMixin(object):
 
         reference.type = resource_type
         reference.identifier = cls.build_reference_identifier(obj, reference_type)
-        reference.reference = resource_type + '/' + resource_id
+        reference.reference = f'{resource_type}/{resource_id}'
 
         if display:
             reference.display = display
