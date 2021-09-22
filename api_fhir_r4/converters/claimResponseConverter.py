@@ -47,8 +47,6 @@ class ClaimResponseConverter(BaseFHIRConverter):
         cls.build_fhir_type(fhir_claim_response, imis_claim)
         cls.build_fhir_insurer(fhir_claim_response, imis_claim)
         cls.build_fhir_requestor(fhir_claim_response, imis_claim, reference_type)
-        cls.build_fhir_billable_period(fhir_claim_response, imis_claim)
-        cls.build_fhir_diagnoses(fhir_claim_response, imis_claim, reference_type)
         return fhir_claim_response
                
     @classmethod
@@ -355,10 +353,10 @@ class ClaimResponseConverter(BaseFHIRConverter):
         extension = item.extension[0]
         _, resource_id = extension.valueReference.reference.split("/")
 
-        if extension.url == 'Medication':
+        if extension.valueReference.type == 'Medication':
             imis_item = Item.objects.get(uuid=resource_id)
             claim_item = ClaimItem.objects.get(claim=imis_claim, item=imis_item)
-        elif extension.url == 'ActivityDefinition':
+        elif extension.valueReference.type == 'ActivityDefinition':
             imis_service = Service.objects.get(uuid=resource_id)
             claim_item = ClaimService.objects.get(claim=imis_claim, service=imis_service)
         else:
@@ -426,7 +424,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         reference = Reference.construct()
         extension = Extension.construct()
         extension.valueReference = reference
-        extension.url = service_type
+        extension.url = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/claim-item-reference'
         extension.valueReference = MedicationConverter\
             .build_fhir_resource_reference(serviced, service_type, reference_type=reference_type)
         return extension
@@ -434,7 +432,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
     @classmethod
     def __build_item_price(cls, item_price):
         price = Money.construct()
-        if hasattr(core,'currency'):
+        if hasattr(core, 'currency'):
             price.currency = core.currency
         price.value = item_price
         return price
@@ -449,23 +447,23 @@ class ClaimResponseConverter(BaseFHIRConverter):
         adjudication.value = quantity
         return adjudication
 
-    _CLAIM_STATUS_DISPLAY = {
-        1: "rejected",
-        2: "entered",
-        4: "checked",
-        8: "processed",
-        16: "valuated"
-    }
-
     @classmethod
     def build_fhir_item_adjudication(cls, item, rejected_reason, imis_claim):
         def build_asked_adjudication(status, price):
-            category = cls.build_codeable_concept(status, text=cls._CLAIM_STATUS_DISPLAY[status])
+            category = cls.build_codeable_concept(
+                system=ClaimMapping.claim_status_system,
+                code=status,
+                display=ClaimMapping.claim_status[f'{status}']
+            )
             adjudication = cls.__build_adjudication(item, rejected_reason, price, category, item.qty_provided, True)
             return adjudication
 
         def build_processed_adjudication(status, price):
-            category = cls.build_codeable_concept(status, text=cls._CLAIM_STATUS_DISPLAY[status])
+            category = cls.build_codeable_concept(
+                system=ClaimMapping.claim_status_system,
+                code=status,
+                display=ClaimMapping.claim_status[f'{status}']
+            )
             if item.qty_approved is not None and item.qty_approved != 0.0:
                 quantity = item.qty_approved
             else:
@@ -498,16 +496,12 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
     @classmethod
     def build_fhir_adjudication_reason(cls, item, rejected_reason):
-        text = None
-        code = None
-        if item.justification is not None:
-            text = item.justification
-        if not rejected_reason:
-            code = "0"
-        else:
-            code = rejected_reason
-
-        return cls.build_codeable_concept(code, text=text)
+        code = "0" if not rejected_reason else rejected_reason
+        return cls.build_codeable_concept(
+            system=ClaimMapping.rejection_reason_system,
+            code=code,
+            display=ClaimMapping.rejection_reason[int(rejected_reason)]
+        )
 
     @classmethod
     def adjudication_to_item(cls, adjudication, claim_item, fhir_claim_response):
