@@ -14,7 +14,7 @@ from api_fhir_r4.converters.claimAdminPractitionerConverter import ClaimAdminPra
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.mapping.claimMapping import ClaimMapping
+from api_fhir_r4.mapping.claimResponseMapping import ClaimResponseMapping
 from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse, ClaimV2 as FHIRClaim
 from api_fhir_r4.models.imisModelEnums import ImisClaimIcdTypes
 from fhir.resources.money import Money
@@ -79,7 +79,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
     @classmethod
     def build_fhir_outcome(cls, fhir_claim_response, imis_claim):
         status = imis_claim.status
-        outcome = ClaimMapping.claim_outcome[f'{status}']
+        outcome = ClaimResponseMapping.claim_outcome[f'{status}']
         fhir_claim_response["outcome"] = outcome
 
     @classmethod
@@ -99,7 +99,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
 
     @classmethod
     def get_status_code_by_display(cls, claim_response_display):
-        for code, display in ClaimMapping.claim_outcome.items():
+        for code, display in ClaimResponseMapping.claim_outcome.items():
             if display == claim_response_display:
                 return code
         return None
@@ -258,9 +258,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
     def build_fhir_type(cls, fhir_claim_response, imis_claim):
         if imis_claim.visit_type:
             fhir_claim_response.type = cls.build_codeable_concept(
-                system=ClaimMapping.visit_type_system,
+                system=ClaimResponseMapping.visit_type_system,
                 code=imis_claim.visit_type,
-                display=ClaimMapping.visit_type[f'{imis_claim.visit_type}']
+                display=ClaimResponseMapping.visit_type[f'{imis_claim.visit_type}']
             )
 
     @classmethod
@@ -451,18 +451,18 @@ class ClaimResponseConverter(BaseFHIRConverter):
     def build_fhir_item_adjudication(cls, item, rejected_reason, imis_claim):
         def build_asked_adjudication(status, price):
             category = cls.build_codeable_concept(
-                system=ClaimMapping.claim_status_system,
+                system=ClaimResponseMapping.claim_status_system,
                 code=status,
-                display=ClaimMapping.claim_status[f'{status}']
+                display=ClaimResponseMapping.claim_status[f'{status}']
             )
             adjudication = cls.__build_adjudication(item, rejected_reason, price, category, item.qty_provided, True)
             return adjudication
 
         def build_processed_adjudication(status, price):
             category = cls.build_codeable_concept(
-                system=ClaimMapping.claim_status_system,
+                system=ClaimResponseMapping.claim_status_system,
                 code=status,
-                display=ClaimMapping.claim_status[f'{status}']
+                display=ClaimResponseMapping.claim_status[f'{status}']
             )
             if item.qty_approved is not None and item.qty_approved != 0.0:
                 quantity = item.qty_approved
@@ -498,9 +498,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
     def build_fhir_adjudication_reason(cls, item, rejected_reason):
         code = "0" if not rejected_reason else rejected_reason
         return cls.build_codeable_concept(
-            system=ClaimMapping.rejection_reason_system,
+            system=ClaimResponseMapping.rejection_reason_system,
             code=code,
-            display=ClaimMapping.rejection_reason[int(rejected_reason)]
+            display=ClaimResponseMapping.rejection_reason[int(rejected_reason)]
         )
 
     @classmethod
