@@ -10,7 +10,7 @@
             {
                "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference",
                "valueReference":{
-                  "reference":"/api/api_fhir_r4/Location/69a55f2d-ee34-4193-be0e-2b6a361797bd"
+                  "reference":"Location/69a55f2d-ee34-4193-be0e-2b6a361797bd"
                }
             }
          ],
@@ -30,7 +30,7 @@
             {
                "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference",
                "valueReference":{
-                  "reference":"/api/api_fhir_r4/Location/69a55f2d-ee34-4193-be0e-2b6a361797bd"
+                  "reference":"Location/69a55f2d-ee34-4193-be0e-2b6a361797bd"
                }
             }
          ],
@@ -46,7 +46,7 @@
       {
          "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/patient-group-reference",
          "valueReference":{
-            "reference":"/api/api_fhir_r4/Group/8e33033a-9f60-43ad-be3e-3bfeb992aae5"
+            "reference":"Group/8e33033a-9f60-43ad-be3e-3bfeb992aae5"
          }
       },
       {
@@ -58,7 +58,7 @@
          "valueCodeableConcept":{
             "coding":[
                {
-                  "system":"http://127.0.0.1:8000/api/api_fhir_r4/CodeSystem/patient-profession",
+                  "system":"CodeSystem/patient-profession",
                   "code":"4",
                   "display":"Others"
                }
@@ -80,7 +80,7 @@
                "valueCodeableConcept":{
                   "coding":[
                      {
-                        "system":"http://127.0.0.1:8000/api/api_fhir_r4/CodeSystem/patient-identification-types",
+                        "system":"CodeSystem/patient-identification-types",
                         "code":"P"
                      }
                   ]
