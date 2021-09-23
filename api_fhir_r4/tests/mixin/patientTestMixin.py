@@ -273,7 +273,7 @@ class PatientTestMixin(GenericTestMixin):
         extension = Extension.construct()
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-profession"
         display = PatientProfessionMapping.patient_profession[str(self._TEST_PROFESSION.id)]
-        system = f"{GeneralConfiguration.get_host_domain()}{GeneralConfiguration.get_base_url()}CodeSystem/patient-profession"
+        system = "CodeSystem/patient-profession"
         extension.valueCodeableConcept = PatientConverter.build_codeable_concept(code=str(self._TEST_PROFESSION.id), system=system)
         if len(extension.valueCodeableConcept.coding) == 1:
             extension.valueCodeableConcept.coding[0].display = display
