@@ -122,7 +122,7 @@ class HealthFacilityOrganisationConverter(BaseFHIRConverter, PersonConverterMixi
 
     @classmethod
     def _build_address_ext(cls, imis_organisation):
-        address_ref = LocationConverter.build_fhir_resource_reference(imis_organisation)
+        address_ref = LocationConverter.build_fhir_resource_reference(imis_organisation, 'Organisation')
         address_ext = Extension.construct()
         address_ext.url = HealthFacilityOrganizationTypeMapping.ADDRESS_LOCATION_REFERENCE_URL
         address_ext.valueReference = address_ref

@@ -2,6 +2,7 @@ from api_fhir_r4.configurations import BaseConfiguration
 from api_fhir_r4.defaultConfig import DEFAULT_CFG
 from django.conf import settings
 
+
 class GeneralConfiguration(BaseConfiguration):
 
     @classmethod
@@ -60,13 +61,21 @@ class GeneralConfiguration(BaseConfiguration):
     def get_system_base_url(cls):
         return cls.get_config_attribute("base_url")
 
+    @classmethod
+    def get_host_domain(cls):
+        url = cls.get_base_url()
+        if url.startswith('/'):
+            return f'http://{settings.SITE_URL()}'
+        else:
+            return ''
+
     @classmethod        
     def get_base_url(cls):
         MODULE_NAME = 'api_fhir_r4'
         site_root = settings.SITE_ROOT()
         if site_root is not None:
             base_url = '/' + site_root
-        if  base_url.endswith('/'):
+        if base_url.endswith('/'):
             return base_url + MODULE_NAME + '/'
         else:
             return base_url + '/'+MODULE_NAME+'/'

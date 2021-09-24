@@ -1,4 +1,3 @@
-import os
 import urllib
 from urllib.parse import urlparse
 
@@ -8,21 +7,17 @@ from insuree.models import Insuree, Gender, Education, Profession, Family, \
 from location.models import Location
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration, R4MaritalConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
-from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
-from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.converters.policyHolderOrganisationConverter import PolicyHolderOrganisationConverter
+from api_fhir_r4.converters.groupConverter import GroupConverter
+from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.mapping.patientMapping import RelationshipMapping, EducationLevelMapping, \
-    PatientProfessionMapping, IdentificationTypeMapping, MaritalStatusMapping
+    PatientProfessionMapping, MaritalStatusMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
-from fhir.resources.patient import Patient, PatientLink, PatientContact
+from fhir.resources.patient import Patient, PatientContact
 from fhir.resources.extension import Extension
 from fhir.resources.attachment import Attachment
-from fhir.resources.coding import Coding
-from fhir.resources.reference import Reference
-from fhir.resources.identifier import Identifier
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
-from location.models import HealthFacility
 
 
 class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
@@ -125,8 +120,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls._validate_imis_is_head(imis_insuree)
     
     @classmethod
-    def get_location_reference(cls,location):
-      return location.rsplit('/',1)[1]
+    def get_location_reference(cls, location):
+        return location.rsplit('Location/', 1)[1]
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -240,16 +235,14 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                         if value:
                             try:
                                 # split 'viilage'
-                                value = value.split('-')[0]
-                                imis_insuree.current_village = Location.objects.get(name=value)
+                                imis_insuree.current_village = Location.objects.get(uuid=value, validity_to__isnull=True)
                             except:
                                 imis_insuree.current_village = None
             else:
                 try:
                     # split family reference
-                    family_reference = family_reference.split('/')[1]
-                    family_reference = family_reference.split('-')[0]
-                    imis_insuree.family = Family.objects.get(head_insuree__last_name=family_reference, validity_to__isnull=True)
+                    family_reference = family_reference.split('Group/')[1]
+                    imis_insuree.family = Family.objects.get(uuid=family_reference, validity_to__isnull=True)
                 except Exception as e:
                     raise e
         #cls._validate_imis_insuree_family_location(imis_insuree)
@@ -366,9 +359,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 # address location reference extension
                 extension = Extension.construct()
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-                reference_location = Reference.construct()
-                reference_location.reference = F"Location/{imis_family.location.name}-village"
-                extension.valueReference = reference_location
+                extension.valueReference = LocationConverter.build_fhir_resource_reference(imis_family.location, 'Location')
                 family_address.extension.append(extension)
 
                 family_address.city = imis_family.location.name
@@ -395,9 +386,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 # address location reference extension
                 extension = Extension.construct()
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-                reference_location = Reference.construct()
-                reference_location.reference = F"Location/{imis_insuree.current_village.name}-village"
-                extension.valueReference = reference_location
+                extension.valueReference = LocationConverter.build_fhir_resource_reference(imis_insuree.current_village, 'Location')
                 current_address.extension.append(extension)
 
                 current_address.city = imis_insuree.current_village.name
@@ -428,8 +417,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                             if value:
                                 try:
                                     # split 'viilage'
-                                    value = value.split('-')[0]
-                                    imis_insuree.current_village = Location.objects.get(name=value, validity_to__isnull=True)
+                                    imis_insuree.current_village = Location.objects.get(uuid=value, validity_to__isnull=True)
                                 except:
                                     imis_insuree.current_village = False
                 elif address.type == "both":
@@ -449,7 +437,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-education-level"
                 if hasattr(imis_insuree, "education") and imis_insuree.education is not None:
                     display = EducationLevelMapping.education_level[str(imis_insuree.education.id)]
-                    system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-education-level"
+                    system = "CodeSystem/patient-education-level"
                     extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_insuree.education.id), system=system)
                     if len(extension.valueCodeableConcept.coding) == 1:
                         extension.valueCodeableConcept.coding[0].display = display
@@ -460,9 +448,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
             elif value == "patient.group.reference":
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-group-reference"
-                reference_group = Reference.construct()
-                reference_group.reference = F"Group/{imis_insuree.last_name}-family"
-                extension.valueReference = reference_group
+                extension.valueReference = GroupConverter.build_fhir_resource_reference(imis_insuree.family, 'Group')
 
             elif value == "patient.identification":
                 nested_extension = Extension.construct()
@@ -476,7 +462,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                         # add identifier extension
                         nested_extension = Extension.construct()
                         nested_extension.url = "type"
-                        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-identification-types"
+                        system = "CodeSystem/patient-identification-types"
                         nested_extension.valueCodeableConcept = cls.build_codeable_concept(code=imis_insuree.type_of_id.code, system=system)
                         extension.extension.append(nested_extension)
 
@@ -484,7 +470,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-profession"
                 if hasattr(imis_insuree, "profession") and imis_insuree.profession is not None:
                     display = PatientProfessionMapping.patient_profession[str(imis_insuree.profession.id)]
-                    system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-profession"
+                    system = "CodeSystem/patient-profession"
                     extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_insuree.profession.id), system=system)
                     if len(extension.valueCodeableConcept.coding) == 1:
                         extension.valueCodeableConcept.coding[0].display = display
@@ -513,7 +499,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         fhir_contact = PatientContact.construct()
         if imis_insuree.relationship is not None and imis_insuree.family is not None \
                 and imis_insuree.family.head_insuree is not None:
-            system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-contact-relationship"
+            system = "CodeSystem/patient-contact-relationship"
             # map to the fhir value from imis one
             display = RelationshipMapping.relationship[str(imis_insuree.relationship.id)]
             fhir_contact.relationship = [cls.build_codeable_concept(code=imis_insuree.relationship.id, system=system)]
@@ -529,7 +515,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_fhir_photo(cls, fhir_patient, imis_insuree):
         if imis_insuree.photo and imis_insuree.photo.folder and imis_insuree.photo.filename:
             # HOST is taken from global variable used in the docker initialization
-            abs_url = os.getenv('NEW_OPENIMIS_HOST', 'localhost')
+            abs_url = GeneralConfiguration.get_host_domain().split('http://')[1]
             domain = abs_url
             photo_uri = cls.__build_photo_uri(imis_insuree)
             photo = Attachment.construct()
@@ -564,10 +550,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_general_practitioner(cls, fhir_patient, imis_insuree):
-        imis_insuree.health_facility = HealthFacility.objects.filter(level='H', validity_to__isnull=True).first()
         if imis_insuree.health_facility:
             fhir_patient.generalPractitioner = [
-                PolicyHolderOrganisationConverter.build_fhir_resource_reference(imis_insuree.health_facility, 'Practitioner')
+                PolicyHolderOrganisationConverter.build_fhir_resource_reference(imis_insuree.health_facility, 'Organisation')
             ]
 
     @classmethod

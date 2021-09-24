@@ -211,15 +211,16 @@ class ContractTestMixin(GenericTestMixin):
             code = ContractConverter.get_first_coding_from_codeable_concept(identifier.type).code
             if code == R4IdentifierConfig.get_fhir_id_type_code():
                 self.assertEqual(self._TEST_POLICY_ID, identifier.value)
-        self.assertEqual(f"Group/{self._TEST_FAMILY_UUID}", fhir_obj.subject[0].reference)
-        self.assertEqual(f"Practitioner/{self._TEST_OFFICER_UUID}", fhir_obj.author.reference)
+        self.assertIn(f"Group/{self._TEST_FAMILY_UUID}", fhir_obj.subject[0].reference)
+        self.assertIn(f"Practitioner/{self._TEST_OFFICER_UUID}", fhir_obj.author.reference)
         self.assertEqual("Offered", fhir_obj.status)
         self.assertEqual("Offered", fhir_obj.legalState.text)
         term = fhir_obj.term[0]
         offer = term.offer
         asset = term.asset[0]
         reference_asset = asset.typeReference[0].reference
-        self.assertEqual(f"Patient/{self._TEST_INSUREE_UUID}", f"{reference_asset[0]}{reference_asset[1:].lower()}")
+        reference_asset = reference_asset.split('Patient/')[1].lower()
+        self.assertEqual(self._TEST_INSUREE_UUID, reference_asset)
         period = asset.period[0]
         self.assertEqual(self._TEST_POLICY_START_DATE, period.start.isoformat()+"T00:00:00")
         self.assertEqual(self._TEST_POLICY_EXPIRED_DATE, period.end.isoformat()+"T00:00:00")
@@ -227,5 +228,5 @@ class ContractTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_POLICY_EFFECTIVE_DATE, use_period.start.isoformat()+"T00:00:00")
         self.assertEqual(self._TEST_POLICY_EXPIRED_DATE, use_period.end.isoformat()+"T00:00:00")
         valued_item = asset.valuedItem[0]
-        self.assertEqual(f"InsurancePlan/{self._TEST_PRODUCT_UUID}", valued_item.entityReference.reference)
+        self.assertIn(f"InsurancePlan/{self._TEST_PRODUCT_UUID}", valued_item.entityReference.reference)
         self.assertEqual(self._TEST_POLICY_VALUE, valued_item.net.value)

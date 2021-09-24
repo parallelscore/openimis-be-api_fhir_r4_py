@@ -82,7 +82,7 @@ class EnrolmentOfficerPractitionerRoleTestMixin(GenericTestMixin):
         return fhir_practitioner_role
 
     def verify_fhir_instance(self, fhir_obj):
-        self.assertEqual(self._TEST_LOCATION_REFERENCE, fhir_obj.location[0].reference)
+        self.assertIn(self._TEST_LOCATION_REFERENCE, fhir_obj.location[0].reference)
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = EnrolmentOfficerPractitionerRoleConverter.get_first_coding_from_codeable_concept(identifier.type).code
@@ -90,8 +90,8 @@ class EnrolmentOfficerPractitionerRoleTestMixin(GenericTestMixin):
                 self.assertEqual(self._TEST_OFFICER.code, identifier.value)
             elif code == R4IdentifierConfig.get_fhir_uuid_type_code():
                 self.assertEqual(self._TEST_OFFICER.uuid, identifier.value)
-        self.assertEqual(self._TEST_PRACTITIONER_REFERENCE, fhir_obj.practitioner.reference)
-        self.assertEqual(self._TEST_SUBSTITUTION_OFFICER.uuid, fhir_obj.extension[0].valueReference.reference.split('/')[1])
+        self.assertIn(self._TEST_PRACTITIONER_REFERENCE, fhir_obj.practitioner.reference)
+        self.assertIn(self._TEST_SUBSTITUTION_OFFICER.uuid, fhir_obj.extension[0].valueReference.reference.split('Practitioner/')[1])
         self.assertEqual(1, len(fhir_obj.code))
         self.assertEqual(1, len(fhir_obj.code[0].coding))
         self.assertEqual("EO", fhir_obj.code[0].coding[0].code)

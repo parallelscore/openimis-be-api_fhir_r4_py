@@ -46,6 +46,7 @@ class PatientTestMixin(GenericTestMixin):
     _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
     _TEST_LOCATION_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
     _TEST_LOCATION_CODE = "RTDTMTVT"
+    _TEST_LOCATION_UUID = "69a55f2d-ee34-4193-be0e-2b6a361797bd"
     _TEST_LOCATION_NAME = "TEST_NAME"
     _TEST_LOCATION_TYPE = "V"
     _TEST_PHOTO_FOLDER = "PhotoTest"
@@ -84,6 +85,7 @@ class PatientTestMixin(GenericTestMixin):
         imis_location.code = self._TEST_LOCATION_CODE
         imis_location.name = self._TEST_LOCATION_NAME
         imis_location.type = self._TEST_LOCATION_TYPE
+        imis_location.uuid = self._TEST_LOCATION_UUID
         imis_location.parent = imis_location_municipality
         
         return imis_location
@@ -169,9 +171,11 @@ class PatientTestMixin(GenericTestMixin):
         name.use = "usual"
         fhir_patient.name = [name]
         identifiers = []
-        chf_id = PatientConverter.build_fhir_identifier(self._TEST_CHF_ID,
-                                                        R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                        R4IdentifierConfig.get_fhir_chfid_type_code())
+        chf_id = PatientConverter.build_fhir_identifier(
+            self._TEST_CHF_ID,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_chfid_type_code()
+        )
 
         identifiers.append(chf_id)
 
@@ -182,11 +186,17 @@ class PatientTestMixin(GenericTestMixin):
             R4MaritalConfig.get_fhir_divorced_code(),
             R4MaritalConfig.get_fhir_marital_status_system())
         telecom = []
-        phone = PatientConverter.build_fhir_contact_point(self._TEST_PHONE, ContactPointSystem.PHONE,
-                                                          ContactPointUse.HOME)
+        phone = PatientConverter.build_fhir_contact_point(
+            self._TEST_PHONE,
+            ContactPointSystem.PHONE,
+            ContactPointUse.HOME
+        )
         telecom.append(phone)
-        email = PatientConverter.build_fhir_contact_point(self._TEST_EMAIL, ContactPointSystem.EMAIL,
-                                                          ContactPointUse.HOME)
+        email = PatientConverter.build_fhir_contact_point(
+            self._TEST_EMAIL,
+            ContactPointSystem.EMAIL,
+            ContactPointUse.HOME
+        )
         telecom.append(email)
         fhir_patient.telecom = telecom
 
@@ -228,7 +238,7 @@ class PatientTestMixin(GenericTestMixin):
         extension = Extension.construct()
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
         reference_location = Reference.construct()
-        reference_location.reference = F"Location/{imis_location.name}-village"
+        reference_location.reference = F"Location/{imis_location.uuid}"
         extension.valueReference = reference_location
         current_address.extension.append(extension)
         current_address.city = imis_location.name
@@ -263,7 +273,7 @@ class PatientTestMixin(GenericTestMixin):
         extension = Extension.construct()
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-profession"
         display = PatientProfessionMapping.patient_profession[str(self._TEST_PROFESSION.id)]
-        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/patient-profession"
+        system = "CodeSystem/patient-profession"
         extension.valueCodeableConcept = PatientConverter.build_codeable_concept(code=str(self._TEST_PROFESSION.id), system=system)
         if len(extension.valueCodeableConcept.coding) == 1:
             extension.valueCodeableConcept.coding[0].display = display
@@ -272,7 +282,7 @@ class PatientTestMixin(GenericTestMixin):
         extension = Extension.construct()
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-group-reference"
         reference_group = Reference.construct()
-        reference_group.reference = F"Group/{imis_family.head_insuree.last_name}-family"
+        reference_group.reference = F"Group/{imis_family.uuid}"
         extension.valueReference = reference_group
         fhir_patient.extension.append(extension)
 
@@ -317,7 +327,7 @@ class PatientTestMixin(GenericTestMixin):
         for extension in fhir_obj.extension:
             self.assertTrue(isinstance(extension, Extension))
             if "patient-group-reference" in extension.url:
-                self.assertIn(self._TEST_LAST_NAME, extension.valueReference.reference)
+                self.assertIn(self._TEST_FAMILY_MOCKED_UUID, extension.valueReference.reference)
             if "patient-card-issue" in extension.url:
                 self.assertEqual(self._TEST_CARD_ISSUED, extension.valueBoolean)
             if "patient-is-head" in extension.url:

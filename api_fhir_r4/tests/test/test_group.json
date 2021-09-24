@@ -14,7 +14,7 @@
                {
                   "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference",
                   "valueReference":{
-                     "reference":"Location/TEST_NAME-village"
+                     "reference":"Location/637f05cf-d8e8-4135-8250-7f01f01936bc"
                   }
                }
             ],
@@ -35,7 +35,7 @@
          "valueCodeableConcept":{
             "coding":[
                {
-                  "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/group-types",
+                  "system":"CodeSystem/group-types",
                   "code":"H",
                   "display":"Household"
                }

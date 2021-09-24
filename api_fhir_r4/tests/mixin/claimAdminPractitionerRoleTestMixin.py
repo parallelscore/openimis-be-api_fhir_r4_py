@@ -34,7 +34,7 @@ class ClaimAdminPractitionerRoleTestMixin(GenericTestMixin):
         self._TEST_CLAIM_ADMIN.save()
         self._TEST_PRACTITIONER_REFERENCE = "Practitioner/" + self._TEST_CLAIM_ADMIN.uuid
         self._TEST_HF = self.create_test_health_facility()
-        self._TEST_ORGANIZATION_REFERENCE = "Organization/" + self._TEST_HF.uuid
+        self._TEST_ORGANIZATION_REFERENCE = "Organisation/" + self._TEST_HF.uuid
 
     def create_test_health_facility(self):
         location = LocationTestMixin().create_test_imis_instance()
@@ -82,7 +82,7 @@ class ClaimAdminPractitionerRoleTestMixin(GenericTestMixin):
         return fhir_practitioner_role
 
     def verify_fhir_instance(self, fhir_obj):
-        self.assertEqual(self._TEST_ORGANIZATION_REFERENCE, fhir_obj.organization.reference)
+        self.assertIn(self._TEST_ORGANIZATION_REFERENCE, fhir_obj.organization.reference)
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = ClaimAdminPractitionerRoleConverter.get_first_coding_from_codeable_concept(identifier.type).code
@@ -90,7 +90,7 @@ class ClaimAdminPractitionerRoleTestMixin(GenericTestMixin):
                 self.assertEqual(self._TEST_CODE, identifier.value)
             elif code == R4IdentifierConfig.get_fhir_uuid_type_code():
                 self.assertEqual(self._TEST_UUID, identifier.value)
-        self.assertEqual(self._TEST_PRACTITIONER_REFERENCE, fhir_obj.practitioner.reference)
+        self.assertIn(self._TEST_PRACTITIONER_REFERENCE, fhir_obj.practitioner.reference)
         self.assertEqual(1, len(fhir_obj.code))
         self.assertEqual(1, len(fhir_obj.code[0].coding))
         self.assertEqual("CA", fhir_obj.code[0].coding[0].code)

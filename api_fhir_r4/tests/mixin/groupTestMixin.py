@@ -30,6 +30,7 @@ class GroupTestMixin(GenericTestMixin):
     _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
     _TEST_LOCATION_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
     _TEST_LOCATION_CODE = "RTDTMTVT"
+    _TEST_LOCATION_UUID = "637f05cf-d8e8-4135-8250-7f01f01936bc"
     _TEST_LOCATION_NAME = "TEST_NAME"
     _TEST_LOCATION_TYPE = "V"
 
@@ -57,6 +58,7 @@ class GroupTestMixin(GenericTestMixin):
 
         imis_location = Location()
         imis_location.code = self._TEST_LOCATION_CODE
+        imis_location.uuid = self._TEST_LOCATION_UUID
         imis_location.name = self._TEST_LOCATION_NAME
         imis_location.type = self._TEST_LOCATION_TYPE
         imis_location.parent = imis_location_municipality
@@ -121,15 +123,19 @@ class GroupTestMixin(GenericTestMixin):
         name.use = "usual"
 
         identifiers = []
-        chf_id = GroupConverter.build_fhir_identifier(self._TEST_CHF_ID,
-                                                        R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                        R4IdentifierConfig.get_fhir_chfid_type_code())
+        chf_id = GroupConverter.build_fhir_identifier(
+            self._TEST_CHF_ID,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_chfid_type_code()
+        )
 
         identifiers.append(chf_id)
 
-        uuid = GroupConverter.build_fhir_identifier(self._TEST_UUID,
-                                                      R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                                      R4IdentifierConfig.get_fhir_uuid_type_code())
+        uuid = GroupConverter.build_fhir_identifier(
+            self._TEST_UUID,
+            R4IdentifierConfig.get_fhir_identifier_type_system(),
+            R4IdentifierConfig.get_fhir_uuid_type_code()
+        )
         identifiers.append(uuid)
 
         fhir_family.identifier = identifiers
@@ -154,7 +160,7 @@ class GroupTestMixin(GenericTestMixin):
         extension = Extension.construct()
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-type"
         display = GroupTypeMapping.group_type[str(self._TEST_FAMILY_TYPE.code)]
-        system = f"{GeneralConfiguration.get_system_base_url()}CodeSystem/group-types"
+        system = f"CodeSystem/group-types"
         extension.valueCodeableConcept = GroupConverter.build_codeable_concept(code=str(self._TEST_FAMILY_TYPE.code), system=system)
         if len(extension.valueCodeableConcept.coding) == 1:
             extension.valueCodeableConcept.coding[0].display = display
@@ -176,7 +182,7 @@ class GroupTestMixin(GenericTestMixin):
         extension_address = Extension.construct()
         extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
         reference_location = Reference.construct()
-        reference_location.reference = F"Location/{imis_location.name}-village"
+        reference_location.reference = F"Location/{imis_location.uuid}"
         extension_address.valueReference = reference_location
         family_address.extension.append(extension_address)
         family_address.city = imis_location.name
