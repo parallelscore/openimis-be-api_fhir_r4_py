@@ -1,4 +1,5 @@
-from api_fhir_r4.configurations import R4ClaimConfig
+from api_fhir_r4.configurations import R4ClaimConfig, GeneralConfiguration
+from urllib.parse import urljoin
 
 
 class ClaimPriorityMapping:
@@ -14,7 +15,7 @@ class ClaimPriorityMapping:
 
 
 class ClaimVisitTypeMapping:
-    SYSTEM = R4ClaimConfig.get_fhir_claim_visit_type_system()
+    SYSTEM = urljoin(GeneralConfiguration.get_system_base_url(), R4ClaimConfig.get_fhir_claim_visit_type_system())
 
     fhir_claim_visit_type_coding = {
         'E': {
@@ -36,7 +37,7 @@ class ClaimVisitTypeMapping:
 
 
 class ClaimItemCategoryMapping:
-    SYSTEM = R4ClaimConfig.get_fhir_claim_item_category_system()
+    SYSTEM = urljoin(GeneralConfiguration.get_system_base_url(), R4ClaimConfig.get_fhir_claim_item_category_system())
 
     fhir_claim_item_type_coding = {
         R4ClaimConfig.get_fhir_claim_item_code(): {

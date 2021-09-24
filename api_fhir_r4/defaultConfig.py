@@ -80,9 +80,11 @@ DEFAULT_CFG = {
         "fhir_claim_item_rejected_reason_adjudication_code": "rejected_reason",
         "fhir_claim_organization_code": "openIMIS",
         "fhir_claim_attachment_code": "attachment",
-        "fhir_claim_supporting_info_category_system": 'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/claim-supporting-info-category',
-        'fhir_claim_item_reference_extension_system': 'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/claim-item-reference',
-        'fhir_claim_visit_type_system': 'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem-claim-visit-type.html',
+        "fhir_claim_supporting_info_category_system": 'CodeSystem/claim-supporting-info-category',
+        'fhir_claim_item_reference_extension_system': 'StructureDefinition/claim-item-reference',
+        'fhir_claim_visit_type_system': 'CodeSystem/claim-visit-type',
+        'fhir_claim_item_category_system': 'CodeSystem/claim-item-category',
+        'fhir_claim_diagnosis_system': 'CodeSystem/diagnosis-ICD10-level1',
         "fhir_claim_allowed_mime_types_regex":
             '|'.join(['text\/.*', 'image\/png', 'image\/jpe?g', 'application\/msword', '.*doc.*'])
     },

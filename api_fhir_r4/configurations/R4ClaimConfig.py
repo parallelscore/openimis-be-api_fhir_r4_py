@@ -80,22 +80,27 @@ class R4ClaimConfig(ClaimConfiguration):
     @classmethod
     def get_fhir_claim_visit_type_system(cls):
         return cls.get_config_attribute("R4_fhir_claim_config").get('fhir_claim_visit_type_system',
-                                                                    'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem-claim-visit-type.html')
+                                                                    'CodeSystem-claim-visit-type')
 
     @classmethod
     def get_fhir_claim_supporting_info_system(cls):
         return cls.get_config_attribute("R4_fhir_claim_config").get('fhir_claim_supporting_info_category_system',
-                                                                    'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/claim-supporting-info-category')
+                                                                    'CodeSystem/claim-supporting-info-category')
 
     @classmethod
-    def get_fhir_claim_item_reference_extension_system(cls):
+    def get_fhir_item_reference_extension_system(cls):
         return cls.get_config_attribute("R4_fhir_claim_config").get('fhir_claim_item_reference_extension_system',
-                                                                    'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/claim-item-reference')
+                                                                    'StructureDefinition/claim-item-reference')
 
     @classmethod
     def get_fhir_claim_item_category_system(cls):
         return cls.get_config_attribute("R4_fhir_claim_config").get('fhir_claim_item_category_system',
-                                                                    'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/claim-item-category.html')
+                                                                    'CodeSystem/claim-item-category')
+
+    @classmethod
+    def get_fhir_claim_diagnosis_system(cls):
+        return cls.get_config_attribute("R4_fhir_claim_config").get('fhir_claim_diagnosis_system',
+                                                                    'CodeSystem/diagnosis-ICD10-level1')
 
     @classmethod
     def get_allowed_fhir_claim_attachment_mime_types_regex(cls):

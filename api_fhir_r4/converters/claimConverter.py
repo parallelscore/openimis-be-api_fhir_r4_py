@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import re
+from urllib.parse import urljoin
 
 from claim import ClaimItemSubmit, ClaimServiceSubmit, ClaimConfig
 from claim.models import Claim, ClaimItem, ClaimService, ClaimAttachment
@@ -10,7 +11,7 @@ from insuree.models import InsureePolicy
 from medical.models import Diagnosis
 from django.utils.translation import gettext as _
 
-from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig
+from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig, GeneralConfiguration
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.healthFacilityOrganisationConverter import HealthFacilityOrganisationConverter
@@ -165,10 +166,9 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_diagnosis(cls, diagnoses, icd):
-        diagnosis_codeable_concept = cls.build_codeable_concept(
-            icd.code,
-            system="https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/diagnosis-ICD10-level1",
-            display=icd.name)
+        base = GeneralConfiguration.get_system_base_url()
+        system = urljoin(base, R4ClaimConfig.get_fhir_claim_diagnosis_system())
+        diagnosis_codeable_concept = cls.build_codeable_concept(icd.code, system=system, display=icd.name)
         claim_diagnosis_data = {'sequence': FhirUtils.get_next_array_sequential_id(diagnoses),
                                 'diagnosisCodeableConcept': diagnosis_codeable_concept.dict()}
         diagnoses.append(ClaimDiagnosis(**claim_diagnosis_data))
@@ -259,8 +259,9 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if value_string:
             supporting_info_entry = ClaimSupportingInfo.construct()
             supporting_info_entry.sequence = FhirUtils.get_next_array_sequential_id(supporting_info)
-            category = cls.build_codeable_concept(code,
-                                                  R4ClaimConfig.get_fhir_claim_supporting_info_system())
+            base = GeneralConfiguration.get_system_base_url()
+            system = urljoin(base, R4ClaimConfig.get_fhir_claim_supporting_info_system())
+            category = cls.build_codeable_concept(code, system)
             supporting_info_entry.category = category
             supporting_info_entry.valueString = value_string
             supporting_info.append(supporting_info_entry)
@@ -321,13 +322,15 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_medication_extension(cls, item, reference_type):
-        url = R4ClaimConfig.get_fhir_claim_item_reference_extension_system()
+        base = GeneralConfiguration.get_system_base_url()
+        url = urljoin(base, R4ClaimConfig.get_fhir_item_reference_extension_system())
         reference = cls.build_fhir_resource_reference(item.item, type='Medication', reference_type=reference_type)
         return cls.build_fhir_reference_extension(reference, url)
 
     @classmethod
     def build_activity_definition_extension(cls, service, reference_type):
-        url = R4ClaimConfig.get_fhir_claim_item_reference_extension_system()
+        base = GeneralConfiguration.get_system_base_url()
+        url = urljoin(base, R4ClaimConfig.get_fhir_item_reference_extension_system())
         reference = cls.build_fhir_resource_reference(service.service, type='ActivityDefinition',
                                                       reference_type=reference_type)
         return cls.build_fhir_reference_extension(reference, url)
