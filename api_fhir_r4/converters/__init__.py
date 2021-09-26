@@ -2,7 +2,11 @@ from abc import ABC
 from typing import Union
 
 from django.db.models import Model
+from fhir.resources.extension import Extension
+from fhir.resources.money import Money
+from fhir.resources.quantity import Quantity
 
+import core
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from fhir.resources.codeableconcept import CodeableConcept
@@ -203,6 +207,38 @@ class BaseFHIRConverter(ABC):
         reference.reference = reference
         return reference
 
+    @classmethod
+    def build_fhir_mapped_coding(cls, mapping):
+        coding = Coding.construct()
+
+        if GeneralConfiguration.show_system():
+            coding.system = mapping["system"]
+        coding.code = mapping["code"]
+        coding.display = mapping["display"]
+
+        return coding
+
+    @classmethod
+    def build_fhir_reference_extension(cls, reference: Reference, url):
+        extension = Extension.construct()
+        extension.url = url
+        extension.valueReference = reference
+        return extension
+
+    @classmethod
+    def build_fhir_money(cls, value):
+        money = Money.construct()
+        money.value = value
+        if hasattr(core, 'currency'):
+            money.currency = core.currency
+        return money
+
+    @classmethod
+    def build_fhir_quantity(cls, value):
+        quantity = Quantity.construct()
+        quantity.value = value
+        return quantity
+
 
 from api_fhir_r4.converters.groupConverterMixin import GroupConverterMixin
 from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
@@ -220,11 +256,11 @@ from api_fhir_r4.converters.coverageEligibilityRequestConverter import CoverageE
 from api_fhir_r4.converters.policyCoverageEligibilityRequestConverter import PolicyCoverageEligibilityRequestConverter
 from api_fhir_r4.converters.communicationRequestConverter import CommunicationRequestConverter
 from api_fhir_r4.converters.claimResponseConverter import ClaimResponseConverter
-from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.healthcareServiceConverter import HealthcareServiceConverter
+from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.converters.insurancePlanConverter import InsurancePlanConverter
 from api_fhir_r4.converters.codeSystemConverter import CodeSystemConverter
