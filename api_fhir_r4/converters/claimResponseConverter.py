@@ -10,7 +10,7 @@ from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.claimAdminPractitionerConverter import ClaimAdminPractitionerConverter
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
-from api_fhir_r4.mapping.claimResponseMapping import ClaimResponseMapping
+from api_fhir_r4.mapping.claimMapping import ClaimResponseMapping
 from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse
 from fhir.resources.money import Money
 from fhir.resources.claimresponse import ClaimResponseItem, ClaimResponseItemAdjudication, \
