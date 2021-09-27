@@ -68,7 +68,6 @@ if 'insuree' in imis_modules:
 # register endpoints related to medical module
 if 'medical' in imis_modules:
     router.register(r'Medication', fhir_viewsets.MedicationViewSet, basename="Medication_R4")
-    router.register(r'Condition', fhir_viewsets.ConditionViewSet, basename="Condition_R4")
     router.register(r'ActivityDefinition', fhir_viewsets.ActivityDefinitionViewSet, basename="ActivityDefinition_R4")
 
 # register all endpoints related to c based on c
