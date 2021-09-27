@@ -6,7 +6,6 @@ from api_fhir_r4.views.fhir.contract import ContractViewSet
 from api_fhir_r4.views.fhir.coverage_eligibility_request import CoverageEligibilityRequestViewSet
 from api_fhir_r4.views.fhir.coverage_request import CoverageRequestQuerySet
 from api_fhir_r4.views.fhir.group import GroupViewSet
-from api_fhir_r4.views.fhir.health_service import HealthcareServiceViewSet
 from api_fhir_r4.views.fhir.insuree import InsureeViewSet
 from api_fhir_r4.views.fhir.location import LocationViewSet
 from api_fhir_r4.views.fhir.medication import MedicationViewSet

@@ -17,7 +17,6 @@ if 'product' in imis_modules:
 # register endpoint related to Location module if used
 if 'location' in imis_modules:
     router.register(r'Location', fhir_viewsets.LocationViewSet, basename="Location_R4")
-    router.register(r'HealthcareService', fhir_viewsets.HealthcareServiceViewSet, basename="HealthcareService_R4")
     # code system for openimis organization legal form
     router.register(
         r'CodeSystem/organization-legal-form',
