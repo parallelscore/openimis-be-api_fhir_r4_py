@@ -1,6 +1,6 @@
 from policy.services import EligibilityRequest
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
-from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter
+from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter, ReferenceConverterMixin
 from fhir.resources.money import Money
 from fhir.resources.coverageeligibilityresponse import CoverageEligibilityResponse as FHIRCoverageEligibilityResponse, \
     CoverageEligibilityResponseInsuranceItem, CoverageEligibilityResponseInsurance, CoverageEligibilityResponseInsuranceItemBenefit
@@ -8,11 +8,17 @@ from api_fhir_r4.models import CoverageEligibilityRequestV2 as FHIRCoverageEligi
 from api_fhir_r4.utils import TimeUtils
 
 
-class CoverageEligibilityRequestConverter(BaseFHIRConverter):
+class CoverageEligibilityRequestConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, coverage_eligibility_response):
-        fhir_response = FHIRCoverageEligibilityResponse.construct()
+    def to_fhir_obj(cls, coverage_eligibility_response, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+        fhir_eligibility_response = {}
+        fhir_eligibility_response["status"] = "active"
+        fhir_eligibility_response["outcome"] = "complete"
+        fhir_eligibility_response["insurer"] = "openIMIS"
+        fhir_eligibility_response["purpose"] = ["validation"]
+        fhir_eligibility_response["created"] = TimeUtils.date().isoformat()
+        fhir_response = FHIRCoverageEligibilityResponse(**fhir_eligibility_response)
         cls.build_fhir_insurance(fhir_response, coverage_eligibility_response)
         return fhir_response
 

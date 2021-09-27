@@ -1,9 +1,6 @@
-import datetime
-
 from claim.models import Feedback, ClaimItem, ClaimService, Claim, ClaimAdmin
 from django.db.models import Subquery
-from location.models import HealthFacility
-from medical.models import Item, Service, Diagnosis
+from medical.models import Item, Service
 import core
 
 from api_fhir_r4.configurations import GeneralConfiguration, R4ClaimConfig
@@ -12,19 +9,14 @@ from api_fhir_r4.converters.claimConverter import ClaimConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.claimAdminPractitionerConverter import ClaimAdminPractitionerConverter
 from api_fhir_r4.converters.medicationConverter import MedicationConverter
-from api_fhir_r4.converters.conditionConverter import ConditionConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from api_fhir_r4.mapping.claimResponseMapping import ClaimResponseMapping
-from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse, ClaimV2 as FHIRClaim
-from api_fhir_r4.models.imisModelEnums import ImisClaimIcdTypes
+from api_fhir_r4.models import ClaimResponseV2 as ClaimResponse
 from fhir.resources.money import Money
-from fhir.resources.claimresponse import ClaimResponseError, ClaimResponseItem, ClaimResponseItemAdjudication, \
+from fhir.resources.claimresponse import ClaimResponseItem, ClaimResponseItemAdjudication, \
     ClaimResponseProcessNote, ClaimResponseTotal
-from fhir.resources.coding import Coding
-from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.reference import Reference
 from fhir.resources.extension import Extension
-from fhir.resources.period import Period
 from api_fhir_r4.utils import TimeUtils, FhirUtils
 
 
@@ -42,10 +34,10 @@ class ClaimResponseConverter(BaseFHIRConverter):
         ClaimConverter.build_fhir_identifiers(fhir_claim_response, imis_claim)
         cls.build_fhir_items(fhir_claim_response, imis_claim, reference_type)
         cls.build_patient_reference(fhir_claim_response, imis_claim, reference_type)
-        cls.build_fhir_total(fhir_claim_response, imis_claim)
+        cls.build_fhir_totals(fhir_claim_response, imis_claim)
         cls.build_fhir_communication_request_reference(fhir_claim_response, imis_claim, reference_type)
         cls.build_fhir_type(fhir_claim_response, imis_claim)
-        cls.build_fhir_insurer(fhir_claim_response, imis_claim)
+        cls.build_fhir_insurer(fhir_claim_response)
         cls.build_fhir_requestor(fhir_claim_response, imis_claim, reference_type)
         return fhir_claim_response
                
@@ -60,8 +52,6 @@ class ClaimResponseConverter(BaseFHIRConverter):
         cls.build_imis_type(imis_claim, fhir_claim_response)
         cls.build_imis_status(imis_claim, fhir_claim_response)
         cls.build_imis_requestor(imis_claim, fhir_claim_response)
-        cls.build_imis_billable_period(imis_claim, fhir_claim_response)
-        cls.build_imis_diagnoses(imis_claim, fhir_claim_response)
         return imis_claim
 
     @classmethod
@@ -118,121 +108,56 @@ class ClaimResponseConverter(BaseFHIRConverter):
             .build_fhir_resource_reference(imis_claim.insuree, reference_type=reference_type)
 
     @classmethod
-    def build_fhir_total(cls, fhir_claim_response, imis_claim):
-        #valuated = cls.build_fhir_total_valuated(imis_claim)
-        #reinsured = cls.build_fhir_total_reinsured(imis_claim)
-        approved = cls.build_fhir_total_approved(imis_claim)
-        claimed = cls.build_fhir_total_claimed(imis_claim)
+    def build_fhir_totals(cls, fhir_claim_response, imis_claim):
+        total_claimed = 0
+        total_approved = 0
+        total_adjusted = 0
+        total_rejected = 0
+        total_valuated = 0
+        if fhir_claim_response:
+            items = fhir_claim_response.item
+            for item in items:
+                for adjudication in item.adjudication:
+                    rejection_reason = adjudication.reason.coding[0].code
+                    if rejection_reason == '0':
+                        if adjudication.category.coding[0].code == str(Claim.STATUS_ENTERED):
+                            total_claimed += adjudication.amount.value*adjudication.value
+                        if adjudication.category.coding[0].code == str(Claim.STATUS_PROCESSED):
+                            total_adjusted += adjudication.amount.value*adjudication.value
+                        if adjudication.category.coding[0].code == str(Claim.STATUS_CHECKED):
+                            total_approved += adjudication.amount.value*adjudication.value
+                        if adjudication.category.coding[0].code == str(Claim.STATUS_VALUATED):
+                            total_valuated += adjudication.amount.value*adjudication.value
+                    else:
+                        total_claimed += adjudication.amount.value*adjudication.value
 
-        if imis_claim.status == Claim.STATUS_VALUATED and approved:
-            if fhir_claim_response.total is not list:
-                fhir_claim_response.total = [claimed, approved]
-            else:
-                fhir_claim_response.total.append(claimed)
-                fhir_claim_response.total.append(approved)
+        fhir_total = []
+        if imis_claim.status >= Claim.STATUS_ENTERED:
+            fhir_total.append(cls.build_fhir_total(imis_claim, Claim.STATUS_ENTERED, total_claimed))
+        if imis_claim.status >= Claim.STATUS_CHECKED:
+            fhir_total.append(cls.build_fhir_total(imis_claim, Claim.STATUS_CHECKED, total_approved))
+        if imis_claim.status >= Claim.STATUS_PROCESSED:
+            fhir_total.append(cls.build_fhir_total(imis_claim, Claim.STATUS_PROCESSED, total_adjusted))
+        if imis_claim.status == Claim.STATUS_VALUATED:
+            fhir_total.append(cls.build_fhir_total(imis_claim, Claim.STATUS_VALUATED, total_valuated))
 
-        if imis_claim.status == Claim.STATUS_VALUATED and not approved:
-            if fhir_claim_response.total is not list:
-                fhir_claim_response.total = [claimed]
-            else:
-                fhir_claim_response.total.append(claimed)
-
-    @classmethod
-    def build_fhir_total_valuated(cls, imis_claim):
-        if imis_claim.valuated:
-            fhir_total = ClaimResponseTotal.construct()
-            money = Money.construct()
-            fhir_total.amount = money
-            fhir_total.category = CodeableConcept.construct()
-            coding = Coding.construct()
-            coding.code = "V"
-            coding.system = "http://terminology.hl7.org/CodeSystem/adjudication.html"
-            coding.display = "Valuated"
-            if fhir_total.category.coding is not list:
-                fhir_total.category.coding = [coding]
-            else:
-                fhir_total.category.coding.append(coding)
-            fhir_total.category.text = "Valuated < Reinsured < Approved < Claimed"
-            fhir_total.amount.value = imis_claim.valuated
-            if hasattr(core, 'currency'):
-                fhir_total.amount.currency = core.currency
-            return fhir_total
-        else:
-            return None
+        if len(fhir_total) > 0:
+            fhir_claim_response.total = fhir_total
 
     @classmethod
-    def build_fhir_total_reinsured(cls, imis_claim):
-        if imis_claim.reinsured:
-            fhir_total = ClaimResponseTotal.construct()
-            money = Money.construct()
-            fhir_total.amount = money
-            fhir_total.category = CodeableConcept.construct()
-            coding = Coding.construct()
-            coding.code = "R"
-            coding.system = "http://terminology.hl7.org/CodeSystem/adjudication.html"
-            coding.display = "Reinsured"
-            if fhir_total.category.coding is not list:
-                fhir_total.category.coding = [coding]
-            else:
-                fhir_total.category.coding.append(coding)
-            fhir_total.category.text = "Valuated < Reinsured < Approved < Claimed"
-
-            fhir_total.amount.value = imis_claim.reinsured
-            if hasattr(core, 'currency'):
-                fhir_total.amount.currency = core.currency
-            return fhir_total
-        else:
-            return None
-
-    @classmethod
-    def build_fhir_total_approved(cls, imis_claim):
-        if imis_claim.approved:
-            fhir_total = ClaimResponseTotal.construct()
-            money = Money.construct()
-            fhir_total.amount = money
-            fhir_total.category = CodeableConcept.construct()
-            coding = Coding.construct()
-            coding.code = "benefit"
-            coding.system = "http://terminology.hl7.org/CodeSystem/adjudication.html"
-            coding.display = "Benefit Amount"
-            if fhir_total.category.coding is not list:
-                fhir_total.category.coding = [coding]
-            else:
-                fhir_total.category.coding.append(coding)
-            fhir_total.category.text = "Approved"
-
-            fhir_total.amount.value = imis_claim.approved
-            if hasattr(core, 'currency'):
-                fhir_total.amount.currency = core.currency
-
-            return fhir_total
-        else:
-            return None
-
-    @classmethod
-    def build_fhir_total_claimed(cls, imis_claim):
-        if imis_claim.claimed:
-            fhir_total = ClaimResponseTotal.construct()
-            money = Money.construct()
-            fhir_total.amount = money
-
-            fhir_total.category = CodeableConcept.construct()
-            coding = Coding.construct()
-            coding.code = "submitted"
-            coding.system = "http://terminology.hl7.org/CodeSystem/adjudication.html"
-            coding.display = "Submitted Amount"
-            if fhir_total.category.coding is not list:
-                fhir_total.category.coding = [coding]
-            else:
-                fhir_total.category.coding.append(coding)
-            fhir_total.category.text = "Claimed"
-
-            fhir_total.amount.value = imis_claim.claimed
-            if hasattr(core, 'currency'):
-                fhir_total.amount.currency = core.currency
-            return fhir_total
-        else:
-            return None
+    def build_fhir_total(cls, imis_claim, claim_status, total):
+        fhir_total = ClaimResponseTotal.construct()
+        money = Money.construct()
+        fhir_total.amount = money
+        fhir_total.category = cls.build_codeable_concept(
+            system=ClaimResponseMapping.claim_status_system,
+            code=claim_status,
+            display=ClaimResponseMapping.claim_status[f'{claim_status}']
+        )
+        fhir_total.amount.value = total
+        if hasattr(core, 'currency'):
+            fhir_total.amount.currency = core.currency
+        return fhir_total
 
     @classmethod
     def build_fhir_communication_request_reference(cls, fhir_claim_response, imis_claim, reference_type):
@@ -296,26 +221,30 @@ class ClaimResponseConverter(BaseFHIRConverter):
         fhir_claim_response["use"] = "claim"
 
     @classmethod
-    def build_fhir_insurer(cls, fhir_claim_response, imis_claim):
+    def build_fhir_insurer(cls, fhir_claim_response):
         fhir_claim_response.insurer = Reference.construct()
         fhir_claim_response.insurer.reference = "openIMIS"
 
     @classmethod
     def build_fhir_items(cls, fhir_claim_response, imis_claim, reference_type):
-        for claim_item in cls.generate_fhir_claim_items(imis_claim, reference_type):
-            type = claim_item.category.text
-            code = claim_item.productOrService.text
+        fhir_claim_response.item = []
+        cls.build_fhir_items_for_imis_items(fhir_claim_response, imis_claim, reference_type)
+        cls.build_fhir_items_for_imis_services(fhir_claim_response, imis_claim, reference_type)
 
-            if type == R4ClaimConfig.get_fhir_claim_item_code():
-                serviced = cls.get_imis_claim_item_by_code(code, imis_claim.id)
-            elif type == R4ClaimConfig.get_fhir_claim_service_code():
-                serviced = cls.get_imis_claim_service_by_code(code, imis_claim.id)
-            else:
-                raise FHIRRequestProcessException(['Could not assign category {} for claim_item: {}'
-                                                  .format(type, claim_item)])
+    @classmethod
+    def build_fhir_items_for_imis_services(cls, fhir_claim_response, imis_claim, reference_type):
+        for claim_service in imis_claim.services.filter(validity_to=None).all():
+            if claim_service:
+                item_type = R4ClaimConfig.get_fhir_claim_service_code()
+                cls.build_fhir_item(fhir_claim_response, claim_service, item_type, claim_service.rejection_reason, imis_claim, reference_type)
 
-            cls._build_response_items(fhir_claim_response, claim_item, serviced, type,
-                                      serviced.rejection_reason, imis_claim, reference_type)
+    @classmethod
+    def build_fhir_items_for_imis_items(cls, fhir_claim_response, imis_claim, reference_type):
+        for claim_item in imis_claim.items.filter(validity_to=None).all():
+            if claim_item:
+                item_type = R4ClaimConfig.get_fhir_claim_item_code()
+                cls.build_fhir_item(fhir_claim_response, claim_item, item_type, claim_item.rejection_reason, imis_claim, reference_type)
+
 
     @classmethod
     def build_imis_items(cls, imis_claim: Claim, fhir_claim_response: ClaimResponse):
@@ -330,17 +259,6 @@ class ClaimResponseConverter(BaseFHIRConverter):
                               type, rejected_reason, imis_claim, reference_type):
         cls.build_fhir_item(fhir_claim_response, claim_item, imis_service,
                             type, rejected_reason, imis_claim, reference_type)
-
-    @classmethod
-    def generate_fhir_claim_items(cls, imis_claim, reference_type):
-        # need to add this three obligatory field to avoid further validation errors
-        fhir_claim = {}
-        fhir_claim['created'] = imis_claim.date_claimed.isoformat()
-        ClaimConverter.build_fhir_status(fhir_claim)
-        ClaimConverter.build_fhir_use(fhir_claim)
-        claim = FHIRClaim(**fhir_claim)
-        ClaimConverter.build_fhir_items(claim, imis_claim, reference_type)
-        return claim.item
 
     @classmethod
     def get_imis_claim_item_by_code(cls, code, imis_claim_id):
@@ -388,9 +306,9 @@ class ClaimResponseConverter(BaseFHIRConverter):
         return result[0] if len(result) > 0 else None
 
     @classmethod
-    def build_fhir_item(cls, fhir_claim_response, claim_item, item, type, rejected_reason, imis_claim, reference_type):
+    def build_fhir_item(cls, fhir_claim_response, item, type, rejected_reason, imis_claim, reference_type):
         claim_response_item = ClaimResponseItem.construct()
-        claim_response_item.itemSequence = claim_item.sequence
+        claim_response_item.itemSequence = FhirUtils.get_next_array_sequential_id(fhir_claim_response.item)
 
         adjudication = cls.build_fhir_item_adjudication(item, rejected_reason, imis_claim)
         claim_response_item.adjudication = adjudication
@@ -414,10 +332,8 @@ class ClaimResponseConverter(BaseFHIRConverter):
         note = cls.build_process_note(fhir_claim_response, item.price_origin)
         if note:
             claim_response_item.noteNumber = [note.number]
-        if fhir_claim_response.item is not list:
-            fhir_claim_response.item = [claim_response_item]
-        else:
-            fhir_claim_response.item.append(claim_response_item)
+
+        fhir_claim_response.item.append(claim_response_item)
 
     @classmethod
     def build_serviced_extension(cls, serviced, service_type, reference_type):
@@ -426,7 +342,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         extension.valueReference = reference
         extension.url = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/claim-item-reference'
         extension.valueReference = MedicationConverter\
-            .build_fhir_resource_reference(serviced, service_type, reference_type=reference_type)
+            .build_fhir_resource_reference(serviced, service_type, reference_type=reference_type, display=serviced.code)
         return extension
 
     @classmethod
@@ -441,8 +357,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
     def __build_adjudication(cls, item, rejected_reason, amount, category, quantity, explicit_amount=False):
         adjudication = ClaimResponseItemAdjudication.construct()
         adjudication.reason = cls.build_fhir_adjudication_reason(item, rejected_reason)
-        if explicit_amount or (amount.value is not None and amount.value != 0.0):
-            adjudication.amount = amount
+        adjudication.amount = amount
         adjudication.category = category
         adjudication.value = quantity
         return adjudication
@@ -479,16 +394,23 @@ class ClaimResponseConverter(BaseFHIRConverter):
                 adjudications.append(build_asked_adjudication(Claim.STATUS_ENTERED, price_asked))
 
             if imis_claim.status >= Claim.STATUS_CHECKED:
-                price_approved = cls.__build_item_price(item.price_approved)
-                adjudications.append(build_processed_adjudication(Claim.STATUS_CHECKED, price_approved))
-
+                if item.price_approved:
+                    price_approved = cls.__build_item_price(item.price_approved)
+                    adjudications.append(build_processed_adjudication(Claim.STATUS_CHECKED, price_approved))
+                else:
+                    adjudications.append(build_processed_adjudication(Claim.STATUS_CHECKED, price_asked))
             if imis_claim.status >= Claim.STATUS_PROCESSED:
-                price_adjusted = cls.__build_item_price(item.price_adjusted)
-                adjudications.append(build_processed_adjudication(Claim.STATUS_PROCESSED, price_adjusted))
-
+                if item.price_adjusted:
+                    price_adjusted = cls.__build_item_price(item.price_adjusted)
+                    adjudications.append(build_processed_adjudication(Claim.STATUS_PROCESSED, price_adjusted))
+                else:
+                    adjudications.append(build_processed_adjudication(Claim.STATUS_PROCESSED, price_asked))
             if imis_claim.status == Claim.STATUS_VALUATED:
-                price_valuated = cls.__build_item_price(item.price_valuated)
-                adjudications.append(build_processed_adjudication(Claim.STATUS_VALUATED, price_valuated))
+                if item.price_valuated:
+                    price_valuated = cls.__build_item_price(item.price_valuated)
+                    adjudications.append(build_processed_adjudication(Claim.STATUS_VALUATED, price_valuated))
+                else:
+                    adjudications.append(build_processed_adjudication(Claim.STATUS_VALUATED, price_asked))
         else:
             adjudications.append(build_asked_adjudication(1, price_asked))
 
@@ -576,72 +498,3 @@ class ClaimResponseConverter(BaseFHIRConverter):
             requestor = fhir_claim_response.requestor
             _, claim_admin_uuid = requestor.reference.split("/")
             imis_claim.admin = ClaimAdmin.objects.get(uuid=claim_admin_uuid)
-
-    @classmethod
-    def build_fhir_billable_period(cls, fhir_claim_response, imis_claim):
-        extension = Extension.construct()
-        extension.url = "billablePeriod"
-        extension.valuePeriod = Period.construct()
-        if imis_claim.date_from:
-            extension.valuePeriod.start = imis_claim.date_from.isoformat()
-        if imis_claim.date_to:
-            extension.valuePeriod.end = imis_claim.date_to.isoformat()
-        if fhir_claim_response.extension is not list:
-            fhir_claim_response.extension = [extension]
-        else:
-            fhir_claim_response.extension.append(extension)
-
-    @classmethod
-    def build_imis_billable_period(cls, imis_claim, fhir_claim_response):
-        billable_period = next(filter(lambda x: x.url == 'billablePeriod', fhir_claim_response.extension))
-        iso_start_date = billable_period.valuePeriod.start
-        iso_end_date = billable_period.valuePeriod.end
-        if iso_start_date:
-            imis_claim.date_from = datetime.date.fromisoformat(iso_start_date)
-        if iso_end_date:
-            imis_claim.date_to = datetime.date.fromisoformat(iso_end_date)
-
-    @classmethod
-    def build_fhir_diagnoses(cls, fhir_claim_response, imis_claim, reference_type):
-        diagnoses = fhir_claim_response.extension
-        cls.build_fhir_diagnosis(diagnoses, imis_claim.icd, ImisClaimIcdTypes.ICD_0.value, reference_type)
-        if imis_claim.icd_1:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_1, ImisClaimIcdTypes.ICD_1.value, reference_type)
-        if imis_claim.icd_2:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_2, ImisClaimIcdTypes.ICD_2.value, reference_type)
-        if imis_claim.icd_3:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_3, ImisClaimIcdTypes.ICD_3.value, reference_type)
-        if imis_claim.icd_4:
-            cls.build_fhir_diagnosis(diagnoses, imis_claim.icd_4, ImisClaimIcdTypes.ICD_4.value, reference_type)
-
-    @classmethod
-    def build_imis_diagnoses(cls, imis_claim, fhir_claim_response):
-        def get_diagnosis_from_extension(icd_order):
-            return next(filter(lambda x: x.url == icd_order, fhir_claim_response.extension), None)
-
-        def get_diagnosis_by_code(ext_obj):
-            _, code = ext_obj.valueReference.reference.split("/")
-            return Diagnosis.objects.get(code=code, validity_to=None)
-
-        def assign_diagnosis_from_ext(fhir_icd: str, imis_icd_attr: str):
-            icd_ext = get_diagnosis_from_extension(fhir_icd)
-            diagnosis = get_diagnosis_by_code(icd_ext) if icd_ext else None
-            setattr(imis_claim, imis_icd_attr, diagnosis)
-
-        assign_diagnosis_from_ext(ImisClaimIcdTypes.ICD_0.value, 'icd')
-        assign_diagnosis_from_ext(ImisClaimIcdTypes.ICD_1.value, 'icd_1')
-        assign_diagnosis_from_ext(ImisClaimIcdTypes.ICD_2.value, 'icd_2')
-        assign_diagnosis_from_ext(ImisClaimIcdTypes.ICD_3.value, 'icd_3')
-        assign_diagnosis_from_ext(ImisClaimIcdTypes.ICD_4.value, 'icd_4')
-
-    @classmethod
-    def build_fhir_diagnosis(cls, diagnoses, icd_code, icd_type, reference_type):
-        extension = Extension.construct()
-        extension.url = icd_type
-        extension.valueReference = ConditionConverter\
-            .build_fhir_resource_reference(icd_code, reference_type=reference_type)
-
-        if type(diagnoses) is not list:
-            diagnoses = [extension]
-        else:
-            diagnoses.append(extension)
