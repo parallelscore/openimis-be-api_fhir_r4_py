@@ -34,7 +34,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         ClaimConverter.build_fhir_identifiers(fhir_claim_response, imis_claim)
         cls.build_fhir_items(fhir_claim_response, imis_claim, reference_type)
         cls.build_patient_reference(fhir_claim_response, imis_claim, reference_type)
-        cls.build_fhir_totals(fhir_claim_response, imis_claim)
+        cls.build_fhir_total_list(fhir_claim_response, imis_claim)
         cls.build_fhir_communication_request_reference(fhir_claim_response, imis_claim, reference_type)
         cls.build_fhir_type(fhir_claim_response, imis_claim)
         cls.build_fhir_insurer(fhir_claim_response)
@@ -108,7 +108,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
             .build_fhir_resource_reference(imis_claim.insuree, reference_type=reference_type)
 
     @classmethod
-    def build_fhir_totals(cls, fhir_claim_response, imis_claim):
+    def build_fhir_total_list(cls, fhir_claim_response, imis_claim):
         total_claimed = 0
         total_approved = 0
         total_adjusted = 0
