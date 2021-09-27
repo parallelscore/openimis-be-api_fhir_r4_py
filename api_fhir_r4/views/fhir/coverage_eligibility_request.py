@@ -5,13 +5,13 @@ from rest_framework.viewsets import GenericViewSet
 
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
 from api_fhir_r4.permissions import FHIRApiCoverageEligibilityRequestPermissions
-from api_fhir_r4.serializers import PolicyCoverageEligibilityRequestSerializer, CoverageEligibilityRequestSerializer
+from api_fhir_r4.serializers import PolicyCoverageEligibilityRequestSerializer
 from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
 
 
 class CoverageEligibilityRequestViewSet(BaseFHIRView, mixins.CreateModelMixin, GenericViewSet):
     queryset = Insuree.filter_queryset()
-    serializer_class = CoverageEligibilityRequestSerializer
+    serializer_class = PolicyCoverageEligibilityRequestSerializer
     permission_classes = (FHIRApiCoverageEligibilityRequestPermissions,)
 
     def get_queryset(self):
