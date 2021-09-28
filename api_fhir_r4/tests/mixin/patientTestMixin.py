@@ -174,7 +174,7 @@ class PatientTestMixin(GenericTestMixin):
         chf_id = PatientConverter.build_fhir_identifier(
             self._TEST_CHF_ID,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
-            R4IdentifierConfig.get_fhir_chfid_type_code()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
 
         identifiers.append(chf_id)
@@ -298,7 +298,7 @@ class PatientTestMixin(GenericTestMixin):
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = PatientConverter.get_first_coding_from_codeable_concept(identifier.type).code
-            if code == R4IdentifierConfig.get_fhir_chfid_type_code():
+            if code == R4IdentifierConfig.get_fhir_generic_type_code():
                 self.assertEqual(self._TEST_CHF_ID, identifier.value)
             elif code == R4IdentifierConfig.get_fhir_uuid_type_code() and not isinstance(identifier.value, UUID):
                 self.assertEqual(self._TEST_UUID, identifier.value)

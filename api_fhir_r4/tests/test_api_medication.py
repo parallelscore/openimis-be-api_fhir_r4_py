@@ -22,7 +22,7 @@ class MedicationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirAp
         self.assertTrue(isinstance(updated_obj, FHIRMedication))
         code = MedicationConverter.get_fhir_identifier_by_code(
             updated_obj.identifier,
-            R4IdentifierConfig.get_fhir_item_code_type()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
         self.assertEqual(self._TEST_EXPECTED_CODE, code)
 
@@ -31,7 +31,7 @@ class MedicationAPITests(GenericFhirAPITestMixin, FhirApiCreateTestMixin, FhirAp
 
     def update_payload_missing_code_identifier(self, data):
         for i in range(len(data["identifier"])):
-            if data["identifier"][i]["type"]["coding"][0]["code"] == "IC":
+            if data["identifier"][i]["type"]["coding"][0]["code"] == "Code":
                 del data["identifier"][i]
                 return data
 

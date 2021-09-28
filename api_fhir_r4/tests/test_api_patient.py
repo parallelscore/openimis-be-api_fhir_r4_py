@@ -88,19 +88,13 @@ class PatientAPITests(GenericFhirAPITestMixin, APITestCase):
 
     def update_payload_missing_chfid_identifier(self, data):
         for i in range(len(data["identifier"])):
-            if data["identifier"][i]["type"]["coding"][0]["code"] == "SB":
+            if data["identifier"][i]["type"]["coding"][0]["code"] == "Code":
                 del data["identifier"][i]
                 return data
 
     def update_payload_no_extensions(self, data):
         data["extension"] = []
         return data
-
-    def update_payload_missing_fhir_address_home_family(self, data):
-        for i in range(len(data["address"])):
-            if data["address"][i]['use'] == "home":
-                del data["address"][i]
-                return data
 
     def update_payload_missing_fhir_address_details(self, data, field, kind_of_address):
         for address in data["address"]:
@@ -123,10 +117,8 @@ class PatientAPITests(GenericFhirAPITestMixin, APITestCase):
                     address.pop("extension")
                     return data
 
-    def update_payload_fhir_address_temp(self, data):
-        for address in data["address"]:
-            if address["use"] == "home":
-                address["use"] = "temp"
+    def update_payload_fhir_no_address(self, data):
+        data["address"] = []
         return data
 
     def update_payload_fhir_address_no_photo(self, data):
@@ -195,17 +187,6 @@ class PatientAPITests(GenericFhirAPITestMixin, APITestCase):
             _("At least one extension with is_head is required")
         )
 
-    def test_post_should_raise_missing_fhir_address_home_family(self):
-        self.login()
-        self.create_dependencies()
-        modified_payload = self.update_payload_missing_fhir_address_home_family(data=self._test_request_data)
-        response = self.client.post(self.base_url, data=modified_payload, format='json')
-        response_json = response.json()
-        self.assertEqual(
-            response_json["issue"][0]["details"]["text"],
-            _('Patient without family address')
-        )
-
     def test_post_should_raise_missing_fhir_home_address_details(self):
         self.login()
         self.create_dependencies()
@@ -255,15 +236,15 @@ class PatientAPITests(GenericFhirAPITestMixin, APITestCase):
             _("Missing extensions for Address")
         )
 
-    def test_post_should_raise_error_no_family_address_slice(self):
+    def test_post_should_raise_error_no_address(self):
         self.login()
         self.create_dependencies()
-        modified_payload = self.update_payload_fhir_address_temp(data=self._test_request_data)
+        modified_payload = self.update_payload_fhir_no_address(data=self._test_request_data)
         response = self.client.post(self.base_url, data=modified_payload, format='json')
         response_json = response.json()
         self.assertEqual(
             response_json["issue"][0]["details"]["text"],
-            _('Patient without family address')
+            _('Address must be supported')
         )
 
     def test_post_should_raise_error_no_photo(self):

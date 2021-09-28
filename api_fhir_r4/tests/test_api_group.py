@@ -18,7 +18,7 @@ class GroupAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'Group/'
     _test_json_path = "/test/test_group.json"
-    _TEST_INSUREE_CHFID = "TestCfhId1"
+    _TEST_INSUREE_CHFID = "TestChfId1"
     _TEST_INSUREE_LAST_NAME = "Test"
     _TEST_INSUREE_OTHER_NAMES = "TestInsuree"
     _TEST_POVERTY_STATUS = True
@@ -90,12 +90,12 @@ class GroupAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase):
 
     def update_payload_no_such_chf_id(self, data):
         for member in data["member"]:
-            member["entity"]["identifier"]["value"] = self._TEST_INSUREE_CHFID_NOT_EXIST
+            member["entity"]["reference"] = f"Patient/{self._TEST_INSUREE_CHFID_NOT_EXIST}"
         return data
 
     def update_payload_remove_chf_id_from_it(self, data):
         for member in data["member"]:
-            member["entity"]["identifier"].pop("value")
+            member["entity"].pop("reference")
         return data
 
     def test_post_should_create_correctly(self):

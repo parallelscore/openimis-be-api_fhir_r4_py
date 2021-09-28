@@ -38,7 +38,7 @@ class ActivityDefinitionConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
-        return R4IdentifierConfig.get_fhir_service_code_type()
+        return R4IdentifierConfig.get_fhir_generic_type_code()
 
     @classmethod
     def to_imis_obj(cls, fhir_activity_definition, audit_user_id):

@@ -56,7 +56,7 @@ class MedicationTestMixin(GenericTestMixin):
         code = MedicationConverter.build_fhir_identifier(
             self._TEST_MEDICATION_CODE,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
-            R4IdentifierConfig.get_fhir_item_code_type()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
         identifiers = [code]
         fhir_medication.identifier = identifiers

@@ -75,13 +75,13 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_identifiers(cls, imis_product, fhir_insurance_plan):
         value = cls.get_fhir_identifier_by_code(fhir_insurance_plan.identifier,
-                                                R4IdentifierConfig.get_fhir_item_code_type())
+                                                R4IdentifierConfig.get_fhir_generic_type_code())
         cls._validate_fhir_insurance_plan_identifier_code(value)
         imis_product.code = value
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
-        return R4IdentifierConfig.get_fhir_item_code_type()
+        return R4IdentifierConfig.get_fhir_generic_type_code()
 
     @classmethod
     def build_fhir_name(cls, fhir_insurance_plan, imis_product):
