@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 
 from api_fhir_r4.configurations import R4ClaimConfig
 from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, PatientConverter, \
-    ConditionConverter, MedicationConverter, HealthcareServiceConverter, ClaimAdminPractitionerConverter, \
+    MedicationConverter, HealthFacilityOrganisationConverter, ClaimAdminPractitionerConverter, \
     ActivityDefinitionConverter, ReferenceConverterMixin as r
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from fhir.resources.fhirabstractmodel import FHIRAbstractModel
@@ -24,9 +24,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
 
     contained_resources = [
         ContainedResourceConverter('insuree', PatientConverter),
-        ContainedResourceConverter('icd', ConditionConverter),
-        *[ContainedResourceConverter('icd_{}'.format(n), ConditionConverter) for n in range(1, 5)],
-        ContainedResourceConverter('health_facility', HealthcareServiceConverter),
+        ContainedResourceConverter('health_facility', HealthFacilityOrganisationConverter),
         ContainedResourceConverter('admin', ClaimAdminPractitionerConverter),
         ContainedResourceConverter('items', MedicationConverter,
                                    lambda model, field: [
@@ -43,8 +41,7 @@ class ClaimSerializer(BaseFHIRSerializer, ContainedContentSerializerMixin):
     def fhir_object_reference_fields(self, fhir_obj: FHIRClaim) -> List[FHIRAbstractModel]:
         return [
             fhir_obj.patient,
-            *[diagnosis.diagnosisReference for diagnosis in fhir_obj.diagnosis],
-            fhir_obj.facility,
+            fhir_obj.provider,
             fhir_obj.enterer,
             *[item.extension[0].valueReference for item in fhir_obj.item]
         ]
