@@ -21,12 +21,12 @@ class GroupTestMixin(GenericTestMixin):
     _TEST_LAST_NAME = "TEST_LAST_NAME"
     _TEST_OTHER_NAME = "TEST_OTHER_NAME"
     _TEST_UUID = "0a60f36c-62eb-11ea-bb93-93ec0339a3dd"
-    _TEST_CHF_ID = "TestCfhId1"
+    _TEST_CHF_ID = "TestChfId1"
     _TEST_POVERTY_STATUS = False
     _TEST_FAMILY_TYPE = FamilyType.objects.get(code="H")
     _TEST_ADDRESS = "TEST_ADDRESS"
     _TEST_INSUREE_MOCKED_UUID = "7240daef-5f8f-4b0f-9042-b221e66f184a"
-    _TEST_INSUREE_MOCKED_CHFID = "TestCfhId1"
+    _TEST_INSUREE_MOCKED_CHFID = "TestChfId1"
     _TEST_FAMILY_MOCKED_UUID = "8e33033a-9f60-43ad-be3e-3bfeb992aae5"
     _TEST_LOCATION_MUNICIPALITY_UUID = "a82f54bf-d983-4963-a279-490312a96344"
     _TEST_LOCATION_CODE = "RTDTMTVT"
@@ -126,7 +126,7 @@ class GroupTestMixin(GenericTestMixin):
         chf_id = GroupConverter.build_fhir_identifier(
             self._TEST_CHF_ID,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
-            R4IdentifierConfig.get_fhir_chfid_type_code()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
 
         identifiers.append(chf_id)
@@ -145,7 +145,10 @@ class GroupTestMixin(GenericTestMixin):
 
         members = []
         member = GroupMember.construct()
-        member.entity = {"identifier": chf_id}
+        reference = Reference.construct()
+        reference.reference = f"Patient/{self._TEST_CHF_ID}"
+        reference.type = "Patient"
+        member.entity = reference
         members.append(member)
         fhir_family.member = members
 
@@ -198,7 +201,7 @@ class GroupTestMixin(GenericTestMixin):
         for identifier in fhir_obj.identifier:
             self.assertTrue(isinstance(identifier, Identifier))
             code = GroupConverter.get_first_coding_from_codeable_concept(identifier.type).code
-            if code == R4IdentifierConfig.get_fhir_chfid_type_code():
+            if code == R4IdentifierConfig.get_fhir_generic_type_code():
                 self.assertEqual(self._TEST_CHF_ID, identifier.value)
             elif code == R4IdentifierConfig.get_fhir_uuid_type_code() and not isinstance(identifier.value, UUID):
                 self.assertEqual(self._TEST_UUID, identifier.value)

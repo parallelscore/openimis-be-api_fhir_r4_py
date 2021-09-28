@@ -74,15 +74,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 members = None
                 cls.valid_condition(members is None, _('Missing member should not be empty'), errors)
             for member in members:
-                cls.build_imis_identifiers(imis_family, member.entity.identifier)
-      
-    @classmethod
-    def build_head(cls,identifier,lookup_code):
-        value = None
-        first_coding = cls.get_first_coding_from_codeable_concept(identifier.type)
-        if first_coding.system == R4IdentifierConfig.get_fhir_identifier_type_system() and first_coding.code == lookup_code:
-            value = identifier.value
-        return value
+                cls.build_imis_identifiers(imis_family, member.entity.reference)
         
     @classmethod
     def build_fhir_identifiers(cls, fhir_family, imis_family):
@@ -102,14 +94,14 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         head_id = cls.build_fhir_identifier(
             imis_family.head_insuree.chf_id,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
-            R4IdentifierConfig.get_fhir_chfid_type_code()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
         identifiers.append(head_id)
 
     @classmethod
-    def build_imis_identifiers(cls, imis_family, identifier):
-        value = cls.build_head(identifier, R4IdentifierConfig.get_fhir_chfid_type_code())
-        cls._validate_fhir_family_identifier_code(value)
+    def build_imis_identifiers(cls, imis_family, reference):
+        cls._validate_fhir_family_identifier_code(reference)
+        value = reference.split('/')[-1]
         try:
             imis_family.head_insuree = Insuree.objects.get(chf_id=value, validity_to__isnull=True)
         except:

@@ -66,7 +66,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
-        return R4IdentifierConfig.get_fhir_chfid_type_code()
+        return R4IdentifierConfig.get_fhir_generic_type_code()
 
     @classmethod
     def get_reference_obj_uuid(cls, imis_patient: Insuree):
@@ -177,12 +177,12 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def __build_chfid_identifier(cls, chfid):
         return cls.build_fhir_identifier(chfid,
                                          R4IdentifierConfig.get_fhir_identifier_type_system(),
-                                         R4IdentifierConfig.get_fhir_chfid_type_code())
+                                         R4IdentifierConfig.get_fhir_generic_type_code())
 
     @classmethod
     def build_imis_identifiers(cls, imis_insuree, fhir_patient):
         value = cls.get_fhir_identifier_by_code(fhir_patient.identifier,
-                                                R4IdentifierConfig.get_fhir_chfid_type_code())
+                                                R4IdentifierConfig.get_fhir_generic_type_code())
         if value:
             imis_insuree.chf_id = value
         value = cls.get_fhir_identifier_by_code(fhir_patient.identifier,
@@ -196,7 +196,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         identifier = cls.build_fhir_identifier(
             imis_insuree.chf_id,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
-            R4IdentifierConfig.get_fhir_chfid_type_code()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
         identifiers.append(identifier)
 
@@ -397,13 +397,11 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 else:
                     addresses.append(current_address)
         fhir_patient.address = addresses
-        cls._validate_fhir_family_home_slice(fhir_patient)
         cls._validate_fhir_address_details(fhir_patient.address)
 
     @classmethod
     def build_imis_addresses(cls, imis_insuree, fhir_patient):
         cls._validate_fhir_address(fhir_patient)
-        cls._validate_fhir_family_home_slice(fhir_patient)
         cls._validate_fhir_address_details(fhir_patient.address)
         addresses = fhir_patient.address
         for address in addresses:

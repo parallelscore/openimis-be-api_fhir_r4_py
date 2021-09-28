@@ -80,7 +80,7 @@ class InsurancePlanTestMixin(GenericTestMixin):
         code = InsurancePlanConverter.build_fhir_identifier(
             self._TEST_PRODUCT_CODE,
             R4IdentifierConfig.get_fhir_identifier_type_system(),
-            R4IdentifierConfig.get_fhir_item_code_type()
+            R4IdentifierConfig.get_fhir_generic_type_code()
         )
         identifiers = [code]
         fhir_insurance_plan.identifier = identifiers

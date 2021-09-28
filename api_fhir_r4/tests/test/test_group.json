@@ -50,11 +50,11 @@
             "coding":[
                {
                   "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
-                  "code":"SB"
+                  "code":"Code"
                }
             ]
          },
-         "value":"TestCfhId1"
+         "value":"TestChfId1"
       }
    ],
    "name":"TEST_LAST_NAME",
@@ -62,18 +62,8 @@
    "member":[
       {
          "entity":{
-            "identifier":{
-               "use":"usual",
-               "type":{
-                  "coding":[
-                     {
-                        "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
-                        "code":"SB"
-                     }
-                  ]
-               },
-               "value":"TestCfhId1"
-            }
+            "reference":"Patient/TestChfId1",
+            "type": "Patient"
          }
       }
    ]

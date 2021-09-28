@@ -97,7 +97,7 @@
          "type":{
             "coding":[
                {
-                  "code":"SB",
+                  "code":"Code",
                   "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers"
                }
             ]

@@ -49,7 +49,7 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def get_fhir_code_identifier_type(cls):
-        return R4IdentifierConfig.get_fhir_item_code_type()
+        return R4IdentifierConfig.get_fhir_generic_type_code()
 
     @classmethod
     def get_reference_obj_uuid(cls, imis_medication: Item):
@@ -201,7 +201,7 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_item_code(cls, imis_medication, fhir_medication, errors):
         item_code = cls.get_fhir_identifier_by_code(fhir_medication.identifier,
-                                                    R4IdentifierConfig.get_fhir_item_code_type())
+                                                    R4IdentifierConfig.get_fhir_generic_type_code())
         if not cls.valid_condition(item_code is None,
                                    gettext('Missing medication `item_code` attribute'), errors):
             imis_medication.code = item_code

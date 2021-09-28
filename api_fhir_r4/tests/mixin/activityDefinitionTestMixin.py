@@ -80,7 +80,7 @@ class ActivityDefinitionTestMixin(GenericTestMixin):
         sc_identifier = Identifier.construct()
         sc_identifier.type = CodeableConcept.construct()
         sc_coding = Coding.construct()
-        sc_coding.code = R4IdentifierConfig.get_fhir_service_code_type()
+        sc_coding.code = R4IdentifierConfig.get_fhir_generic_type_code()
         sc_coding.system = R4IdentifierConfig.get_fhir_identifier_type_system()
         sc_identifier.type.coding = [sc_coding]
         sc_identifier.value = self._TEST_SERVICE_CODE
@@ -207,7 +207,7 @@ class ActivityDefinitionTestMixin(GenericTestMixin):
         self.assertAlmostEqual(price_money.value, self._TEST_SERVICE_PRICE, places=2)
         self.assertGreater(len(fhir_obj.identifier), 0)
         self.verify_fhir_identifier(fhir_obj, R4IdentifierConfig.get_fhir_uuid_type_code(), self._TEST_SERVICE_UUID)
-        self.verify_fhir_identifier(fhir_obj, R4IdentifierConfig.get_fhir_service_code_type(), self._TEST_SERVICE_CODE)
+        self.verify_fhir_identifier(fhir_obj, R4IdentifierConfig.get_fhir_generic_type_code(), self._TEST_SERVICE_CODE)
         timing_repeat = fhir_obj.timingTiming.repeat
         self.assertEqual(timing_repeat.frequency, self._TEST_ACTIVITY_DEFINITION_TIMING_FREQUENCY)
         self.assertEqual(timing_repeat.periodUnit, self._TEST_ACTIVITY_DEFINITION_TIMING_UNIT)
