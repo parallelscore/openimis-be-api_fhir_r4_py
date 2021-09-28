@@ -4,7 +4,7 @@ from location.models import HealthFacility
 from claim.models import ClaimAdmin
 from fhir.resources.address import Address
 
-from api_fhir_r4.configurations import R4IdentifierConfig
+from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin, LocationConverter, PersonConverterMixin
 from fhir.resources.organization import Organization
 from fhir.resources.organization import OrganizationContact
@@ -167,7 +167,7 @@ class HealthFacilityOrganisationConverter(BaseFHIRConverter, PersonConverterMixi
     @classmethod
     def __legal_form_extension(cls):
         extension = Extension.construct()
-        extension.url = 'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/organization-legal-form'
+        extension.url = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/organization-legal-form'
         extension.valueCodeableConcept = cls.build_codeable_concept(
             code=HealthFacilityOrganizationTypeMapping.LEGAL_FORM_CODE,
             system=HealthFacilityOrganizationTypeMapping.LEGAL_FORM_SYSTEM,
@@ -187,7 +187,7 @@ class HealthFacilityOrganisationConverter(BaseFHIRConverter, PersonConverterMixi
             logger.warning(f'Failed to build level display for HF Level {level}.')
 
         extension = Extension.construct()
-        extension.url = 'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/organization-hf-level'
+        extension.url = f'{GeneralConfiguration.get_system_base_url()}/StructureDefinition/organization-hf-level'
         extension.valueCodeableConcept = cls.build_codeable_concept(
             code=level,
             system=HealthFacilityOrganizationTypeMapping.LEVEL_SYSTEM,

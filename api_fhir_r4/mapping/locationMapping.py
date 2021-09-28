@@ -1,10 +1,10 @@
-from api_fhir_r4.configurations import R4LocationConfig
+from api_fhir_r4.configurations import GeneralConfiguration, R4LocationConfig
 from api_fhir_r4.models.imisModelEnums import ImisLocationType
 
 
 class LocationTypeMapping:
-    SYSTEM = 'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/openimis-location'
-    PHYSICAL_TYPE_SYSTEM = 'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/location-type'
+    SYSTEM = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/openimis-location'
+    PHYSICAL_TYPE_SYSTEM = f'{GeneralConfiguration.get_system_base_url()}/CodeSystem/location-type'
 
     PHYSICAL_TYPES_DEFINITIONS = {
         ImisLocationType.REGION.value: {

@@ -1,3 +1,4 @@
+from api_fhir_r4.configurations import GeneralConfiguration
 from api_fhir_r4.models.imisModelEnums import ContactPointSystem
 
 
@@ -5,7 +6,7 @@ class HealthFacilityOrganizationTypeMapping:
     LEGAL_FORM_CODE = 'D'
     LEGAL_FORM_DISPLAY = 'District organization'
     LEGAL_FORM_SYSTEM = 'CodeSystem/organization-legal-form'
-    LEGAL_FORM_URL = 'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/organization-legal-form'
+    LEGAL_FORM_URL = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/organization-legal-form'
 
     ORGANIZATION_TYPE = 'prov'
 
@@ -14,7 +15,7 @@ class HealthFacilityOrganizationTypeMapping:
     FAX_CONTACT_POINT_SYSTEM = ContactPointSystem.FAX
 
     ADDRESS_LOCATION_REFERENCE_URL = \
-        'https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/address-location-reference'
+        f'{GeneralConfiguration.get_system_base_url()}/StructureDefinition/address-location-reference'
 
     CONTRACT_PURPOSE = {
         'code': 'PAYOR',
@@ -27,4 +28,4 @@ class HealthFacilityOrganizationTypeMapping:
         'H': 'Hospital'
     }
 
-    LEVEL_SYSTEM = 'https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/organization-hf-level'
+    LEVEL_SYSTEM = f'{GeneralConfiguration.get_system_base_url()}/CodeSystem/organization-hf-level'
