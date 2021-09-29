@@ -32,7 +32,6 @@ class CoverageEligibilityRequestConverterTestCase(CoverageEligibilityRequestTest
         self.verify_imis_instance(imis_coverage_eligibility_request)
 
     def test_create_object_from_json(self):
-        self.setUp()
         dict_coverage_eligibility_response = json.loads(self._test_coverage_eligibility_response_json_representation)
         fhir_coverage_eligibility_response = CoverageEligibilityResponse(**dict_coverage_eligibility_response)
         self.verify_fhir_instance(fhir_coverage_eligibility_response)
