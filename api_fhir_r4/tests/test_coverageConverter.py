@@ -16,13 +16,11 @@ class CoverageConverterTestCase(CoverageTestMixin):
         self._test_coverage_json_representation = open(dir_path + self.__TEST_COVERAGE_JSON_PATH).read()
 
     def test_to_fhir_obj(self):
-        self.setUp()
         imis_policy = self.create_test_imis_instance()
         fhir_coverage = CoverageConverter.to_fhir_obj(imis_policy)
         self.verify_fhir_instance(fhir_coverage)
 
     def test_create_object_from_json(self):
-        self.setUp()
         dict_coverage = json.loads(self._test_coverage_json_representation)
         fhir_coverage = Coverage(**dict_coverage)
         self.verify_fhir_instance(fhir_coverage)
