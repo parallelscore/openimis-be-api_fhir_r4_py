@@ -1,9 +1,9 @@
-"""
-from coverage.annotate import os
+import json
+import os
 
 from api_fhir_r4.converters import CoverageEligibilityRequestConverter
-from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.tests import CoverageEligibilityRequestTestMixin
+from fhir.resources.coverageeligibilityresponse import CoverageEligibilityResponse
 
 
 class CoverageEligibilityRequestConverterTestCase(CoverageEligibilityRequestTestMixin):
@@ -28,11 +28,11 @@ class CoverageEligibilityRequestConverterTestCase(CoverageEligibilityRequestTest
 
     def test_to_imis_obj(self):
         fhir_coverage_eligibility_request = self.create_test_fhir_instance()
-        imis_coverage_eligibility_request = CoverageEligibilityRequestConverter.to_imis_obj(fhir_coverage_eligibility_request, None)
+        imis_coverage_eligibility_request = CoverageEligibilityRequestConverter.to_imis_obj(fhir_coverage_eligibility_request.dict(), None)
         self.verify_imis_instance(imis_coverage_eligibility_request)
 
     def test_create_object_from_json(self):
         self.setUp()
-        fhir_coverage_eligibility_response = FHIRAbstractModel(**dict(self._test_coverage_eligibility_response_json_representation))
+        dict_coverage_eligibility_response = json.loads(self._test_coverage_eligibility_response_json_representation)
+        fhir_coverage_eligibility_response = CoverageEligibilityResponse(**dict_coverage_eligibility_response)
         self.verify_fhir_instance(fhir_coverage_eligibility_response)
-"""

@@ -1,4 +1,5 @@
 from policy.services import EligibilityRequest
+from insuree.models import Insuree
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
 from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter, ReferenceConverterMixin
 from fhir.resources.money import Money
@@ -37,9 +38,6 @@ class CoverageEligibilityRequestConverter(BaseFHIRConverter):
 
     @classmethod
     def to_imis_obj(cls, fhir_coverage_eligibility_request, audit_user_id):
-        fhir_coverage_eligibility_request["status"] = "active"
-        fhir_coverage_eligibility_request["purpose"] = ["benefits"]
-        fhir_coverage_eligibility_request["created"] = TimeUtils.date().isoformat()
         fhir_coverage_eligibility_request = FHIRCoverageEligibilityRequest(**fhir_coverage_eligibility_request)
         chf_id = cls.build_imis_chf(fhir_coverage_eligibility_request)
         item_code, service_code = cls.build_imis_item_service(fhir_coverage_eligibility_request)
@@ -147,18 +145,18 @@ class CoverageEligibilityRequestConverter(BaseFHIRConverter):
         item_code = None
         if fhir_coverage_eligibility_request.item:
             for item in fhir_coverage_eligibility_request.item:
-                type_service = cls.__get_code_from_codeable_concept_by_coding_code(item.category,Config.get_fhir_item_code())
+                type_service = cls.__get_code_from_codeable_concept_by_coding_code(item.category)
                 if type_service == 'item':
                     item_code = item.productOrService.text
-                if type_service == 'code':
+                if type_service == 'service':
                     service_code = item.productOrService.text
         return item_code, service_code
 
     @classmethod
-    def __get_code_from_codeable_concept_by_coding_code(cls, codeable_concept, coding_code):
+    def __get_code_from_codeable_concept_by_coding_code(cls, codeable_concept):
         service_code = None
         if codeable_concept:
             coding = cls.get_first_coding_from_codeable_concept(codeable_concept)
-            if coding and coding.code == coding_code:
+            if coding:
                 service_code = coding.code
         return service_code

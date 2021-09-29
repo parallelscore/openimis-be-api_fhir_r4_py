@@ -6,6 +6,7 @@ from api_fhir_r4.tests.mixin.claimAdminPractitionerTestMixin import ClaimAdminPr
 from api_fhir_r4.tests.mixin.claimAdminPractitionerRoleTestMixin import ClaimAdminPractitionerRoleTestMixin
 from api_fhir_r4.tests.mixin.claimTestMixin import ClaimTestMixin
 from api_fhir_r4.tests.mixin.claimResponseTestMixin import ClaimResponseTestMixin
+from api_fhir_r4.tests.mixin.activityDefinitionTestMixin import ActivityDefinitionTestMixin
 from api_fhir_r4.tests.mixin.coverageEligibilityRequestTestMixin import CoverageEligibilityRequestTestMixin
 from api_fhir_r4.tests.mixin.communicationRequestTestMixin import CommunicationRequestTestMixin
 from api_fhir_r4.tests.mixin.genericFhirAPITestMixin import GenericFhirAPITestMixin
