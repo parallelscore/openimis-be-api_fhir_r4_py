@@ -5,7 +5,7 @@ from policy.test_helpers import create_test_policy
 from insuree.models import InsureePolicy
 
 from api_fhir_r4.configurations import R4IdentifierConfig
-from api_fhir_r4.converters import ContractConverter
+from api_fhir_r4.converters.coverageConverter import CoverageConverter
 from api_fhir_r4.tests import GenericTestMixin
 
 from api_fhir_r4.utils import TimeUtils
@@ -92,7 +92,7 @@ class CoverageTestMixin(GenericTestMixin):
 
     def verify_fhir_instance(self, fhir_obj):
         for identifier in fhir_obj.identifier:
-            code = ContractConverter.get_first_coding_from_codeable_concept(identifier.type).code
+            code = CoverageConverter.get_first_coding_from_codeable_concept(identifier.type).code
             if code == R4IdentifierConfig.get_fhir_uuid_type_code():
                 self.assertEqual(self._TEST_POLICY_UUID, identifier.value)
         self.assertIn(f"Patient/{self._TEST_INSUREE_CHF_ID}", fhir_obj.policyHolder.reference)
