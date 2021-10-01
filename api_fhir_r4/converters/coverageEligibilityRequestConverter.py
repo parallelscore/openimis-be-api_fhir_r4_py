@@ -1,6 +1,7 @@
 from policy.services import EligibilityRequest
+from insuree.models import Insuree
 from api_fhir_r4.configurations import R4CoverageEligibilityConfiguration as Config
-from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter
+from api_fhir_r4.converters import BaseFHIRConverter, PatientConverter, ReferenceConverterMixin
 from fhir.resources.money import Money
 from fhir.resources.coverageeligibilityresponse import CoverageEligibilityResponse as FHIRCoverageEligibilityResponse, \
     CoverageEligibilityResponseInsuranceItem, CoverageEligibilityResponseInsurance, CoverageEligibilityResponseInsuranceItemBenefit
@@ -11,20 +12,35 @@ from api_fhir_r4.utils import TimeUtils
 class CoverageEligibilityRequestConverter(BaseFHIRConverter):
 
     @classmethod
-    def to_fhir_obj(cls, coverage_eligibility_response):
-        fhir_response = FHIRCoverageEligibilityResponse.construct()
+    def to_fhir_obj(cls, coverage_eligibility_response, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+        # TODO update this entities after finishing profile for Response
+        fhir_eligibility_response = {}
+        fhir_eligibility_response["status"] = 'active'
+        fhir_eligibility_response["outcome"] = 'complete'
+
+        reference_insurer = {}
+        reference_insurer["reference"] = 'openIMIS'
+        fhir_eligibility_response["insurer"] = reference_insurer
+
+        reference_patient = {}
+        reference_patient["reference"] = f'Patient/{coverage_eligibility_response.eligibility_request.chf_id}'
+        fhir_eligibility_response['patient'] = reference_patient
+
+        reference_coverage_eligibility_request = {}
+        reference_coverage_eligibility_request["reference"] = f'CoverageEligibilityRequest'
+        fhir_eligibility_response['request'] = reference_coverage_eligibility_request
+
+        fhir_eligibility_response["purpose"] = ["benefits"]
+        fhir_eligibility_response["created"] = TimeUtils.date().isoformat()
+        fhir_response = FHIRCoverageEligibilityResponse(**fhir_eligibility_response)
         cls.build_fhir_insurance(fhir_response, coverage_eligibility_response)
         return fhir_response
 
     @classmethod
     def to_imis_obj(cls, fhir_coverage_eligibility_request, audit_user_id):
-        fhir_coverage_eligibility_request["status"] = "active"
-        fhir_coverage_eligibility_request["purpose"] = ["validation"]
-        fhir_coverage_eligibility_request["created"] = TimeUtils.date().isoformat()
         fhir_coverage_eligibility_request = FHIRCoverageEligibilityRequest(**fhir_coverage_eligibility_request)
-        chf_id = cls.build_imis_uuid(fhir_coverage_eligibility_request)
-        service_code = cls.build_imis_service_code(fhir_coverage_eligibility_request)
-        item_code = cls.build_imis_item_code(fhir_coverage_eligibility_request)
+        chf_id = cls.build_imis_chf(fhir_coverage_eligibility_request)
+        item_code, service_code = cls.build_imis_item_service(fhir_coverage_eligibility_request)
         return EligibilityRequest(chf_id, service_code, item_code)
 
     @classmethod
@@ -116,28 +132,31 @@ class CoverageEligibilityRequestConverter(BaseFHIRConverter):
         return benefit
 
     @classmethod
-    def build_imis_uuid(cls, fhir_coverage_eligibility_request):
-        uuid = None
+    def build_imis_chf(cls, fhir_coverage_eligibility_request):
+        chf_id = None
         patient_reference = fhir_coverage_eligibility_request.patient
         if patient_reference:
-            uuid = PatientConverter.get_resource_id_from_reference(patient_reference)
-        return uuid
+            chf_id = PatientConverter.get_resource_id_from_reference(patient_reference)
+        return chf_id
 
     @classmethod
-    def build_imis_service_code(cls, fhir_coverage_eligibility_request):
-        return cls.get_text_from_codeable_concept_by_coding_code(fhir_coverage_eligibility_request.item[0].category,
-                                                                 Config.get_fhir_service_code())
+    def build_imis_item_service(cls, fhir_coverage_eligibility_request):
+        service_code = None
+        item_code = None
+        if fhir_coverage_eligibility_request.item:
+            for item in fhir_coverage_eligibility_request.item:
+                type_service = cls.__get_code_from_codeable_concept_by_coding_code(item.category)
+                if type_service == 'item':
+                    item_code = item.productOrService.text
+                if type_service == 'service':
+                    service_code = item.productOrService.text
+        return item_code, service_code
 
     @classmethod
-    def build_imis_item_code(cls, fhir_coverage_eligibility_request):
-        return cls.get_text_from_codeable_concept_by_coding_code(fhir_coverage_eligibility_request.item[0].productOrService,
-                                                                 Config.get_fhir_item_code())
-
-    @classmethod
-    def get_text_from_codeable_concept_by_coding_code(cls, codeable_concept, coding_code):
+    def __get_code_from_codeable_concept_by_coding_code(cls, codeable_concept):
         service_code = None
         if codeable_concept:
             coding = cls.get_first_coding_from_codeable_concept(codeable_concept)
-            if coding and coding.code == coding_code:
-                service_code = codeable_concept.text
+            if coding:
+                service_code = coding.code
         return service_code
