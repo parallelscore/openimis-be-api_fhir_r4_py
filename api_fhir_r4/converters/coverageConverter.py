@@ -92,7 +92,7 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if policy_holder_contract:
             # formal sector
             resource_id = policy_holder_contract.id
-            resource_type = 'Organization'
+            resource_type = 'Organisation'
         else:
             # informal sector
             resource_id = imis_policy.family.head_insuree.chf_id
