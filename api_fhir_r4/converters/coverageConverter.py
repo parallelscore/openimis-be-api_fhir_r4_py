@@ -1,6 +1,7 @@
 from django.utils.translation import gettext as _
 from api_fhir_r4.configurations import GeneralConfiguration, R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.mapping.coverageMapping import CoverageStatus
 from api_fhir_r4.models import CoverageV2 as Coverage, CoverageClassV2 as CoverageClass
 from fhir.resources.period import Period
 from fhir.resources.extension import Extension
@@ -117,7 +118,7 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_coverage_status(cls, fhir_coverage, imis_policy):
         code = imis_policy.status
-        fhir_coverage.status = cls.__map_status(code)
+        fhir_coverage.status = CoverageStatus.map_status(code)
         return fhir_coverage
 
     @classmethod
@@ -135,17 +136,6 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
         )
 
         fhir_coverage.class_fhir.append(coverage_class)
-
-    @classmethod
-    def __map_status(cls, code):
-        codes = {
-            1: R4CoverageConfig.get_status_idle_code(),
-            2: R4CoverageConfig.get_status_active_code(),
-            4: R4CoverageConfig.get_status_suspended_code(),
-            8: R4CoverageConfig.get_status_expired_code(),
-            None: R4CoverageConfig.get_status_idle_code(),
-        }
-        return codes[code]
 
     @classmethod
     def build_coverage_extension(cls, fhir_coverage, imis_coverage):
