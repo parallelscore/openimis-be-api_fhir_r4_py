@@ -5,7 +5,6 @@ from api_fhir_r4.models import CoverageV2 as Coverage, CoverageClassV2 as Covera
 from fhir.resources.period import Period
 from fhir.resources.extension import Extension
 from fhir.resources.reference import Reference
-from insuree.models import InsureePolicy
 from policy.signals import signal_check_formal_sector_for_policy
 from product.models import ProductItem, ProductService
 from policy.models import Policy
