@@ -2,10 +2,11 @@ from django.utils.translation import gettext as _
 from api_fhir_r4.configurations import GeneralConfiguration, R4CoverageConfig
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.models import CoverageV2 as Coverage, CoverageClassV2 as CoverageClass
-from fhir.resources.money import Money
 from fhir.resources.period import Period
 from fhir.resources.extension import Extension
 from fhir.resources.reference import Reference
+from insuree.models import InsureePolicy
+from policy.signals import signal_check_formal_sector_for_policy
 from product.models import ProductItem, ProductService
 from policy.models import Policy
 from api_fhir_r4.utils import TimeUtils
@@ -80,11 +81,27 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_coverage_payor(cls, fhir_coverage, imis_policy):
-        # TODO consider formal sector
+        policy_holder_contract = None
+        # send the signal from insuree module - check if policy is connected to
+        # formal sector contract entity
+        results_signal_policy_fs = signal_check_formal_sector_for_policy.send(
+             sender=cls, policy_id=imis_policy.id
+        )
+        if len(results_signal_policy_fs) > 0:
+            if results_signal_policy_fs[0][1]:
+                policy_holder_contract = results_signal_policy_fs[0][1]
+        if policy_holder_contract:
+            # formal sector
+            resource_id = policy_holder_contract.id
+            resource_type = 'Organization'
+        else:
+            # informal sector
+            resource_id = imis_policy.family.head_insuree.chf_id
+            resource_type = 'Patient'
+
         fhir_coverage.payor = []
         reference = Reference.construct()
-        resource_id = imis_policy.family.head_insuree.chf_id
-        reference.reference = "Patient/" + str(resource_id)
+        reference.reference = f'{resource_type}/{resource_id}'
         fhir_coverage.payor.append(reference)
         return fhir_coverage
 
@@ -127,6 +144,7 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
             2: R4CoverageConfig.get_status_active_code(),
             4: R4CoverageConfig.get_status_suspended_code(),
             8: R4CoverageConfig.get_status_expired_code(),
+            None: R4CoverageConfig.get_status_idle_code(),
         }
         return codes[code]
 
