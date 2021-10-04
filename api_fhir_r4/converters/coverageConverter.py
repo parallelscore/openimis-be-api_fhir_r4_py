@@ -81,7 +81,7 @@ class CoverageConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_coverage_payor(cls, fhir_coverage, imis_policy):
         policy_holder_contract = None
-        # send the signal from insuree module - check if policy is connected to
+        # send the signal from policy module - check if policy is connected to
         # formal sector contract entity
         results_signal_policy_fs = signal_check_formal_sector_for_policy.send(
              sender=cls, policy_id=imis_policy.id
