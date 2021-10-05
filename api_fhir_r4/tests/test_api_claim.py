@@ -184,3 +184,18 @@ class ClaimAPITests(GenericFhirAPITestMixin, APITestCase):
                 self.assertEqual(adjudication["reason"]["coding"][0]["code"], '2')
 
         self.assertEqual(response_json["resourceType"], "ClaimResponse")
+
+    def test_get_should_return_200_claim_response(self):
+        # test if get ClaimResponse return 200
+        response = self.client.post(
+            GeneralConfiguration.get_base_url() + 'login/', data=self._test_request_data_credentials, format='json'
+        )
+        response_json = response.json()
+        token = response_json["token"]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        headers = {
+            "Content-Type": "application/json",
+            "HTTP_AUTHORIZATION": f"Bearer {token}"
+        }
+        response = self.client.get(GeneralConfiguration.get_base_url() + 'ClaimResponse/', data=None, format='json', **headers)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
