@@ -38,7 +38,7 @@ class R4IdentifierConfig(IdentifierConfiguration):
 
     @classmethod
     def get_fhir_claim_code_type(cls):
-        return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_claim_code_type', "MR")
+        return cls.get_config_attribute("R4_fhir_identifier_type_config").get('fhir_code_for_imis_claim_code_type', "Code")
 
     @classmethod
     def get_fhir_uuid_type_code(cls):
