@@ -1,4 +1,4 @@
-import datetime
+from core import datetime
 
 from insuree.test_helpers import create_test_insuree
 from location.models import HealthFacility

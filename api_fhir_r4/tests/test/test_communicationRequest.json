@@ -1,62 +1,144 @@
 {
    "resourceType":"CommunicationRequest",
-   "id":"612a1e12-ce44-4632-90a8-129ec714ec59",
-   "identifier":[
-      {
+   "status":"active",
+   "statusReason":{
+      "coding":[
+         {
+            "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/feedback-status",
+            "code":"4",
+            "display":"Selected"
+         }
+      ]
+   },
+   "subject":{
+      "reference":"Patient/76aca309-f8cf-4890-8f2e-b416d78de00b",
+      "type":"Patient",
+      "identifier":{
          "type":{
             "coding":[
                {
-                  "code":"ACSN",
-                  "system":"https://hl7.org/fhir/valueset-identifier-type.html"
+                  "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
+                  "code":"UUID"
                }
             ]
          },
-         "use":"usual",
-         "value":"612a1e12-ce44-4632-90a8-129ec714ec59"
+         "value":"76aca309-f8cf-4890-8f2e-b416d78de00b"
+      }
+   },
+   "about":[
+      {
+         "reference":"Claim/7ac646cb-d3cd-4660-baeb-ee34ecf0354e",
+         "type":"Claim",
+         "identifier":{
+            "type":{
+               "coding":[
+                  {
+                     "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
+                     "code":"UUID"
+                  }
+               ]
+            },
+            "value":"7ac646cb-d3cd-4660-baeb-ee34ecf0354e"
+         }
       }
    ],
-   "status":"active",
-   "occurrenceDateTime":"2010-11-16T00:00:00",
-   "reasonCode":[
+   "payload":[
       {
-         "coding":[
+         "extension":[
             {
-               "code":"care_rendered"
+               "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/communication-payload-type",
+               "valueCodeableConcept":{
+                  "coding":[
+                     {
+                        "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/feedback-payload",
+                        "code":"care_rendered"
+                     }
+                  ]
+               }
             }
          ],
-         "text":"True"
+         "contentString":"Care Rendered? (yes|no)"
       },
       {
-         "coding":[
+         "extension":[
             {
-               "code":"payment_asked"
+               "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/communication-payload-type",
+               "valueCodeableConcept":{
+                  "coding":[
+                     {
+                        "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/feedback-payload",
+                        "code":"payment_asked"
+                     }
+                  ]
+               }
             }
          ],
-         "text":"False"
+         "contentString":"Payment Asked? (yes|no)"
       },
       {
-         "coding":[
+         "extension":[
             {
-               "code":"drug_prescribed"
+               "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/communication-payload-type",
+               "valueCodeableConcept":{
+                  "coding":[
+                     {
+                        "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/feedback-payload",
+                        "code":"drug_prescribed"
+                     }
+                  ]
+               }
             }
          ],
-         "text":"True"
+         "contentString":"Drug Prescribed? (yes|no)"
       },
       {
-         "coding":[
+         "extension":[
             {
-               "code":"drug_received"
+               "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/communication-payload-type",
+               "valueCodeableConcept":{
+                  "coding":[
+                     {
+                        "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/feedback-payload",
+                        "code":"drug_received"
+                     }
+                  ]
+               }
             }
          ],
-         "text":"False"
+         "contentString":"Drug Received? (yes|no)"
       },
       {
-         "coding":[
+         "extension":[
             {
-               "code":"asessment"
+               "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/communication-payload-type",
+               "valueCodeableConcept":{
+                  "coding":[
+                     {
+                        "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/feedback-payload",
+                        "code":"asessment"
+                     }
+                  ]
+               }
             }
          ],
-         "text":"2"
+         "contentString":"Asessment? (0|1|2|3|4|5)"
+      }
+   ],
+   "recipient":[
+      {
+         "reference":"Practitioner/044c33d1-dbf3-4d6a-9924-3797b461e535",
+         "type":"Practitioner",
+         "identifier":{
+            "type":{
+               "coding":[
+                  {
+                     "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
+                     "code":"UUID"
+                  }
+               ]
+            },
+            "value":"044c33d1-dbf3-4d6a-9924-3797b461e535"
+         }
       }
    ]
 }

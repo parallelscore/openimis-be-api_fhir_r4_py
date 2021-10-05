@@ -19,12 +19,11 @@ class CommunicationRequestConverterTestCase(CommunicationRequestTestMixin):
             self._test_communication_request_json_representation = self._test_communication_request_json_representation[:-1]
 
     def test_to_fhir_obj(self):
-        imis_feedback = self.create_test_imis_instance()
-        fhir_communication_request = CommunicationRequestConverter.to_fhir_obj(imis_feedback)
+        imis_claim = self.create_test_imis_instance()
+        fhir_communication_request = CommunicationRequestConverter.to_fhir_obj(imis_claim)
         self.verify_fhir_instance(fhir_communication_request)
 
     def test_fhir_object_to_json_request(self):
-        self.setUp()
         dict_communication_request = json.loads(self._test_communication_request_json_representation)
         fhir_communication_request = CommunicationRequest(**dict_communication_request)
         self.verify_fhir_instance(fhir_communication_request)
