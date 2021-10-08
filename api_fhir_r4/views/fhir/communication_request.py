@@ -1,4 +1,4 @@
-from claim.models import Feedback
+from claim.models import Claim
 
 from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
@@ -16,4 +16,6 @@ class CommunicationRequestViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, m
     permission_classes = (FHIRApiCommunicationRequestPermissions,)
 
     def get_queryset(self):
-        return Feedback.get_queryset(None, self.request.user)
+        return Claim.get_queryset(None, self.request.user).filter(feedback_status__in=[
+            Claim.FEEDBACK_SELECTED, Claim.FEEDBACK_DELIVERED, Claim.FEEDBACK_BYPASSED
+        ])
