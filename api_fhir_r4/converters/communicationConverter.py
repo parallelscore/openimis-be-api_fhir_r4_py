@@ -3,6 +3,7 @@ from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.utils import DbManagerUtils
 from claim.models import Claim, Feedback
+from insuree.models import Insuree
 from django.utils.translation import gettext as _
 from fhir.resources.communication import Communication, CommunicationPayload
 from fhir.resources.extension import Extension
@@ -119,11 +120,15 @@ class CommunicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
         )
         fhir_communication.about.append(reference)
 
-
     @classmethod
     def build_imis_about(cls, imis_feedback, fhir_communication, errors):
         claim_uuid = cls.__get_claim_reference(fhir_communication.about[0].reference)
-        imis_feedback.claim = Claim.objects.get(uuid=claim_uuid, validity_to__isnull=True)
+        try:
+            imis_feedback.claim = Claim.objects.get(uuid=claim_uuid, validity_to__isnull=True)
+        except Exception:
+            raise FHIRException(
+                _('Claim does not exist')
+            )
 
     @classmethod
     def __get_claim_reference(cls, claim):
@@ -212,6 +217,12 @@ class CommunicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
             raise FHIRException(
                 _('subject is required')
             )
+        else:
+            patient_uuid = fhir_communication.subject.reference.rsplit('/', 1)[1]
+            if Insuree.objects.filter(uuid=patient_uuid, validity_to__isnull=True).count() == 0:
+                raise FHIRException(
+                    _('Patient does not exist')
+                )
 
     @classmethod
     def _validate_fhir_status(cls, fhir_communication):
