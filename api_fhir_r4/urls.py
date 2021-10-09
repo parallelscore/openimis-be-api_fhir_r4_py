@@ -75,7 +75,10 @@ if 'claim' in imis_modules:
     router.register(r'ClaimResponse', fhir_viewsets.ClaimResponseViewSet, basename="ClaimResponse_R4")
     router.register(r'PractitionerRole', fhir_viewsets.PractitionerRoleViewSet, basename="PractitionerRole_R4")
     router.register(r'Practitioner', fhir_viewsets.PractitionerViewSet, basename="Practitioner_R4")
-    router.register(r'CommunicationRequest', fhir_viewsets.CommunicationRequestViewSet, basename="CommunicationRequest_R4")
+    router.register(r'CommunicationRequest', fhir_viewsets.CommunicationRequestViewSet,
+                    basename="CommunicationRequest_R4")
+    router.register(r'Communication', fhir_viewsets.CommunicationViewSet,
+                    basename="Communication_R4")
     # code system for openimis medication
     router.register(r'CodeSystem/diagnosis', fhir_viewsets.CodeSystemOpenIMISDiagnosisViewSet,
                     basename="CodeSystem/diagnosis_R4")
