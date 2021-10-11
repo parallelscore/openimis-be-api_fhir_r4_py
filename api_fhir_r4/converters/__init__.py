@@ -174,6 +174,10 @@ class BaseFHIRConverter(ABC):
         return next(iter([extension for extension in extensions if extension.url == url]), None)
 
     @classmethod
+    def get_code_from_extension_codeable_concept(cls, extension):
+        return extension.valueCodeableConcept.coding[0].code
+
+    @classmethod
     def get_use_context_by_code(cls, use_context, code):
         return next(iter([entry for entry in use_context if entry.code.code == code]), None)
 
@@ -265,3 +269,4 @@ from api_fhir_r4.converters.codeSystemConverter import CodeSystemConverter
 from api_fhir_r4.converters.healthFacilityOrganisationConverter import HealthFacilityOrganisationConverter
 from api_fhir_r4.converters.enrolmentOfficerPractitionerConverter import EnrolmentOfficerPractitionerConverter
 from api_fhir_r4.converters.enrolmentOfficerPractitionerRoleConverter import EnrolmentOfficerPractitionerRoleConverter
+from api_fhir_r4.converters.communicationConverter import CommunicationConverter

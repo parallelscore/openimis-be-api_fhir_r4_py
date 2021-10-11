@@ -112,11 +112,11 @@ DEFAULT_CFG = {
         "fhir_active_policy_status": ("A", 2)
     },
     "R4_fhir_communication_request_config": {
-        "fhir_care_rendered_code": "care_rendered",
-        "fhir_payment_asked_code": "payment_asked",
-        "fhir_drug_prescribed_code": "drug_prescribed",
-        "fhir_drug_received_code": "drug_received",
-        "fhir_asessment_code": "asessment"
+        "fhir_care_rendered_code": "CareRendered",
+        "fhir_payment_asked_code": "PaymentAsked",
+        "fhir_drug_prescribed_code": "DrugPrescribed",
+        "fhir_drug_received_code": "DrugReceived",
+        "fhir_asessment_code": "Asessment"
     },
     "R4_fhir_contract_config": {
         "fhir_contract_eo_signer_type": "EnrolmentOfficer",

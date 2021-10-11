@@ -9,6 +9,7 @@ from api_fhir_r4.tests.mixin.claimResponseTestMixin import ClaimResponseTestMixi
 from api_fhir_r4.tests.mixin.activityDefinitionTestMixin import ActivityDefinitionTestMixin
 from api_fhir_r4.tests.mixin.coverageEligibilityRequestTestMixin import CoverageEligibilityRequestTestMixin
 from api_fhir_r4.tests.mixin.communicationRequestTestMixin import CommunicationRequestTestMixin
+from api_fhir_r4.tests.mixin.communicationTestMixin import CommunicationTestMixin
 from api_fhir_r4.tests.mixin.genericFhirAPITestMixin import GenericFhirAPITestMixin
 from api_fhir_r4.tests.mixin.fhirApiReadTestMixin import FhirApiReadTestMixin
 from api_fhir_r4.tests.mixin.fhirApiCreateTestMixin import FhirApiCreateTestMixin

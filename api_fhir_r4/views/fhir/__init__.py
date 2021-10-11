@@ -1,6 +1,7 @@
 from api_fhir_r4.views.fhir.activity_definition import ActivityDefinitionViewSet
 from api_fhir_r4.views.fhir.claim import ClaimViewSet
 from api_fhir_r4.views.fhir.claim_response import ClaimResponseViewSet
+from api_fhir_r4.views.fhir.communication import CommunicationViewSet
 from api_fhir_r4.views.fhir.communication_request import CommunicationRequestViewSet
 from api_fhir_r4.views.fhir.contract import ContractViewSet
 from api_fhir_r4.views.fhir.coverage_eligibility_request import CoverageEligibilityRequestViewSet
