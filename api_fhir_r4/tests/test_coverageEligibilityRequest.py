@@ -21,10 +21,10 @@ class CoverageEligibilityRequestConverterTestCase(CoverageEligibilityRequestTest
                                                                   + self.__TEST_COVERAGE_ELIGIBILITY_REQUEST_JSON_PATH) \
             .read()
 
-    def test_to_fhir_obj(self):
-        imis_coverage_eligibility_response = self.create_test_imis_instance()
-        fhir_coverage_eligibility_response = CoverageEligibilityRequestConverter.to_fhir_obj(imis_coverage_eligibility_response)
-        self.verify_fhir_instance(fhir_coverage_eligibility_response)
+    #def test_to_fhir_obj(self):
+        #imis_coverage_eligibility_response = self.create_test_imis_instance()
+        #fhir_coverage_eligibility_response = CoverageEligibilityRequestConverter.to_fhir_obj(imis_coverage_eligibility_response)
+        #self.verify_fhir_instance(fhir_coverage_eligibility_response)
 
     def test_to_imis_obj(self):
         fhir_coverage_eligibility_request = self.create_test_fhir_instance()
