@@ -9,7 +9,7 @@ from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin, L
 from fhir.resources.organization import Organization
 from fhir.resources.organization import OrganizationContact
 from fhir.resources.extension import Extension
-from api_fhir_r4.mapping.OrganizationMapping import HealthFacilityOrganizationTypeMapping
+from api_fhir_r4.mapping.organizationMapping import HealthFacilityOrganizationTypeMapping
 from api_fhir_r4.utils import DbManagerUtils
 
 logger = logging.getLogger(__name__)
