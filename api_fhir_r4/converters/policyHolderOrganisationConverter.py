@@ -5,7 +5,7 @@ from fhir.resources.address import Address
 from fhir.resources.extension import Extension
 from fhir.resources.humanname import HumanName
 
-from api_fhir_r4.mapping.OrganizationMapping import PolicyHolderOrganisationLegalFormMapping, \
+from api_fhir_r4.mapping.organizationMapping import PolicyHolderOrganisationLegalFormMapping, \
     PolicyHolderOrganisationActivityMapping
 from api_fhir_r4.models.imisModelEnums import ImisLocationType, ContactPointSystem, AddressType
 from location.models import Location
