@@ -141,5 +141,15 @@ DEFAULT_CFG = {
         "fhir_product_code": "Product",
         "fhir_effective_date_code": "EffectiveDate",
         "fhir_enroll_date_code": "EnrollDate"
+    },
+    "R4_fhir_organisation_config": {
+        "fhir_ph_organisation_type": "bus",
+        "fhir_address_municipality_extension_system": "StructureDefinition/address-municipality",
+        "fhir_location_reference_extension_system": "StructureDefinition/address-location-reference",
+        "fhir_ph_organisation_legal_form_extension_system": "StructureDefinition/organization-ph-legal-form",
+        "fhir_ph_organisation_activity_extension_system": "StructureDefinition/organization-ph-activity",
+        "fhir_ph_organisation_legal_form_code_system": "CodeSystem/organization-ph-legal-form",
+        "fhir_ph_organisation_activity_code_system": "CodeSystem/organization-ph-activity",
+        "fhir_ph_organisation_type_system": "http://terminology.hl7.org/CodeSystem/organization-type",
     }
 }
