@@ -462,7 +462,7 @@ class OrganisationConfiguration(BaseConfiguration):
 
     @classmethod
     def get_fhir_ph_organisation_type(cls):
-        raise NotImplementedError('`get_ph_organisation_type()` must be implemented.')
+        raise NotImplementedError('`get_fhir_ph_organisation_type()` must be implemented.')
 
     @classmethod
     def get_fhir_address_municipality_extension_system(cls):
