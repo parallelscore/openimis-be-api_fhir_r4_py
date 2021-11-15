@@ -33,7 +33,7 @@ class PatientTestMixin(GenericTestMixin):
     _TEST_DOB = "1990-03-24"
     _TEST_ID = 10000
     _TEST_UUID = "0a60f36c-62eb-11ea-bb93-93ec0339a3dd"
-    _TEST_CHF_ID = "TEST_CHF_ID"
+    _TEST_CHF_ID = "827192671"
     _TEST_PASSPORT = "TEST_PASSPORT"
     _TEST_GENDER_CODE = "M"
     _TEST_GENDER = None
