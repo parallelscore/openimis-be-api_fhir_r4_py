@@ -513,7 +513,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     def build_fhir_photo(cls, fhir_patient, imis_insuree):
         if imis_insuree.photo and imis_insuree.photo.folder and imis_insuree.photo.filename:
             # HOST is taken from global variable used in the docker initialization
-            abs_url = GeneralConfiguration.get_host_domain().split('http://')[1]
+            # If URL root is not explicitly given in the settings 'localhost' is used
+            # (if value is empty validation exception is raised).
+            abs_url = GeneralConfiguration.get_host_domain().split('http://')[1] or 'localhost'
             domain = abs_url
             photo_uri = cls.__build_photo_uri(imis_insuree)
             photo = Attachment.construct()
