@@ -4,7 +4,7 @@ from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from fhir.resources.invoice import Invoice as FHIRInvoice, \
     InvoiceLineItem as FHIRInvoiceLineItem, InvoiceLineItemPriceComponent
 from fhir.resources.money import Money
-from api_fhir_r4.mapping.invoiceMapping import ChargeItemMapping
+from api_fhir_r4.mapping.invoiceMapping import ChargeItemMapping, InvoiceTypeMapping
 
 
 class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
@@ -35,7 +35,12 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_type(cls, fhir_invoice, imis_invoice):
-        pass
+        invoice_type = InvoiceTypeMapping.invoice_type[imis_invoice.subject_type.model]
+        fhir_invoice.type = cls.build_codeable_concept(
+            code=invoice_type["code"],
+            display=invoice_type["display"],
+            system=f"{GeneralConfiguration.get_system_base_url()}/CodeSystem/invoice-type",
+        )
 
     @classmethod
     def build_fhir_date(cls, fhir_invoice, imis_invoice):
@@ -43,11 +48,11 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_totals(cls, fhir_invoice, imis_invoice):
-        fhir_invoice.totalNet = cls.build_fhir_total(imis_invoice.amount_net, imis_invoice.currency_code)
-        fhir_invoice.totalGross = cls.build_fhir_total(imis_invoice.amount_total, imis_invoice.currency_code)
+        fhir_invoice.totalNet = cls.build_fhir_invoice_money(imis_invoice.amount_net, imis_invoice.currency_code)
+        fhir_invoice.totalGross = cls.build_fhir_invoice_money(imis_invoice.amount_total, imis_invoice.currency_code)
 
     @classmethod
-    def build_fhir_total(cls, imis_total_value, imis_currency):
+    def build_fhir_invoice_money(cls, imis_total_value, imis_currency):
         total = Money.construct()
         total.value = imis_total_value
         total.currency = imis_currency
@@ -59,7 +64,7 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         for line in imis_line_items.all():
             fhir_line_item = FHIRInvoiceLineItem.construct()
             cls.build_line_item_charge_item_codeable_concept(fhir_line_item, line)
-            cls.build_line_item_price_component(fhir_line_item, line, currency)
+            cls.build_line_item_price_component_base(fhir_line_item, line, currency)
             fhir_invoice.lineItem.append(fhir_line_item)
 
     @classmethod
@@ -73,7 +78,7 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_line_item.chargeItemCodeableConcept = type
 
     @classmethod
-    def build_line_item_price_component(cls, fhir_line_item, line, currency):
+    def build_line_item_price_component_base(cls, fhir_line_item, line, currency):
         fhir_line_item.priceComponent = []
         price_component = {"type": "base"}
         price_component = InvoiceLineItemPriceComponent(**price_component)
@@ -93,4 +98,6 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
             display=line.code,
             system="Code"
         )
+        price_component.factor = line.quantity
+        price_component.amount = cls.build_fhir_invoice_money(line.unit_price*line.quantity, currency)
         fhir_line_item.priceComponent.append(price_component)
