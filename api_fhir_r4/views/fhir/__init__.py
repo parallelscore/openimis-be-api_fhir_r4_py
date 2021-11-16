@@ -14,6 +14,7 @@ from api_fhir_r4.views.fhir.organisation import OrganisationViewSet
 from api_fhir_r4.views.fhir.practitioner import PractitionerViewSet
 from api_fhir_r4.views.fhir.practitioner_role import PractitionerRoleViewSet
 from api_fhir_r4.views.fhir.insurance_plan import ProductViewSet
+from api_fhir_r4.views.fhir.invoice import InvoiceViewSet
 from api_fhir_r4.views.fhir.code_systems.diagnosis import CodeSystemOpenIMISDiagnosisViewSet
 from api_fhir_r4.views.fhir.code_systems.group_type import CodeSystemOpenIMISGroupTypeViewSet
 from api_fhir_r4.views.fhir.code_systems.patient_education_level import CodeSystemOpenIMISPatientEducationLevelViewSet
