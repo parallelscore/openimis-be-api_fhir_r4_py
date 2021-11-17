@@ -13,7 +13,6 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def to_fhir_obj(cls, imis_invoice, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_invoice = {"status": "active"}
         fhir_invoice = FHIRInvoice(**fhir_invoice)
-        # then create fhir object as usual
         cls.build_fhir_identifiers(fhir_invoice, imis_invoice)
         cls.build_fhir_pk(fhir_invoice, imis_invoice.id)
         cls.build_fhir_type(fhir_invoice, imis_invoice)
@@ -65,6 +64,12 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
             fhir_line_item = FHIRInvoiceLineItem.construct()
             cls.build_line_item_charge_item_codeable_concept(fhir_line_item, line)
             cls.build_line_item_price_component_base(fhir_line_item, line, currency)
+            if line.tax_rate:
+                cls.build_line_item_price_component_tax(fhir_line_item, line, currency)
+            if line.discount > 0:
+                cls.build_line_item_price_component_discount(fhir_line_item, line, currency)
+            if line.deduction > 0:
+                cls.build_line_item_price_component_deduction(fhir_line_item, line, currency)
             fhir_invoice.lineItem.append(fhir_line_item)
 
     @classmethod
@@ -83,16 +88,8 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         price_component = {"type": "base"}
         price_component = InvoiceLineItemPriceComponent(**price_component)
         price_component.extension = []
+        price_component.extension.append(cls.build_line_item_unit_price_extension(line, currency))
 
-        extension = Extension.construct()
-        extension.url = f"{GeneralConfiguration.get_system_base_url()}/StructureDefinition/unit-price"
-        unit_price = Money.construct()
-        unit_price.value = line.unit_price
-        unit_price.currency = currency
-        extension.valueMoney = unit_price
-        price_component.extension.append(extension)
-
-        price_component.type = 'base'
         price_component.code = cls.build_codeable_concept(
             code="Code",
             display=line.code,
@@ -101,3 +98,52 @@ class InvoiceConverter(BaseFHIRConverter, ReferenceConverterMixin):
         price_component.factor = line.quantity
         price_component.amount = cls.build_fhir_invoice_money(line.unit_price*line.quantity, currency)
         fhir_line_item.priceComponent.append(price_component)
+
+    @classmethod
+    def build_line_item_price_component_discount(cls, fhir_line_item, line, currency):
+        fhir_line_item.priceComponent = []
+        price_component = {"type": "discount"}
+        price_component = InvoiceLineItemPriceComponent(**price_component)
+        price_component.extension = []
+        price_component.extension.append(cls.build_line_item_unit_price_extension(line, currency))
+
+        price_component.code = cls.build_codeable_concept(
+            code="Code",
+            display=line.code,
+            system="Code"
+        )
+        price_component.factor = line.discount
+        price_component.amount = cls.build_fhir_invoice_money(-1*line.unit_price*line.quantity*(line.discount/100), currency)
+        fhir_line_item.priceComponent.append(price_component)
+
+    @classmethod
+    def build_line_item_price_component_deduction(cls, fhir_line_item, line, currency):
+        fhir_line_item.priceComponent = []
+        price_component = {"type": "deduction"}
+        price_component = InvoiceLineItemPriceComponent(**price_component)
+        price_component.extension = []
+        price_component.extension.append(cls.build_line_item_unit_price_extension(line, currency))
+
+        price_component.code = cls.build_codeable_concept(
+            code="Code",
+            display=line.code,
+            system="Code"
+        )
+        price_component.factor = 1
+        price_component.amount = cls.build_fhir_invoice_money((-1*line.deduction), currency)
+        fhir_line_item.priceComponent.append(price_component)
+
+    @classmethod
+    def build_line_item_price_component_tax(cls, fhir_line_item, line, currency):
+        # TODO do this when calculation rule for counting taxes will be available
+        pass
+
+    @classmethod
+    def build_line_item_unit_price_extension(cls, line_item, currency):
+        extension = Extension.construct()
+        extension.url = f"{GeneralConfiguration.get_system_base_url()}/StructureDefinition/unit-price"
+        unit_price = Money.construct()
+        unit_price.value = line_item.unit_price
+        unit_price.currency = currency
+        extension.valueMoney = unit_price
+        return extension
