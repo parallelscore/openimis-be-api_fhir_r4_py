@@ -75,7 +75,7 @@ class PolicyHolderOrganisationConverter(BaseFHIRConverter, ReferenceConverterMix
     @classmethod
     def build_fhir_legal_form_extension(cls, fhir_organisation, imis_organisation):
         codeable_concept = cls.build_codeable_concept_from_coding(cls.build_fhir_mapped_coding(
-            PolicyHolderOrganisationLegalFormMapping.fhir_ph_organisation_legal_form[imis_organisation.legal_form]
+            PolicyHolderOrganisationLegalFormMapping.fhir_ph_code_system(imis_organisation.legal_form)
         ))
         base = GeneralConfiguration.get_system_base_url()
         url = urljoin(base, R4OrganisationConfig.get_fhir_ph_organisation_legal_form_extension_system())
@@ -88,7 +88,7 @@ class PolicyHolderOrganisationConverter(BaseFHIRConverter, ReferenceConverterMix
     @classmethod
     def build_fhir_activity_extension(cls, fhir_organisation, imis_organisation):
         codeable_concept = cls.build_codeable_concept_from_coding(cls.build_fhir_mapped_coding(
-            PolicyHolderOrganisationActivityMapping.fhir_ph_organisation_activity[imis_organisation.activity_code]
+            PolicyHolderOrganisationActivityMapping.fhir_ph_code_system(imis_organisation.activity_code)
         ))
         base = GeneralConfiguration.get_system_base_url()
         url = urljoin(base, R4OrganisationConfig.get_fhir_ph_organisation_activity_extension_system())

@@ -1,7 +1,11 @@
+import copy
+from functools import lru_cache
 from urllib.parse import urljoin
 
 from api_fhir_r4.configurations import GeneralConfiguration, R4OrganisationConfig
 from api_fhir_r4.models.imisModelEnums import ContactPointSystem
+from policyholder.apps import PolicyholderConfig
+from policyholder.services import PolicyHolderActivity, PolicyHolderLegalForm
 
 
 class HealthFacilityOrganizationTypeMapping:
@@ -33,67 +37,47 @@ class HealthFacilityOrganizationTypeMapping:
     LEVEL_SYSTEM = f'{GeneralConfiguration.get_system_base_url()}/CodeSystem/organization-hf-level'
 
 
-class PolicyHolderOrganisationLegalFormMapping(object):
-    SYSTEM = urljoin(GeneralConfiguration.get_system_base_url(),
-                     R4OrganisationConfig.get_fhir_ph_organisation_legal_form_code_system())
+class PolicyHolderConfigMapping:
+    @classmethod
+    def _get_system(cls):
+        raise NotImplementedError('_get_system() not implemented')
 
-    fhir_ph_organisation_legal_form = {
-        1: {
-            "system": SYSTEM,
-            "code": "1",
-            "display": "Personal Company",
-        },
-        2: {
-            "system": SYSTEM,
-            "code": "2",
-            "display": "Limited Risk Company",
-        },
-        3: {
-            "system": SYSTEM,
-            "code": "3",
-            "display": "Association",
-        },
-        4: {
-            "system": SYSTEM,
-            "code": "4",
-            "display": "Government",
-        },
-        5: {
-            "system": SYSTEM,
-            "code": "5",
-            "display": "Union",
-        },
-    }
+    @classmethod
+    def _get_config_mapping(cls):
+        raise NotImplementedError('_get_config_mapping() not implemented')
+
+    @classmethod
+    def fhir_ph_code_system(cls, code):
+        @lru_cache(maxsize=None)
+        def __code_system_dict():
+            system = urljoin(
+                GeneralConfiguration.get_system_base_url(),
+                cls._get_system()
+            )
+            dict_ = {}
+            for activity in copy.deepcopy(cls._get_config_mapping()):
+                activity['system'] = system
+                dict_[int(activity['code'])] = activity
+            return dict_
+
+        return __code_system_dict()[code]
 
 
-class PolicyHolderOrganisationActivityMapping(object):
-    SYSTEM = urljoin(GeneralConfiguration.get_system_base_url(),
-                     R4OrganisationConfig.get_fhir_ph_organisation_activity_code_system())
+class PolicyHolderOrganisationLegalFormMapping(PolicyHolderConfigMapping):
+    @classmethod
+    def _get_system(cls):
+        return R4OrganisationConfig.get_fhir_ph_organisation_legal_form_code_system()
 
-    fhir_ph_organisation_activity = {
-        1: {
-            "system": SYSTEM,
-            "code": "1",
-            "display": "Retail",
-        },
-        2: {
-            "system": SYSTEM,
-            "code": "2",
-            "display": "Industry",
-        },
-        3: {
-            "system": SYSTEM,
-            "code": "3",
-            "display": "Building",
-        },
-        4: {
-            "system": SYSTEM,
-            "code": "4",
-            "display": "Sailing",
-        },
-        5: {
-            "system": SYSTEM,
-            "code": "5",
-            "display": "Services",
-        },
-    }
+    @classmethod
+    def _get_config_mapping(cls):
+        return PolicyholderConfig.policyholder_legal_form
+
+
+class PolicyHolderOrganisationActivityMapping(PolicyHolderConfigMapping):
+    @classmethod
+    def _get_system(cls):
+        return R4OrganisationConfig.get_fhir_ph_organisation_activity_code_system()
+
+    @classmethod
+    def _get_config_mapping(cls):
+        return PolicyholderConfig.policyholder_activity
