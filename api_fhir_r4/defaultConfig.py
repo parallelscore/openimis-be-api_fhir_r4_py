@@ -151,5 +151,9 @@ DEFAULT_CFG = {
         "fhir_ph_organisation_legal_form_code_system": "CodeSystem/organization-ph-legal-form",
         "fhir_ph_organisation_activity_code_system": "CodeSystem/organization-ph-activity",
         "fhir_ph_organisation_type_system": "http://terminology.hl7.org/CodeSystem/organization-type",
+    },
+    "R4_fhir_invoice_config": {
+        "fhir_invoice_type_system": "CodeSystem/invoice-type",
+        "fhir_invoice_charge_item_system": "CodeSystem/invoice-charge-item"
     }
 }

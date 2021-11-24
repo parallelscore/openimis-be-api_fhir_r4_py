@@ -237,10 +237,12 @@ class BaseFHIRConverter(ABC):
         return extension
 
     @classmethod
-    def build_fhir_money(cls, value):
+    def build_fhir_money(cls, value, currency=None):
         money = Money.construct()
         money.value = value
-        if hasattr(core, 'currency'):
+        if currency:
+            money.currency = currency
+        elif hasattr(core, 'currency'):
             money.currency = core.currency
         return money
 
@@ -277,3 +279,4 @@ from api_fhir_r4.converters.healthFacilityOrganisationConverter import HealthFac
 from api_fhir_r4.converters.enrolmentOfficerPractitionerConverter import EnrolmentOfficerPractitionerConverter
 from api_fhir_r4.converters.enrolmentOfficerPractitionerRoleConverter import EnrolmentOfficerPractitionerRoleConverter
 from api_fhir_r4.converters.communicationConverter import CommunicationConverter
+from api_fhir_r4.converters.invoiceConverter import InvoiceConverter

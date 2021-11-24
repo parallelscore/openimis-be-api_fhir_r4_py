@@ -101,6 +101,10 @@ if 'policyholder' in imis_modules:
     router.register(r'CodeSystem/organization-ph-activity', fhir_viewsets.CodeSystemOrganizationPHActivityViewSet,
                     basename="CodeSystem/organization-ph-activity_R4")
 
+# register endpoint for policy holder if used
+if 'invoice' in imis_modules:
+    router.register(r'Invoice', fhir_viewsets.InvoiceViewSet, basename="Invoice_R4")
+
 urlpatterns = [
     path('', include(router.urls))
 ]
