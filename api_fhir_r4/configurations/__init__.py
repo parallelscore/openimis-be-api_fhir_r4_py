@@ -454,8 +454,21 @@ class CoverageConfiguration(BaseConfiguration):  # pragma: no cover
         raise NotImplementedError('`get_effective_date_code()` must be implemented.')
 
 
-class OrganisationConfiguration(BaseConfiguration):
+class InvoiceConfiguration(BaseConfiguration):
+    @classmethod
+    def build_configuration(cls, cfg):
+        raise NotImplementedError('`build_configuration()` must be implemented.')
 
+    @classmethod
+    def get_fhir_invoice_type_system(cls):
+        raise NotImplementedError('`get_fhir_invoice_type_system()` must be implemented.')
+
+    @classmethod
+    def get_fhir_invoice_charge_item_system(cls):
+        raise NotImplementedError('`get_fhir_invoice_charge_item_system()` must be implemented.')
+
+
+class OrganisationConfiguration(BaseConfiguration):
     @classmethod
     def build_configuration(cls, cfg):
         raise NotImplementedError('`build_configuration()` must be implemented.')
@@ -550,6 +563,7 @@ from api_fhir_r4.configurations.R4LocationConfig import R4LocationConfig
 from api_fhir_r4.configurations.R4MaritalConfig import R4MaritalConfig
 from api_fhir_r4.configurations.R4IssueTypeConfig import R4IssueTypeConfig
 from api_fhir_r4.configurations.R4ClaimConfig import R4ClaimConfig
+from api_fhir_r4.configurations.R4InvoiceConfig import R4InvoiceConfig
 from api_fhir_r4.configurations.R4CoverageEligibilityConfiguration import R4CoverageEligibilityConfiguration
 from api_fhir_r4.configurations.R4CommunicationRequestConfig import R4CommunicationRequestConfig
 from api_fhir_r4.configurations.R4OrganisationConfig import R4OrganisationConfig

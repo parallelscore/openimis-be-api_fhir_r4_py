@@ -237,10 +237,12 @@ class BaseFHIRConverter(ABC):
         return extension
 
     @classmethod
-    def build_fhir_money(cls, value):
+    def build_fhir_money(cls, value, currency=None):
         money = Money.construct()
         money.value = value
-        if hasattr(core, 'currency'):
+        if currency:
+            money.currency = currency
+        elif hasattr(core, 'currency'):
             money.currency = core.currency
         return money
 
