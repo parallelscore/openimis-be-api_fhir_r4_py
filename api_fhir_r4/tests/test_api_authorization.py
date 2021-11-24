@@ -97,7 +97,11 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
         response = self.client.get(self.url_to_test_authorization, format='json', **headers)
         response_json = response.json()
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response_json["issue"][0]["details"]["text"], "Missing 'Bearer' prefix")
+
+        if os.getenv('REMOTE_USER_AUTHENTICATION', 'False').lower == 'false':
+            self.assertEqual(response_json["issue"][0]["details"]["text"], "Missing 'Bearer' prefix")
+        else:
+            self.assertEqual(response_json["issue"][0]["details"]["text"], "Basic auth error: there is no basic header")
 
     def test_post_should_raise_unproper_structure_of_token(self):
         response = self.client.post(self.base_url+'login/', data=self._test_request_data_credentials, format='json')
