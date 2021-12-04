@@ -19,7 +19,7 @@ from insuree.models import Insuree, InsureePolicy
 
 class ClaimViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, mixins.ListModelMixin,
                    mixins.CreateModelMixin, GenericViewSet):
-    retrievers = [UUIDIdentifierModelRetriever, DatabaseIdentifierModelRetriever]
+    retrievers = [UUIDIdentifierModelRetriever]
     serializer_class = ClaimSerializer
     permission_classes = (FHIRApiClaimPermissions,)
 
