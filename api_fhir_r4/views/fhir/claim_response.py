@@ -17,4 +17,4 @@ class ClaimResponseViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, mixins.L
     permission_classes = (FHIRApiClaimPermissions,)
 
     def get_queryset(self):
-        return Claim.get_queryset(None, self.request.user)
+        return Claim.get_queryset(None, self.request.user).order_by('validity_from')

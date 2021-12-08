@@ -1,10 +1,9 @@
 import datetime
-from typing import List
 
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch
 
 from insuree.models import Insuree, InsureePolicy
-from claim.models import Claim, Feedback, ClaimItem, ClaimService
+from claim.models import Claim, ClaimItem, ClaimService
 from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -55,7 +54,7 @@ class ClaimViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, mixins.ListModel
         return Response(serializer.data)
 
     def get_queryset(self):
-        return Claim.get_queryset(None, self.request.user)\
+        return Claim.get_queryset(None, self.request.user).order_by('validity_from')\
             .select_related('insuree')\
             .select_related('health_facility')\
             .select_related('icd')\

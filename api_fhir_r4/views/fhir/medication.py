@@ -28,4 +28,4 @@ class MedicationViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, MultiIdenti
         return response
 
     def get_queryset(self):
-        return Item.get_queryset(None, self.request.user)
+        return Item.get_queryset(None, self.request.user).order_by('validity_from')
