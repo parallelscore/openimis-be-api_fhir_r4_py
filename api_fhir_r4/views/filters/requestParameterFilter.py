@@ -6,42 +6,47 @@ from core.datetimes.ad_datetime import datetime
 
 
 class QuerysetFilterABC(ABC):
-    def __init__(self, parameter, value):
-        self.parameter = parameter
+    def __init__(self, field, value):
+        self.field = field
         self.value = value
 
     def apply_filter(self, queryset):
+        """
+        apply_filter should apply contained filter to given queryset and return the result.
+        @param queryset: queryset the filter should be applied to
+        @return: filtered queryset
+        """
         raise NotImplemented('apply_filter() not implemented')
 
 
 class QuerysetEqualFilter(QuerysetFilterABC):
     def apply_filter(self, queryset):
-        return queryset.filter(**{self.parameter: self.value})
+        return queryset.filter(**{self.field: self.value})
 
 
 class QuerysetNotEqualFilter(QuerysetFilterABC):
     def apply_filter(self, queryset):
-        return queryset.exclude(**{self.parameter: self.value})
+        return queryset.exclude(**{self.field: self.value})
 
 
 class QuerysetGreaterThanFilter(QuerysetFilterABC):
     def apply_filter(self, queryset):
-        return queryset.filter(**{f'{self.parameter}__gt': self.value})
+        return queryset.filter(**{f'{self.field}__gt': self.value})
 
 
 class QuerysetLesserThanFilter(QuerysetFilterABC):
     def apply_filter(self, queryset):
-        return queryset.filter(**{f'{self.parameter}__lt': self.value})
+        return queryset.filter(**{f'{self.field}__lt': self.value})
 
 
 class QuerysetGreaterThanEqualFilter(QuerysetFilterABC):
     def apply_filter(self, queryset):
-        return queryset.filter(**{f'{self.parameter}__gte': self.value})
+        return queryset.filter(**{f'{self.field}__gte': self.value})
 
 
 class QuerysetLesserThanEqualFilter(QuerysetFilterABC):
     def apply_filter(self, queryset):
-        return queryset.filter(**{f'{self.parameter}__lte': self.value})
+        return queryset.filter(**{f'{self.field}__lte': self.value})
 
 
 class QuerysetApproximateDateFilter(QuerysetFilterABC):
@@ -49,7 +54,7 @@ class QuerysetApproximateDateFilter(QuerysetFilterABC):
         range_size = (TimeUtils.now() - self.value).days * 0.1
         value_start = self.value - timedelta(days=range_size)
         value_end = self.value + timedelta(days=range_size)
-        return queryset.filter(**{f'{self.parameter}__range': (value_start, value_end)})
+        return queryset.filter(**{f'{self.field}__range': (value_start, value_end)})
 
 
 class QuerysetParameterABC(ABC):
@@ -58,6 +63,11 @@ class QuerysetParameterABC(ABC):
         self.accepted_prefixes = self._get_prefix_filter_mapping().keys()
 
     def _get_prefix_filter_mapping(self):
+        """
+        _get_prefix_filter_mapping should return a dict that maps respective prefixes from FHIR specification to lambdas
+        capable of creating specific filters taking affected field and parsed parameter value as arguments.
+        @return: {prefix: lambda creating filter} map
+        """
         raise NotImplemented('_get_modifier_filter_mapping() not implemented')
 
     def build_filter(self, request_parameter_value):
@@ -70,21 +80,27 @@ class QuerysetParameterABC(ABC):
         return modifier, output_value
 
     def _parse_value(self, value):
+        """
+        Allow for custom parameter value parsing logic. _parse_value in case of parsing error should raise Value error
+        with message containing {request_parameter} placeholder to insert parameter name
+        @param value: value to be parsed
+        @return: parsed value
+        """
         return value
 
 
 class QuerysetLastUpdatedParameter(QuerysetParameterABC):
     def _get_prefix_filter_mapping(self):
         return {
-            'eq': lambda param, value: QuerysetEqualFilter(param, value),
-            'ne': lambda param, value: QuerysetNotEqualFilter(param, value),
-            'gt': lambda param, value: QuerysetGreaterThanFilter(param, value),
-            'lt': lambda param, value: QuerysetLesserThanFilter(param, value),
-            'ge': lambda param, value: QuerysetGreaterThanEqualFilter(param, value),
-            'le': lambda param, value: QuerysetLesserThanEqualFilter(param, value),
-            'sa': lambda param, value: QuerysetGreaterThanEqualFilter(param, value),
-            'eb': lambda param, value: QuerysetLesserThanEqualFilter(param, value),
-            'ap': lambda param, value: QuerysetApproximateDateFilter(param, value)
+            'eq': lambda field, value: QuerysetEqualFilter(field, value),
+            'ne': lambda field, value: QuerysetNotEqualFilter(field, value),
+            'gt': lambda field, value: QuerysetGreaterThanFilter(field, value),
+            'lt': lambda field, value: QuerysetLesserThanFilter(field, value),
+            'ge': lambda field, value: QuerysetGreaterThanEqualFilter(field, value),
+            'le': lambda field, value: QuerysetLesserThanEqualFilter(field, value),
+            'sa': lambda field, value: QuerysetGreaterThanEqualFilter(field, value),
+            'eb': lambda field, value: QuerysetLesserThanEqualFilter(field, value),
+            'ap': lambda field, value: QuerysetApproximateDateFilter(field, value)
         }
 
     def _parse_value(self, value):
@@ -99,6 +115,11 @@ class RequestParameterFilterABC(ABC):
         self.request = request
 
     def _get_parameter_mapping(self):
+        """
+        _get_parameter_mapping should return a dict mapping request parameters to lambdas capable of creating
+        filters (allowing lazy loading)
+        @return: {request parameter: lambda creating queryset parameter} map
+        """
         raise NotImplemented('_get_parameter_mapping() not implemented')
 
     def filter_queryset(self, queryset):
@@ -109,7 +130,7 @@ class RequestParameterFilterABC(ABC):
 
         output_queryset = queryset
         for request_parameter in request_parameters:
-            output_parameter = self._get_parameter_mapping()[request_parameter]()
+            output_parameter = parameter_mapping[request_parameter]()
             try:
                 output_queryset = output_parameter.build_filter(self.request.GET[request_parameter]).apply_filter(
                     output_queryset)
