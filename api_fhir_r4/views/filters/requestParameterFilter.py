@@ -16,7 +16,7 @@ class QuerysetFilterABC(ABC):
         @param queryset: queryset the filter should be applied to
         @return: filtered queryset
         """
-        raise NotImplemented('apply_filter() not implemented')
+        raise NotImplementedError('apply_filter() not implemented')
 
 
 class QuerysetEqualFilter(QuerysetFilterABC):
@@ -68,7 +68,7 @@ class QuerysetParameterABC(ABC):
         capable of creating specific filters taking affected field and parsed parameter value as arguments.
         @return: {prefix: lambda creating filter} map
         """
-        raise NotImplemented('_get_modifier_filter_mapping() not implemented')
+        raise NotImplementedError('_get_modifier_filter_mapping() not implemented')
 
     def build_filter(self, request_parameter_value):
         modifier, value = self._get_prefix_and_value(request_parameter_value)
@@ -120,7 +120,7 @@ class RequestParameterFilterABC(ABC):
         filters (allowing lazy loading)
         @return: {request parameter: lambda creating queryset parameter} map
         """
-        raise NotImplemented('_get_parameter_mapping() not implemented')
+        raise NotImplementedError('_get_parameter_mapping() not implemented')
 
     def filter_queryset(self, queryset):
         parameter_mapping = self._get_parameter_mapping()
