@@ -1,7 +1,9 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import timedelta
 
-from api_fhir_r4.utils import TimeUtils
+from django.db.models import QuerySet
+from typing import Dict, Callable, Any
+
 from core.datetimes.ad_datetime import datetime
 
 
@@ -10,13 +12,14 @@ class QuerysetFilterABC(ABC):
         self.field = field
         self.value = value
 
-    def apply_filter(self, queryset):
+    @abstractmethod
+    def apply_filter(self, queryset: QuerySet) -> QuerySet:
         """
         apply_filter should apply contained filter to given queryset and return the result.
         @param queryset: queryset the filter should be applied to
         @return: filtered queryset
         """
-        raise NotImplementedError('apply_filter() not implemented')
+        pass
 
 
 class QuerysetEqualFilter(QuerysetFilterABC):
@@ -51,7 +54,7 @@ class QuerysetLesserThanEqualFilter(QuerysetFilterABC):
 
 class QuerysetApproximateDateFilter(QuerysetFilterABC):
     def apply_filter(self, queryset):
-        range_size = (TimeUtils.now() - self.value).days * 0.1
+        range_size = (datetime.now() - self.value).days * 0.1
         value_start = self.value - timedelta(days=range_size)
         value_end = self.value + timedelta(days=range_size)
         return queryset.filter(**{f'{self.field}__range': (value_start, value_end)})
@@ -62,13 +65,14 @@ class QuerysetParameterABC(ABC):
         self.output_parameter = output_parameter
         self.accepted_prefixes = self._get_prefix_filter_mapping().keys()
 
-    def _get_prefix_filter_mapping(self):
+    @abstractmethod
+    def _get_prefix_filter_mapping(self) -> Dict[str, Callable[[str, Any], QuerysetFilterABC]]:
         """
         _get_prefix_filter_mapping should return a dict that maps respective prefixes from FHIR specification to lambdas
         capable of creating specific filters taking affected field and parsed parameter value as arguments.
         @return: {prefix: lambda creating filter} map
         """
-        raise NotImplementedError('_get_modifier_filter_mapping() not implemented')
+        pass
 
     def build_filter(self, request_parameter_value):
         modifier, value = self._get_prefix_and_value(request_parameter_value)
@@ -114,13 +118,14 @@ class RequestParameterFilterABC(ABC):
     def __init__(self, request):
         self.request = request
 
-    def _get_parameter_mapping(self):
+    @abstractmethod
+    def _get_parameter_mapping(self) -> Dict[str, Callable[[], QuerysetParameterABC]]:
         """
         _get_parameter_mapping should return a dict mapping request parameters to lambdas capable of creating
         filters (allowing lazy loading)
         @return: {request parameter: lambda creating queryset parameter} map
         """
-        raise NotImplementedError('_get_parameter_mapping() not implemented')
+        pass
 
     def filter_queryset(self, queryset):
         parameter_mapping = self._get_parameter_mapping()
