@@ -1,17 +1,19 @@
 from rest_framework.request import Request
-from invoice.models import Invoice
+
+from api_fhir_r4.mixins import MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin
 from api_fhir_r4.model_retrievers import CodeIdentifierModelRetriever, DatabaseIdentifierModelRetriever, \
     UUIDIdentifierModelRetriever
 from api_fhir_r4.multiserializer import modelViewset
 from api_fhir_r4.permissions import FHIRApiInvoicePermissions
 from api_fhir_r4.serializers import InvoiceSerializer
 from api_fhir_r4.views.fhir.fhir_base_viewset import BaseMultiserializerFHIRView
-from api_fhir_r4.mixins import MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin
+from api_fhir_r4.views.filters import DateUpdatedRequestParameterFilter
+from invoice.models import Invoice
 
 
 class InvoiceViewSet(BaseMultiserializerFHIRView,
-                          modelViewset.MultiSerializerModelViewSet,
-                          MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin):
+                     modelViewset.MultiSerializerModelViewSet,
+                     MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin):
     retrievers = [UUIDIdentifierModelRetriever, DatabaseIdentifierModelRetriever, CodeIdentifierModelRetriever]
     permission_classes = (FHIRApiInvoicePermissions,)
 
@@ -52,7 +54,8 @@ class InvoiceViewSet(BaseMultiserializerFHIRView,
         return Invoice.objects
 
     def _invoice_queryset(self):
-        return Invoice.objects.filter(is_deleted=False).order_by('date_created')
+        queryset = Invoice.objects.filter(is_deleted=False).order_by('date_created')
+        return DateUpdatedRequestParameterFilter(self.request).filter_queryset(queryset)
 
     @classmethod
     def _get_type_from_body(cls, request):
