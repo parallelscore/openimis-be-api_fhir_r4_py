@@ -8,7 +8,9 @@ from api_fhir_r4.multiserializer import modelViewset
 from api_fhir_r4.permissions import FHIRApiInvoicePermissions
 from api_fhir_r4.serializers import InvoiceSerializer, BillSerializer
 from api_fhir_r4.views.fhir.fhir_base_viewset import BaseMultiserializerFHIRView
-from invoice.models import Invoice, Bill
+from api_fhir_r4.views.filters import DateUpdatedRequestParameterFilter
+from invoice.models import Bill
+from invoice.models import Invoice
 
 
 class InvoiceViewSet(BaseMultiserializerFHIRView,
@@ -31,8 +33,10 @@ class InvoiceViewSet(BaseMultiserializerFHIRView,
         return cls._base_request_validator_dispatcher(
             request=context['request'],
             get_check=lambda x: cls._get_type_from_query(x) in ('invoice', None),
-            post_check=lambda x: cls._get_type_from_body(x) in [item['code'] for item in InvoiceTypeMapping.invoice_type],
-            put_check=lambda x: cls._get_type_from_body(x) in [item['code'] for item in InvoiceTypeMapping.invoice_type],
+            post_check=lambda x: cls._get_type_from_body(x) in [item['code'] for item in
+                                                                InvoiceTypeMapping.invoice_type],
+            put_check=lambda x: cls._get_type_from_body(x) in [item['code'] for item in
+                                                               InvoiceTypeMapping.invoice_type],
         )
 
     @classmethod
@@ -63,13 +67,13 @@ class InvoiceViewSet(BaseMultiserializerFHIRView,
     def get_queryset(self):
         return Invoice.objects
 
-    @classmethod
-    def _invoice_queryset(cls):
-        return Invoice.objects.filter(is_deleted=False).order_by('date_created')
+    def _invoice_queryset(self):
+        queryset = Invoice.objects.filter(is_deleted=False).order_by('date_created')
+        return DateUpdatedRequestParameterFilter(self.request).filter_queryset(queryset)
 
-    @classmethod
-    def _bill_queryset(cls):
-        return Bill.objects.filter(is_deleted=False).order_by('date_created')
+    def _bill_queryset(self):
+        queryset = Bill.objects.filter(is_deleted=False).order_by('date_created')
+        return DateUpdatedRequestParameterFilter(self.request).filter_queryset(queryset)
 
     @classmethod
     def _get_type_from_body(cls, request):
