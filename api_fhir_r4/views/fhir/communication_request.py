@@ -18,5 +18,5 @@ class CommunicationRequestViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, m
     def get_queryset(self):
         queryset = Claim.get_queryset(None, self.request.user).filter(feedback_status__in=[
             Claim.FEEDBACK_SELECTED, Claim.FEEDBACK_DELIVERED, Claim.FEEDBACK_BYPASSED
-        ])
+        ]).order_by('validity_from')
         return ValidityFromRequestParameterFilter(self.request).filter_queryset(queryset)

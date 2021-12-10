@@ -54,7 +54,7 @@ class ClaimViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, mixins.ListModel
         return Response(serializer.data)
 
     def get_queryset(self):
-        queryset = Claim.get_queryset(None, self.request.user) \
+        queryset = Claim.get_queryset(None, self.request.user).order_by('validity_from') \
             .select_related('insuree') \
             .select_related('health_facility') \
             .select_related('icd') \
