@@ -11,11 +11,12 @@ from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
 
 from api_fhir_r4.configurations import R4ClaimConfig, GeneralConfiguration
-from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, ReferenceConverterMixin as r
+from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, PatientConverter, \
+    MedicationConverter, HealthFacilityOrganisationConverter, ClaimAdminPractitionerConverter, \
+    ActivityDefinitionConverter, ReferenceConverterMixin as r, GroupConverter
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.serializers import BaseFHIRSerializer
-
 
 class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
 
@@ -145,11 +146,9 @@ class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
             dict_ = x.__dict__
             dict_.pop('_state', None)
             if isinstance(x, ClaimItem):
-                dict_['item_id'] = \
-                    self.__get_contained_medical_provision(contained_items, dict_) or dict_['item_id']
+                dict_['item_id'] = self.__get_contained_or_default_medical_provision(contained_items, dict_)
             elif isinstance(x, ClaimService):
-                dict_['service_id'] = \
-                    self.__get_contained_medical_provision(contained_items, dict_) or dict_['service_id']
+                dict_['service_id'] = self.__get_contained_or_default_medical_provision(contained_items, dict_)
             else:
                 raise AttributeError(F"Medical provision {x} is not ClaimItem nor ClaimService")
 
@@ -175,9 +174,9 @@ class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
             lambda x: x.code == validated_data['claim_admin_code'])
         return contained_value or validated_data['admin_id']
 
-    def __get_contained_medical_provision(self, contained_items: list, item):
+    def __get_contained_or_default_medical_provision(self, contained_items: list, item):
         contained_value = self.__id_from_contained(contained_items, lambda x: x.code == item['code'])
-        return contained_value
+        return contained_value or item['id']
 
     def __id_from_contained(self, contained_collection, lookup_func):
         matching = [x.id for x in contained_collection if lookup_func(x)]
