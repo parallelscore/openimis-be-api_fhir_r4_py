@@ -11,6 +11,7 @@ DEFAULT_CFG = {
     "default_value_of_location_offline_attribute": False,
     "default_value_of_location_care_type": "B",
     "default_response_page_size": 10,
+    "claim_rule_engine_validation": True,
     "R4_fhir_identifier_type_config": {
         "system": "https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
         "fhir_code_for_imis_db_uuid_type": "UUID",

@@ -147,6 +147,7 @@ class ClaimAPITests(GenericFhirAPITestMixin, APITestCase):
             custom_props={"code": self._TEST_ITEM_CODE}
         )
         item.code = self._TEST_ITEM_CODE
+        item.uuid = self._TEST_ITEM_UUID
         item.save()
         return item
 
@@ -156,6 +157,7 @@ class ClaimAPITests(GenericFhirAPITestMixin, APITestCase):
             custom_props={"code": self._TEST_SERVICE_CODE}
         )
         service.code = self._TEST_SERVICE_CODE
+        service.uuid = self._TEST_SERVICE_UUID
         service.save()
         return service
 

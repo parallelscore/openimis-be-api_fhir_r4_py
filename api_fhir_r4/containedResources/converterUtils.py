@@ -64,8 +64,6 @@ def get_from_contained_or_by_reference(fhir_reference, contained, converter, aud
     value = None
     if fhir_reference:
         if contained:
-            value = get_converted_contained_resource(
-                contained, fhir_reference, converter, audit_user_id
-            )
+            value = get_converted_contained_resource(contained, fhir_reference, converter, audit_user_id)
         value = value or converter.get_imis_obj_by_fhir_reference(fhir_reference)
     return value

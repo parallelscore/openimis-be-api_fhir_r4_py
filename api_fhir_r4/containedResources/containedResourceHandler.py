@@ -29,11 +29,13 @@ class ContainedResourceManager:
     def __init__(
             self, fhir_converter: FHIRContainedResourceConverter = None,
             imis_converter: IMISContainedResourceConverter = None,
-            serializer: BaseFHIRSerializer = None
+            serializer: BaseFHIRSerializer = None,
+            alias: str = None
     ):
         self.fhir_converter = fhir_converter
         self.imis_converter = imis_converter
         self.serialzier = serializer
+        self.alias = alias
 
     def convert_to_fhir(self, imis_obj: models.Model) -> List[FHIRAbstractModel]:
         self._assert_fhir_converter()
@@ -81,6 +83,7 @@ class ContainedResourceManager:
         if uuid:
             created.uuid = uuid
             created.save()
+        return created
 
     def _is_saved_in_db(self, obj: models.Model):
         # Checks if given ID is already stored in database

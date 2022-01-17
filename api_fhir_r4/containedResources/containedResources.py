@@ -51,7 +51,7 @@ class AbstractContainedResourceCollection(ABC):
         pass
 
     @classmethod
-    def _build_resource_from_serializer(cls, serializer: BaseFHIRSerializer):
+    def _build_resource_from_serializer(cls, serializer: BaseFHIRSerializer) -> ContainedResourceManager:
         reference_type = serializer.reference_type
         converter = serializer.fhirConverter
         definition = cls._definitions_for_serializers()[type(serializer)]
@@ -73,4 +73,8 @@ class AbstractContainedResourceCollection(ABC):
                 reference_type=reference_type
             )
 
-        return ContainedResourceManager(fhir_converter, imis_converter, serializer)
+        return ContainedResourceManager(fhir_converter, imis_converter, serializer, cls._create_alias(definition))
+
+    @classmethod
+    def _create_alias(cls, contained_resource_definition):
+        return F"{contained_resource_definition.imis_field}__{contained_resource_definition.fhir_field}"

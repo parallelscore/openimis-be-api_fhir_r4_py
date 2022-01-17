@@ -20,6 +20,7 @@ class ContainedContentSerializerMixin:
 
     def __init__(self, *args, **kwargs):
         self.__contained_definitions = None
+        # Serializers for contained resources are created with same argument as main serializer
         self.build_contained_resource_managers(*args, **kwargs)
         super().__init__(*args, **kwargs)
 
@@ -91,5 +92,8 @@ class ContainedContentSerializerMixin:
         return F"#{base_reference}"
 
     def _create_or_update_contained(self, validated_data):
+        result = {}
         for resource in self._contained_definitions.get_contained().values():
-            resource.create_or_update_from_contained(validated_data)
+            name = resource.alias
+            result[name] = resource.create_or_update_from_contained(validated_data)
+        return result

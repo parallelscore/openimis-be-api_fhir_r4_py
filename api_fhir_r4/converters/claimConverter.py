@@ -3,7 +3,10 @@ import hashlib
 import re
 from urllib.parse import urljoin
 
-from claim.services import ClaimItemSubmit, ClaimServiceSubmit, ClaimConfig
+
+from typing import Type
+
+from claim.services import ClaimItemSubmit, ClaimServiceSubmit, ClaimConfig, ClaimElementSubmit
 from claim.models import Claim, ClaimItem, ClaimService, ClaimAttachment
 
 from api_fhir_r4.containedResources.converterUtils import get_from_contained_or_by_reference
@@ -13,7 +16,8 @@ from medical.models import Diagnosis
 from django.utils.translation import gettext as _
 
 from api_fhir_r4.configurations import R4IdentifierConfig, R4ClaimConfig, GeneralConfiguration
-from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin, MedicationConverter, \
+    ActivityDefinitionConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.healthFacilityOrganisationConverter import HealthFacilityOrganisationConverter
 from api_fhir_r4.converters.claimAdminPractitionerConverter import ClaimAdminPractitionerConverter
@@ -62,7 +66,7 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_imis_claim_admin(imis_claim, fhir_claim, errors, audit_user_id=audit_user_id)
         cls.build_imis_visit_type(imis_claim, fhir_claim, errors)
         cls.build_imis_supporting_info(imis_claim, fhir_claim, errors)
-        cls.build_imis_submit_items_and_services(imis_claim, fhir_claim, errors)
+        cls.build_imis_submit_items_and_services(imis_claim, fhir_claim, errors, audit_user_id)
         cls.check_errors(errors)
         return imis_claim
 
@@ -121,8 +125,8 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_imis_patient(cls, imis_claim, fhir_claim, errors, audit_user_id):
         insuree = get_from_contained_or_by_reference(
-            fhir_claim.patient, fhir_claim.contained, PatientConverter, audit_user_id
-        )
+            fhir_claim.patient, fhir_claim.contained, PatientConverter, audit_user_id)
+
         if insuree:
             imis_claim.insuree = insuree
             imis_claim.insuree_chf_code = insuree.chf_id
@@ -341,16 +345,16 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return cls.build_fhir_reference_extension(reference, url)
 
     @classmethod
-    def build_imis_submit_items_and_services(cls, imis_claim, fhir_claim, errors):
+    def build_imis_submit_items_and_services(cls, imis_claim, fhir_claim, errors, audit_user_id):
         imis_items = []
         imis_services = []
         if fhir_claim.item:
             for item in fhir_claim.item:
                 category = item.category.text
                 if category == R4ClaimConfig.get_fhir_claim_item_code():
-                    cls.build_imis_submit_item(imis_items, item)
+                    cls.build_imis_submit_item(imis_items, item, fhir_claim, audit_user_id)
                 elif category == R4ClaimConfig.get_fhir_claim_service_code():
-                    cls.build_imis_submit_service(imis_services, item)
+                    cls.build_imis_submit_service(imis_services, item, fhir_claim, audit_user_id)
                 else:
                     cls.valid_condition(True, _('Unknown item category: `%s`') % category, errors)
 
@@ -359,18 +363,45 @@ class ClaimConverter(BaseFHIRConverter, ReferenceConverterMixin):
         imis_claim.submit_services = imis_services
 
     @classmethod
-    def build_imis_submit_item(cls, imis_items, fhir_item):
-        price_asked = cls.get_fhir_item_price_asked(fhir_item)
-        qty_provided = cls.get_fhir_item_qty_provided(fhir_item)
-        item_code = cls.get_fhir_item_code(fhir_item)
-        imis_items.append(ClaimItemSubmit(item_code, qty_provided, price_asked))
+    def build_imis_submit_item(cls, imis_items, fhir_item, fhir_claim, audit_user_id):
+        item = cls.__get_provision_from_contained_or_reference(
+                fhir_item, fhir_claim,
+                MedicationConverter,
+                audit_user_id)
+        claim_item = ClaimItem(
+            qty_provided=cls.get_fhir_item_qty_provided(fhir_item),
+            price_asked=cls.get_fhir_item_price_asked(fhir_item),
+            item=item
+        )
+        claim_item.code = item.code
+        imis_items.append(claim_item)
 
     @classmethod
-    def build_imis_submit_service(cls, imis_services, fhir_item):
+    def build_imis_submit_service(cls, imis_services, fhir_item, fhir_claim, audit_user_id):
+        claim_service = ClaimService(
+            qty_provided=cls.get_fhir_item_qty_provided(fhir_item),
+            price_asked=cls.get_fhir_item_price_asked(fhir_item),
+            service=cls.__get_provision_from_contained_or_reference(
+                fhir_item, fhir_claim,
+                ActivityDefinitionConverter,
+                audit_user_id)
+        )
+        claim_service.code = claim_service.service.code
+        imis_services.append(claim_service)
+
+    @classmethod
+    def __get_provision_from_contained_or_reference(cls, fhir_provision, fhir_claim, converter, audit_user_id):
+        # Items and services are referenced by extension with ValueReference
+        reference = fhir_provision.extension[0].valueReference
+        return get_from_contained_or_by_reference(
+            reference, fhir_claim.contained, converter, audit_user_id)
+
+    @classmethod
+    def _get_imis_claim_provision(cls, fhir_item, submission_type: Type[ClaimElementSubmit]):
         price_asked = cls.get_fhir_item_price_asked(fhir_item)
-        qty_provided = cls.get_fhir_item_qty_provided(fhir_item)
-        service_code = cls.get_fhir_item_code(fhir_item)
-        imis_services.append(ClaimServiceSubmit(service_code, qty_provided, price_asked))
+        quantity = cls.get_fhir_item_qty_provided(fhir_item)
+        code = cls.get_fhir_item_code(fhir_item)
+        return submission_type(code, quantity, price_asked).to_claim_provision()
 
     @classmethod
     def get_fhir_item_code(cls, fhir_item):
