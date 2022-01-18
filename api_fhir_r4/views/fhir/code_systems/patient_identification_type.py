@@ -26,9 +26,9 @@ class CodeSystemOpenIMISPatientIdentificationTypeViewSet(viewsets.ViewSet):
                 "model_name": 'IdentificationType',
                 "code_field": 'code',
                 "display_field": 'identification_type',
-                "id": 'openIMISPatientIdentificationTypes',
-                "name": 'openIMISPatientIdentificationTypes',
-                "title": 'openIMIS Patient Identification Types',
+                "id": 'patient-identification-type',
+                "name": 'PatientIdentificationTypeCS',
+                "title": 'Identification Type (Patient)',
                 "description": "Indicates the type of document the Patient used to identify himself."
                                "Values defined by openIMIS. Can be extended.",
                 "url": self.request.build_absolute_uri()

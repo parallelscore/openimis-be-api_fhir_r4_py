@@ -158,7 +158,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-type"
                 if hasattr(imis_family, "family_type") and imis_family.family_type is not None:
                     display = GroupTypeMapping.group_type[str(imis_family.family_type.code)]
-                    system = "CodeSystem/group-types"
+                    system = "CodeSystem/group-type"
                     extension.valueCodeableConcept = cls.build_codeable_concept(code=str(imis_family.family_type.code),
                                                                                 system=system)
                     if len(extension.valueCodeableConcept.coding) == 1:

@@ -7,7 +7,7 @@ from insuree.models import FamilyType
 
 class CodeSystemGroupTypeAPITests(GenericFhirAPITestMixin, APITestCase):
 
-    base_url = GeneralConfiguration.get_base_url()+'CodeSystem/group-types/'
+    base_url = GeneralConfiguration.get_base_url()+'CodeSystem/group-type/'
 
     def setUp(self):
         self._EXPECTED_COUNT = FamilyType.objects.all().count()
@@ -22,5 +22,5 @@ class CodeSystemGroupTypeAPITests(GenericFhirAPITestMixin, APITestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
-        self.assertEqual(response_data['name'], 'openIMISGroupTypes')
-        self.assertEqual(response_data['title'], 'openIMIS Group Types')
+        self.assertEqual(response_data['name'], 'GroupTypeCS')
+        self.assertEqual(response_data['title'], 'Group Type (Group)')

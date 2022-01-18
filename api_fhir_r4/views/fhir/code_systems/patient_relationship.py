@@ -26,9 +26,9 @@ class CodeSystemOpenIMISPatientRelationshipViewSet(viewsets.ViewSet):
                 "model_name": 'Relation',
                 "code_field": 'id',
                 "display_field": 'relation',
-                "id": 'openIMISPatientContactRelationship',
-                "name": 'openIMISPatientContactRelationship',
-                "title": 'openIMIS Patient Contact Relationship',
+                "id": 'patient-contact-relationship',
+                "name": 'PatientContactRelationshipCS',
+                "title": 'Contact Relationship (Patient)',
                 "description": "Indicates the Relationship of a Patient with the Head of the Family. "
                                "Values defined by openIMIS.",
                 "url": self.request.build_absolute_uri()

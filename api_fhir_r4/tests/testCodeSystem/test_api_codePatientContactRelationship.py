@@ -27,5 +27,5 @@ class CodeSystemPatientContactRelationshipAPITests(GenericFhirAPITestMixin, APIT
                 brother_sister = concept['display']
         self.assertEqual(brother_sister, 'Brother/Sister')
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
-        self.assertEqual(response_data['name'], 'openIMISPatientContactRelationship')
-        self.assertEqual(response_data['title'], 'openIMIS Patient Contact Relationship')
+        self.assertEqual(response_data['name'], 'PatientContactRelationshipCS')
+        self.assertEqual(response_data['title'], 'Contact Relationship (Patient)')

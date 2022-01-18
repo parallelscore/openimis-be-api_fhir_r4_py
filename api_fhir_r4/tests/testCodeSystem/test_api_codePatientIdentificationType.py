@@ -7,7 +7,7 @@ from insuree.models import IdentificationType
 
 class CodeSystemPatientIdentificationTypeAPITests(GenericFhirAPITestMixin, APITestCase):
 
-    base_url = GeneralConfiguration.get_base_url()+'CodeSystem/patient-identification-types/'
+    base_url = GeneralConfiguration.get_base_url()+'CodeSystem/patient-identification-type/'
 
     def setUp(self):
         self._EXPECTED_COUNT = IdentificationType.objects.all().count()
@@ -27,5 +27,5 @@ class CodeSystemPatientIdentificationTypeAPITests(GenericFhirAPITestMixin, APITe
                 national_id = concept['display']
         self.assertEqual(national_id, 'National ID')
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
-        self.assertEqual(response_data['name'], 'openIMISPatientIdentificationTypes')
-        self.assertEqual(response_data['title'], 'openIMIS Patient Identification Types')
+        self.assertEqual(response_data['name'], 'PatientIdentificationTypeCS')
+        self.assertEqual(response_data['title'], 'Identification Type (Patient')

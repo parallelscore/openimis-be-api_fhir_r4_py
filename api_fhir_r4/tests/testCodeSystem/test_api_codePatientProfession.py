@@ -27,5 +27,5 @@ class CodeSystemPatientProfessionAPITests(GenericFhirAPITestMixin, APITestCase):
                 national_id = concept['display']
         self.assertEqual(national_id, 'Employee')
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
-        self.assertEqual(response_data['name'], 'openIMISPatientProfession')
-        self.assertEqual(response_data['title'], 'openIMIS Patient Profession')
+        self.assertEqual(response_data['name'], 'PatientProfessionCS')
+        self.assertEqual(response_data['title'], 'Profession (Patient)')
