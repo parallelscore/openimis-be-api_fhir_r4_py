@@ -18,6 +18,12 @@ class R4OrganisationConfig(OrganisationConfiguration):
                  'http://terminology.hl7.org/CodeSystem/organization-type')
 
     @classmethod
+    def get_fhir_ph_organisation_contactentity_type(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_ph_organisation_type_contactentity_type',
+                 'http://terminology.hl7.org/CodeSystem/contactentity-type')
+
+    @classmethod
     def get_fhir_address_municipality_extension_system(cls):
         return cls.get_config_attribute('R4_fhir_organisation_config').get('fhir_address_municipality_extension_system',
                                                                            'StructureDefinition/address-municipality')
@@ -51,3 +57,81 @@ class R4OrganisationConfig(OrganisationConfiguration):
         return cls.get_config_attribute('R4_fhir_organisation_config') \
             .get('fhir_ph_organisation_activity_code_system',
                  'CodeSystem/organization-ph-activity')
+
+    @classmethod
+    def get_fhir_insurer_organisation_id(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_id',
+                 'openIMIS-Implementation')
+
+    @classmethod
+    def get_fhir_insurer_organisation_code(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_code',
+                 'openIMIS')
+
+    @classmethod
+    def get_fhir_insurer_organisation_name(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_name',
+                 'openIMIS Implementation')
+
+    @classmethod
+    def get_fhir_insurer_organisation_type(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_type',
+                 'ins')
+
+    @classmethod
+    def get_fhir_insurer_organisation_email(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_email',
+                 'implementation@openimis.org')
+
+    @classmethod
+    def get_fhir_insurer_organisation_phone(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_phone',
+                 '0908060703')
+
+    @classmethod
+    def get_fhir_insurer_organisation_fax(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_fax',
+                 '0908060730')
+
+    @classmethod
+    def get_fhir_insurer_organisation_contact_name(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_contact_name',
+                 'Manuel D. Medina')
+
+    @classmethod
+    def get_fhir_insurer_organisation_municipality(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_municipality',
+                 'Jamu')
+
+    @classmethod
+    def get_fhir_insurer_organisation_city(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_city',
+                 'Jamula')
+
+    @classmethod
+    def get_fhir_insurer_organisation_district(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_district',
+                 'Rapta')
+
+    @classmethod
+    def get_fhir_insurer_organisation_state(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_state',
+                 'Ultha')
+
+    @classmethod
+    def get_fhir_insurer_organisation_line(cls):
+        return cls.get_config_attribute('R4_fhir_organisation_config') \
+            .get('fhir_insurer_organisation_line',
+                 '1 Pasay')
