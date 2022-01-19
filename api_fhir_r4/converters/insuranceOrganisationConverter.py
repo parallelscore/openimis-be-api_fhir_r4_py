@@ -11,6 +11,7 @@ from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 
 
 class InsuranceOrganisationConverter(BaseFHIRConverter):
+
     @classmethod
     def to_fhir_obj(cls, imis_organisation, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_organisation = Organization()
@@ -25,6 +26,7 @@ class InsuranceOrganisationConverter(BaseFHIRConverter):
         cls.build_fhir_name(fhir_organisation, imis_organisation)
         cls.build_fhir_type(fhir_organisation, imis_organisation)
         cls.build_fhir_contact(fhir_organisation, imis_organisation)
+        cls.build_fhir_telecom(fhir_organisation, imis_organisation)
         cls.build_fhir_address_organisation(fhir_organisation, imis_organisation)
         return fhir_organisation
 
@@ -57,7 +59,7 @@ class InsuranceOrganisationConverter(BaseFHIRConverter):
     @classmethod
     def build_fhir_type(cls, fhir_organisation, imis_organisation):
         fhir_organisation.type = [cls.build_codeable_concept(
-            code=imis_organisation["fhir_insurer_organisation_code"],
+            code=imis_organisation["fhir_insurer_organisation_type"],
             system=R4OrganisationConfig.get_fhir_ph_organisation_type_system()
         )]
 
@@ -68,18 +70,17 @@ class InsuranceOrganisationConverter(BaseFHIRConverter):
     @classmethod
     def build_fhir_telecom(cls, fhir_organisation, imis_organisation):
         fhir_organisation.telecom = []
-        if imis_organisation.email:
-            fhir_organisation.telecom.append(cls.build_fhir_contact_point(
-                system=ContactPointSystem.EMAIL,
-                value=imis_organisation.email))
-        if imis_organisation.fax:
-            fhir_organisation.telecom.append(cls.build_fhir_contact_point(
-                system=ContactPointSystem.FAX,
-                value=imis_organisation.fax))
-        if imis_organisation.phone:
-            fhir_organisation.telecom.append(cls.build_fhir_contact_point(
-                system=ContactPointSystem.PHONE,
-                value=imis_organisation.phone))
+        fhir_organisation.telecom.append(cls.build_fhir_contact_point(
+            system=ContactPointSystem.EMAIL,
+            value=imis_organisation["fhir_insurer_organisation_email"]))
+
+        fhir_organisation.telecom.append(cls.build_fhir_contact_point(
+            system=ContactPointSystem.FAX,
+            value=imis_organisation["fhir_insurer_organisation_fax"]))
+
+        fhir_organisation.telecom.append(cls.build_fhir_contact_point(
+            system=ContactPointSystem.PHONE,
+            value=imis_organisation["fhir_insurer_organisation_phone"]))
 
     @classmethod
     def build_fhir_contact(cls, fhir_organisation, imis_organisation):
