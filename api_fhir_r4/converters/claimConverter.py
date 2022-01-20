@@ -5,7 +5,8 @@ from urllib.parse import urljoin
 
 from typing import Type
 
-from claim.services import ClaimItemSubmit, ClaimServiceSubmit, ClaimConfig, ClaimElementSubmit
+from claim.services import ClaimElementSubmit
+from claim.apps import ClaimConfig
 from claim.models import Claim, ClaimItem, ClaimService, ClaimAttachment
 
 from api_fhir_r4.containedResources.converterUtils import get_from_contained_or_by_reference
