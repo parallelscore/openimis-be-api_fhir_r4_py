@@ -46,7 +46,7 @@ class InsurancePlanTestMixin(GenericTestMixin):
         imis_product.max_installments = self._TEST_MAX_INSTALLMENTS
         imis_product.grace_period = self._TEST_GRACE_PERIOD_PAYMENT
         imis_product.insurance_period = self._TEST_INSURANCE_PERIOD
-        imis_product.member_count = self._TEST_MEMBER_COUNT
+        imis_product.max_members = self._TEST_MEMBER_COUNT
         imis_product.lump_sum = self._TEST_LUMPSUM
         imis_product.threshold = self._TEST_THRESHOLD
         imis_product.premium_adult = self._TEST_PREMIUM_ADULT

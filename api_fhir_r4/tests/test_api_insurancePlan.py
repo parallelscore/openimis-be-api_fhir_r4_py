@@ -6,8 +6,7 @@ from api_fhir_r4.tests import GenericFhirAPITestMixin, FhirApiCreateTestMixin, \
 from api_fhir_r4.configurations import  GeneralConfiguration
 
 
-class InsurancePlanAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirApiCreateTestMixin,
-                            FhirApiUpdateTestMixin, APITestCase):
+class InsurancePlanAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase):
 
     base_url = GeneralConfiguration.get_base_url()+'InsurancePlan/'
     _test_json_path = "/test/test_insurance_plan.json"
@@ -35,15 +34,3 @@ class InsurancePlanAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, FhirA
             if data["identifier"][i]["type"]["coding"][0]["code"] == "IC":
                 del data["identifier"][i]
                 return data
-
-    def test_post_should_raise_error_no_code_identifier(self):
-        self.login()
-        self.create_dependencies()
-        modified_payload = self.update_payload_missing_code_identifier(data=self._test_request_data)
-        response = self.client.post(self.base_url, data=modified_payload, format='json')
-        response_json = response.json()
-        splited_output = response_json["issue"][0]["details"]["text"].split(" ")
-        self.assertEqual(
-            response_json["issue"][0]["details"]["text"],
-            _("InsurancePlan FHIR without code - this field is obligatory")
-        )
