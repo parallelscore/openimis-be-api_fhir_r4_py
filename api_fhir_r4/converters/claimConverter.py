@@ -3,7 +3,7 @@ import hashlib
 import re
 from urllib.parse import urljoin
 
-from claim import ClaimItemSubmit, ClaimServiceSubmit, ClaimConfig
+from claim.services import ClaimItemSubmit, ClaimServiceSubmit, ClaimConfig
 from claim.models import Claim, ClaimItem, ClaimService, ClaimAttachment
 
 from api_fhir_r4.mapping.claimMapping import ClaimPriorityMapping, ClaimVisitTypeMapping
