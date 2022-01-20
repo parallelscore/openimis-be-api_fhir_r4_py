@@ -11,14 +11,10 @@ from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
 
 from api_fhir_r4.configurations import R4ClaimConfig, GeneralConfiguration
-from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, PatientConverter, \
-    MedicationConverter, HealthFacilityOrganisationConverter, ClaimAdminPractitionerConverter, \
-    ActivityDefinitionConverter, ReferenceConverterMixin as r, GroupConverter
+from api_fhir_r4.converters import ClaimResponseConverter, OperationOutcomeConverter, ReferenceConverterMixin as r
 from api_fhir_r4.converters.claimConverter import ClaimConverter
 from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from api_fhir_r4.serializers import BaseFHIRSerializer
-from insuree.models import Insuree
-from location.models import HealthFacility
 
 
 class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
