@@ -226,7 +226,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
     def __build_imis_limit(cls, imis_product, benefit_limits):
         for limit in benefit_limits:
             if limit.code.coding[0].code == 'memberCount':
-                imis_product.member_count = int(limit.value.value)
+                imis_product.max_members = int(limit.value.value)
             if limit.code.coding[0].code == 'period':
                 imis_product.insurance_period = int(limit.value.value)
 
@@ -390,7 +390,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             elif value == "administration-period":
                 cls.__build_fhir_period_extension(extension, value, imis_product.administration_period)
             elif value == "payment-grace-period":
-                cls.__build_fhir_period_extension(extension, value, imis_product.grace_period)
+                cls.__build_fhir_period_extension(extension, value, imis_product.grace_period_enrolment)
             elif value == "renewal-grace-period":
                 cls.__build_fhir_period_extension(extension, value, imis_product.grace_period_renewal)
             elif value == "renewal-discount":
@@ -429,7 +429,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             build_extension(fhir_insurance_plan, imis_product, "start_cycle4")
         if imis_product.administration_period is not None:
             build_extension(fhir_insurance_plan, imis_product, "administration-period")
-        if imis_product.grace_period is not None:
+        if imis_product.grace_period_enrolment is not None:
             build_extension(fhir_insurance_plan, imis_product, "payment-grace-period")
         if imis_product.grace_period_renewal is not None:
             build_extension(fhir_insurance_plan, imis_product, "renewal-grace-period")
@@ -471,7 +471,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
             for i in range(len(period_exts)):
                 value = period_exts[i].valueQuantity.value
                 if i == 0:
-                    imis_product.grace_period = value
+                    imis_product.grace_period_enrolment = value
                 if i == 1:
                     imis_product.administration_period = value
                 if i == 2:

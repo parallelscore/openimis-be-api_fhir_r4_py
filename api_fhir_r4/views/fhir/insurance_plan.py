@@ -9,7 +9,7 @@ from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from product.models import Product
 
 
-class ProductViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, MultiIdentifierUpdateMixin, viewsets.ModelViewSet):
+class ProductViewSet(BaseFHIRView, MultiIdentifierRetrieverMixin, viewsets.ReadOnlyModelViewSet):
     retrievers = [UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever]
     serializer_class = InsurancePlanSerializer
     permission_classes = (FHIRApiProductPermissions,)
