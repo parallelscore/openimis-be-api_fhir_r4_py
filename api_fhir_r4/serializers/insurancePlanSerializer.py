@@ -38,7 +38,7 @@ class InsurancePlanSerializer(BaseFHIRSerializer):
         instance.general_assembly_fee = validated_data.get('general_assembly_fee', instance.general_assembly_fee)
         instance.conversion_product = validated_data.get('conversion_product', instance.conversion_product)
         instance.max_installments = validated_data.get('max_installments', instance.max_installments)
-        instance.grace_period = validated_data.get('grace_period', instance.grace_period)
+        instance.grace_period_enrolment = validated_data.get('grace_period_enrolment', instance.grace_period_enrolment)
         instance.audit_user_id = self.get_audit_user_id()
         instance.save()
         return instance
