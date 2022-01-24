@@ -5,7 +5,7 @@ from typing import List, Union
 
 from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.mixins import ContainedContentSerializerMixin
-from api_fhir_r4.models import Claim as FHIRClaim
+from api_fhir_r4.models import ClaimV2 as FHIRClaim
 from django.http import HttpResponseForbidden
 from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404

@@ -17,5 +17,4 @@ class FhirApiReadTestMixin(object):
     def test_get_should_return_200(self):
         self.login()
         response = self.client.get(self.base_url, data=None, format='json')
-        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
