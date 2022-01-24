@@ -78,6 +78,7 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
         return True
 
     def list(self, request, *args, **kwargs):
+        resource_type = request.GET.get("resourceType")
         identifier = request.GET.get("code")
         if identifier:
             return self.retrieve(request, *args, **{**kwargs, 'identifier': identifier})
@@ -91,13 +92,14 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
             filtered_querysets[model, serializer] = next_serializer_data
 
         # if insurance organisation queryset is empty - take the default one
-        if len(filtered_querysets[ModuleConfiguration, InsuranceOrganizationSerializer]) == 0:
-            filtered_querysets[ModuleConfiguration, InsuranceOrganizationSerializer] = \
-                [DEFAULT_CFG['R4_fhir_insurance_organisation_config']]
-        else:
-            # save in 'filtered_queryset' values from module db config to have good value in 'total_count'
-            filtered_querysets[ModuleConfiguration, InsuranceOrganizationSerializer] = \
-                self._get_insurance_organisations_as_list()
+        if resource_type is None or resource_type == 'io':
+            if len(filtered_querysets[ModuleConfiguration, InsuranceOrganizationSerializer]) == 0:
+                filtered_querysets[ModuleConfiguration, InsuranceOrganizationSerializer] = \
+                    [DEFAULT_CFG['R4_fhir_insurance_organisation_config']]
+            else:
+                # save in 'filtered_queryset' values from module db config to have good value in 'total_count'
+                filtered_querysets[ModuleConfiguration, InsuranceOrganizationSerializer] = \
+                    self._get_insurance_organisations_as_list()
 
         page = self.paginate_queryset(list(chain(*filtered_querysets.values())))
         data = self.__dispatch_page_data(page)
