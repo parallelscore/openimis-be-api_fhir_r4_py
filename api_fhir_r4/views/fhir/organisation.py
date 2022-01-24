@@ -1,5 +1,7 @@
+import logging
 from datetime import datetime as py_datetime
 from django.db.models import Q
+from django.http import Http404
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -15,6 +17,8 @@ from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter, DateUp
 from location.models import HealthFacility
 from core.models import ModuleConfiguration
 from policyholder.models import PolicyHolder
+
+logger = logging.getLogger(__name__)
 
 
 class OrganisationViewSet(BaseMultiserializerFHIRView,
@@ -77,12 +81,46 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        # consider if user want to obtain Organisation/openIMIS-implementation
-        identifier = kwargs.get("identifier")
-        if identifier == 'openIMIS-Implementation':
-            serializer = InsuranceOrganizationSerializer(self._io_queryset()[0])
-            return Response(serializer.data)
-        return super().retrieve(request, *args, **kwargs)
+        self._validate_retrieve_model_request()
+        retrieved = []
+        for serializer, (qs, _) in self.get_eligible_serializers_iterator():
+            if qs.model is not ModuleConfiguration:
+                ref_type, instance = self._get_object_with_first_valid_retriever(qs, kwargs['identifier'])
+                if instance:
+                    serializer = serializer(instance, reference_type=ref_type)
+                    if serializer.data:
+                        retrieved.append(serializer.data)
+            else:
+                if qs.count() > 0:
+                    data = self._get_insurance_organisation(kwargs.get('identifier', None))
+                    if data:
+                        retrieved.append(data)
+
+        if len(retrieved) > 1:
+            raise ValueError("Ambiguous retrieve result, object found for multiple serializers.")
+        if len(retrieved) == 0:
+            raise Http404(f"Resource for identifier {kwargs['identifier']} not found")
+
+        return Response(retrieved[0])
+
+    def _get_insurance_organisations(self):
+        """method to get insurance organisation from module fhir config"""
+        data = []
+        serializer = InsuranceOrganizationSerializer()
+        module_config = self._io_queryset()[0]._cfg
+        if 'insurer_organisation' in module_config:
+            insurer_organisations = module_config['insurer_organisation']
+            for io in insurer_organisations:
+                data.append(serializer.to_representation(obj=io))
+        return data
+
+    def _get_insurance_organisation(self, identifier):
+        """method to get chosen insurance organisation from module fhir config"""
+        insurer_organisations = self._get_insurance_organisations()
+        if len(insurer_organisations) > 0:
+            for io in insurer_organisations:
+                if identifier == f"{io['id']}":
+                    return io
 
     def get_queryset(self):
         return HealthFacility.objects
@@ -117,3 +155,22 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
             return request.GET['resourceType'].lower()
         except KeyError:
             return None
+
+    def _serialize_dispatched_data(self, data, serializer_models):
+        # override this method to support InsuranceOrganisation serializer
+        #  solution - model taken from ModuleConfiguration model
+        serialized = []
+        for model, model_data in data.items():
+            serializer_cls = serializer_models.get(model, None)
+            if not serializer_cls:
+                logger.error(f"Found data of type {model_data} but it couldn't be matched with "
+                             f"any of available serializers {serializer_models}")
+                continue
+            else:
+                if model is ModuleConfiguration:
+                    serialized.extend(self._get_insurance_organisations())
+                else:
+                    serializer = serializer_cls(tuple(model_data), many=True)
+                    serialized.extend(serializer.data)
+
+        return serialized
