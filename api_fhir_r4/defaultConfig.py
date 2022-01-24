@@ -154,6 +154,7 @@ DEFAULT_CFG = {
         "fhir_ph_organisation_type_contactentity_type":"http://terminology.hl7.org/CodeSystem/contactentity-type"
     },
     "R4_fhir_insurance_organisation_config": {
+        "resource_type": 'insurance_organisation',
         "id": 'openIMIS-Implementation',
         "name": 'openIMIS Implementation',
         "code": 'openIMIS',
