@@ -28,4 +28,4 @@ class CodeSystemPatientIdentificationTypeAPITests(GenericFhirAPITestMixin, APITe
         self.assertEqual(national_id, 'National ID')
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
         self.assertEqual(response_data['name'], 'PatientIdentificationTypeCS')
-        self.assertEqual(response_data['title'], 'Identification Type (Patient')
+        self.assertEqual(response_data['title'], 'Identification Type (Patient)')
