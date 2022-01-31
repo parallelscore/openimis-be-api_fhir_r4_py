@@ -1,12 +1,12 @@
 from typing import Union
 
-from core.models import User, TechnicalUser
 from django.http.response import HttpResponseBase
+from fhir.resources.fhirabstractmodel import FHIRAbstractModel
+from rest_framework import serializers
 
 from api_fhir_r4.configurations import GeneralConfiguration
-from rest_framework import serializers
 from api_fhir_r4.converters import BaseFHIRConverter, OperationOutcomeConverter, ReferenceConverterMixin
-from fhir.resources.fhirabstractmodel import FHIRAbstractModel
+from core.models import User, TechnicalUser
 
 
 class BaseFHIRSerializer(serializers.Serializer):
@@ -90,3 +90,4 @@ from api_fhir_r4.serializers.enrolmentOfficerPractitionerRoleSerializer import \
 from api_fhir_r4.serializers.communicationSerializer import CommunicationSerializer
 from api_fhir_r4.serializers.invoiceSerializer import InvoiceSerializer
 from api_fhir_r4.serializers.billSerializer import BillSerializer
+from api_fhir_r4.serializers.subscriptionSerializer import SubscriptionSerializer

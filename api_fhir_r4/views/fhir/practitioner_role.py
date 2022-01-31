@@ -6,7 +6,7 @@ from api_fhir_r4.multiserializer import modelViewset
 from api_fhir_r4.permissions import FHIRApiPractitionerPermissions
 from api_fhir_r4.serializers import ClaimAdminPractitionerRoleSerializer, \
     EnrolmentOfficerPractitionerRoleSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseMultiserializerFHIRView
+from api_fhir_r4.views.fhir.base import BaseMultiserializerFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from claim.models import ClaimAdmin
 from core.models import Officer

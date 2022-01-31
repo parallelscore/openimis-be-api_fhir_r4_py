@@ -4,7 +4,7 @@ from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin
 from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiCommunicationRequestPermissions
 from api_fhir_r4.serializers import CommunicationSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
+from api_fhir_r4.views.fhir.base import BaseFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from claim.models import Feedback
 

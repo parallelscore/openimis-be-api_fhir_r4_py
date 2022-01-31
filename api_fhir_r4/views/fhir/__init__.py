@@ -1,4 +1,3 @@
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
 from api_fhir_r4.views.fhir.activity_definition import ActivityDefinitionViewSet
 from api_fhir_r4.views.fhir.claim import ClaimViewSet
 from api_fhir_r4.views.fhir.claim_response import ClaimResponseViewSet
@@ -28,3 +27,4 @@ from api_fhir_r4.views.fhir.medication import MedicationViewSet
 from api_fhir_r4.views.fhir.organisation import OrganisationViewSet
 from api_fhir_r4.views.fhir.practitioner import PractitionerViewSet
 from api_fhir_r4.views.fhir.practitioner_role import PractitionerRoleViewSet
+from api_fhir_r4.views.fhir.subscription import SubscriptionViewSet

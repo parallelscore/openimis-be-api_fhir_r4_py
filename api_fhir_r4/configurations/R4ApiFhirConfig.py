@@ -1,6 +1,6 @@
 from api_fhir_r4.configurations import BaseApiFhirConfiguration, R4IdentifierConfig, \
     R4LocationConfig, R4MaritalConfig, R4IssueTypeConfig, R4ClaimConfig, R4CoverageEligibilityConfiguration, \
-    R4CommunicationRequestConfig, R4OrganisationConfig, R4CoverageConfig
+    R4CommunicationRequestConfig, R4OrganisationConfig, R4CoverageConfig, R4SubscriptionConfig
 
 
 class R4ApiFhirConfig(BaseApiFhirConfiguration):
@@ -40,3 +40,7 @@ class R4ApiFhirConfig(BaseApiFhirConfiguration):
     @classmethod
     def get_organisation_configuration(cls):
         return R4OrganisationConfig
+
+    @classmethod
+    def get_subscription_configuration(cls):
+        return R4SubscriptionConfig

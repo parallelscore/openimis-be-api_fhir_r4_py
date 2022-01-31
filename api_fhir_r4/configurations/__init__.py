@@ -514,6 +514,24 @@ class OrganisationConfiguration(BaseConfiguration):
         raise NotImplementedError('`get_fhir_ph_organisation_type_system()` must be implemented.')
 
 
+class SubscriptionConfiguration(BaseConfiguration):
+    @classmethod
+    def build_configuration(cls, cfg):
+        raise NotImplementedError('`build_configuration()` must be implemented.')
+
+    @classmethod
+    def get_fhir_subscription_channel_rest_hook(cls):
+        raise NotImplementedError('`get_fhir_subscription_channel_rest_hook()` must be implemented.')
+
+    @classmethod
+    def get_fhir_subscription_status_off(cls):
+        raise NotImplementedError('`get_fhir_subscription_status_off()` must be implemented.')
+
+    @classmethod
+    def get_fhir_subscription_status_active(cls):
+        raise NotImplementedError('`get_fhir_subscription_status_active()` must be implemented.')
+
+
 class BaseApiFhirConfiguration(BaseConfiguration):  # pragma: no cover
 
     @classmethod
@@ -527,6 +545,7 @@ class BaseApiFhirConfiguration(BaseConfiguration):  # pragma: no cover
         cls.get_communication_request_configuration().build_configuration(cfg)
         cls.get_coverage_configuration().build_configuration(cfg)
         cls.get_organisation_configuration().build_configuration(cfg)
+        cls.get_subscription_configuration().build_configuration(cfg)
 
     @classmethod
     def get_identifier_configuration(cls):
@@ -564,6 +583,10 @@ class BaseApiFhirConfiguration(BaseConfiguration):  # pragma: no cover
     def get_organisation_configuration(cls):
         raise NotImplementedError('`get_organisation_configuration()` must be implemented.')
 
+    @classmethod
+    def get_subscription_configuration(cls):
+        raise NotImplementedError('`get_subscription_configuration()` must be implemented.')
+
 
 from api_fhir_r4.configurations.generalConfiguration import GeneralConfiguration
 from api_fhir_r4.configurations.R4IdentifierConfig import R4IdentifierConfig
@@ -576,6 +599,7 @@ from api_fhir_r4.configurations.R4CoverageEligibilityConfiguration import R4Cove
 from api_fhir_r4.configurations.R4CommunicationRequestConfig import R4CommunicationRequestConfig
 from api_fhir_r4.configurations.R4OrganisationConfig import R4OrganisationConfig
 from api_fhir_r4.configurations.R4CoverageConfig import R4CoverageConfig
+from api_fhir_r4.configurations.R4SubscriptionConfig import R4SubscriptionConfig
 # all specific configurations have to be imported before R4ApiFhirConfig
 from api_fhir_r4.configurations.R4ApiFhirConfig import R4ApiFhirConfig
 from api_fhir_r4.configurations.moduleConfiguration import ModuleConfiguration
