@@ -26,9 +26,9 @@ class CodeSystemOpenIMISGroupTypeViewSet(viewsets.ViewSet):
                 "model_name": 'FamilyType',
                 "code_field": 'code',
                 "display_field": 'type',
-                "id": 'openIMISGroupTypes',
-                "name": 'openIMISGroupTypes',
-                "title": 'openIMIS Group Types',
+                "id": 'group-type',
+                "name": 'GroupTypeCS',
+                "title": 'Group Type (Group)',
                 "description": "Indicates the type of the Group. "
                                "Values defined by openIMIS. Can be extended.",
                 "url": self.request.build_absolute_uri()

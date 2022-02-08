@@ -26,9 +26,9 @@ class CodeSystemOpenIMISPatientEducationLevelViewSet(viewsets.ViewSet):
                 "model_name": 'Education',
                 "code_field": 'id',
                 "display_field": 'education',
-                "id": 'openIMISPatientEducationLevel',
-                "name": 'openIMISPatientEducationLevel',
-                "title": 'openIMIS Patient Education Level',
+                "id": 'patient-education-level',
+                "name": 'PatientEducationLevelCS',
+                "title": 'Education Level (Patient)',
                 "description": "Indicates the Education level of a Patient. "
                                "Values defined by openIMIS. Can be extended.",
                 "url": self.request.build_absolute_uri()

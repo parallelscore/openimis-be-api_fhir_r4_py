@@ -48,9 +48,9 @@ if 'insuree' in imis_modules:
         basename="CodeSystem/patient-profession_R4"
     )
     router.register(
-        r'CodeSystem/patient-identification-types',
+        r'CodeSystem/patient-identification-type',
         fhir_viewsets.CodeSystemOpenIMISPatientIdentificationTypeViewSet,
-        basename="CodeSystem/patient-identification-types_R4"
+        basename="CodeSystem/patient-identification-type_R4"
     )
     router.register(
         r'CodeSystem/patient-contact-relationship',
@@ -59,9 +59,9 @@ if 'insuree' in imis_modules:
     )
     # code system for openimis group
     router.register(
-        r'CodeSystem/group-types',
+        r'CodeSystem/group-type',
         fhir_viewsets.CodeSystemOpenIMISGroupTypeViewSet,
-        basename="CodeSystem/group-types_R4"
+        basename="CodeSystem/group-type_R4"
     )
     router.register(
         r'CodeSystem/group-confirmation-type',

@@ -35,7 +35,7 @@
          "valueCodeableConcept":{
             "coding":[
                {
-                  "system":"CodeSystem/group-types",
+                  "system":"CodeSystem/group-type",
                   "code":"H",
                   "display":"Household"
                }

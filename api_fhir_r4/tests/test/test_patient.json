@@ -80,7 +80,7 @@
                "valueCodeableConcept":{
                   "coding":[
                      {
-                        "system":"CodeSystem/patient-identification-types",
+                        "system":"CodeSystem/patient-identification-type",
                         "code":"P"
                      }
                   ]

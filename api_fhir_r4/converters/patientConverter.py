@@ -460,7 +460,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                         # add identifier extension
                         nested_extension = Extension.construct()
                         nested_extension.url = "type"
-                        system = "CodeSystem/patient-identification-types"
+                        system = "CodeSystem/patient-identification-type"
                         nested_extension.valueCodeableConcept = cls.build_codeable_concept(code=imis_insuree.type_of_id.code, system=system)
                         extension.extension.append(nested_extension)
 
