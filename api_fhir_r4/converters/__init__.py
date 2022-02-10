@@ -194,6 +194,10 @@ class BaseFHIRConverter(ABC):
         return contact_point
 
     @classmethod
+    def get_contract_points_by_system_code(cls, telecom, system=None):
+        return [contact.value for contact in telecom if contact.system == system]
+
+    @classmethod
     def build_fhir_address(cls, value, use, type):
         current_address = Address.construct()
         if value:
@@ -212,7 +216,7 @@ class BaseFHIRConverter(ABC):
         return fhir_reference
 
     @classmethod
-    def build_fhir_mapped_coding(cls, mapping):
+    def build_fhir_mapped_coding(cls, mapping) -> Coding:
         coding = Coding.construct()
 
         if GeneralConfiguration.show_system():
@@ -256,6 +260,8 @@ class BaseFHIRConverter(ABC):
 from api_fhir_r4.converters.groupConverterMixin import GroupConverterMixin
 from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
 from api_fhir_r4.converters.referenceConverterMixin import ReferenceConverterMixin
+from api_fhir_r4.converters.medicationConverter import MedicationConverter
+from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.contractConverter import ContractConverter
 from api_fhir_r4.converters.patientConverter import PatientConverter
 from api_fhir_r4.converters.groupConverter import GroupConverter
@@ -269,10 +275,7 @@ from api_fhir_r4.converters.coverageEligibilityRequestConverter import CoverageE
 # from api_fhir_r4.converters.policyCoverageEligibilityRequestConverter import PolicyCoverageEligibilityRequestConverter
 from api_fhir_r4.converters.communicationRequestConverter import CommunicationRequestConverter
 from api_fhir_r4.converters.claimResponseConverter import ClaimResponseConverter
-from api_fhir_r4.converters.medicationConverter import MedicationConverter
-from api_fhir_r4.converters.activityDefinitionConverter import ActivityDefinitionConverter
 from api_fhir_r4.converters.claimConverter import ClaimConverter
-from api_fhir_r4.converters.containedResourceConverter import ContainedResourceConverter
 from api_fhir_r4.converters.insurancePlanConverter import InsurancePlanConverter
 from api_fhir_r4.converters.codeSystemConverter import CodeSystemConverter
 from api_fhir_r4.converters.healthFacilityOrganisationConverter import HealthFacilityOrganisationConverter

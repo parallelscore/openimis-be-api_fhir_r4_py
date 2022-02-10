@@ -25,7 +25,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         # then create fhir object as usual
         cls.build_fhir_extentions(fhir_family, imis_family, reference_type)
         cls.build_fhir_identifiers(fhir_family, imis_family)
-        cls.build_fhir_pk(fhir_family, imis_family.uuid)
+        cls.build_fhir_pk(fhir_family, imis_family, reference_type=reference_type)
         cls.build_fhir_active(fhir_family, imis_family)
         cls.build_fhir_quantity(fhir_family, imis_family)
         cls.build_fhir_name(fhir_family, imis_family)
@@ -47,7 +47,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
 
     @classmethod
     def get_reference_obj_id(cls, imis_family):
-        return imis_family.uuid
+        return imis_family.id
 
     @classmethod
     def get_fhir_resource_type(cls):
@@ -148,7 +148,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         def build_extension(fhir_family, imis_family, value):
             extension = Extension.construct()
             if value == "group-address":
-                cls._build_extension_address(extension, fhir_family, imis_family)
+                cls._build_extension_address(extension, fhir_family, imis_family, reference_type=reference_type)
 
             elif value == "group-poverty-status":
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-poverty-status"
@@ -188,19 +188,17 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         for extension in fhir_family.extension:
             if extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-address":
                 address = extension.valueAddress
-                if address:
-                    # insuree use temp address
-                    if address.use == "home":
-                        if address.type == "physical":
-                            imis_family.address = address.text
-                            for ext in address.extension:
-                                if "StructureDefinition/address-location-reference" in ext.url:
-                                    value = cls.get_location_reference(ext.valueReference.reference)
-                                    if value:
-                                        try:
-                                            imis_family.location = Location.objects.get(uuid=value, validity_to__isnull=True)
-                                        except:
-                                            imis_family.location = None
+                # insuree use temp address
+                if address and address.use == "home" and address.type == "physical":
+                    imis_family.address = address.text
+                    for ext in address.extension:
+                        if "StructureDefinition/address-location-reference" in ext.url:
+                            value = cls.get_location_reference(ext.valueReference.reference)
+                            if value:
+                                try:
+                                    imis_family.location = Location.objects.get(uuid=value, validity_to__isnull=True)
+                                except Location.DoesNotExist:
+                                    imis_family.location = None
 
             elif extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-poverty-status":
                 imis_family.poverty = extension.valueBoolean
@@ -231,7 +229,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         return location.rsplit('Location/', 1)[1]
 
     @classmethod
-    def _build_extension_address(cls, extension, fhir_family, imis_family):
+    def _build_extension_address(cls, extension, fhir_family, imis_family, reference_type):
         extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/group-address"
         family_address = cls.build_fhir_address(imis_family.address, "home", "physical")
         if imis_family.location:
@@ -246,7 +244,8 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
             # address location reference extension
             extension_address = Extension.construct()
             extension_address.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-            extension_address.valueReference = LocationConverter.build_fhir_resource_reference(imis_family.location, 'Location')
+            extension_address.valueReference = LocationConverter\
+                .build_fhir_resource_reference(imis_family.location, 'Location', reference_type=reference_type)
             family_address.extension.append(extension_address)
             family_address.city = imis_family.location.name
         extension.valueAddress = family_address
