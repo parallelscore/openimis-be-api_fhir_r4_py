@@ -223,7 +223,9 @@ class ClaimAPIContainedTestBaseMixin:
 
 
 class ClaimAPIContainedTests(ClaimAPIContainedTestBaseMixin, GenericFhirAPITestMixin, APITestCase):
-
+    base_url = GeneralConfiguration.get_base_url() + 'Claim/'
+    _test_json_path = "/test/test_claim_contained.json"
+    
     def test_post_should_create_correctly(self):
         response = self.client.post(
             GeneralConfiguration.get_base_url() + 'login/', data=self._test_request_data_credentials, format='json'
