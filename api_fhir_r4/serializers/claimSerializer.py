@@ -33,58 +33,7 @@ class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
 
     def create(self, validated_data):
         from_contained = self._create_or_update_contained(self.initial_data)
-        essential_claim_fields = [
-            'date_claimed', 'date_from', 'date_to',
-            'icd_id', 'icd_1_id', 'icd_2_id', 'icd_3_id', 'icd_4_id',
-            'code',
-            'claimed',
-            'explanation',
-            'adjustment'
-            'category',
-            'visit_type',
-            'guarantee_id',
-
-            'insuree_id',
-            'health_facility_id',
-            'admin_id',
-
-            'items',
-            'services',
-
-            'json_ext'
-        ]
-        truncated_data = {k: v for k, v in validated_data.items() if k in essential_claim_fields}
-        truncated_data.pop('_state', None)
-
-        # Items and services passed in converter through additional attributes
-        truncated_data['items'] = self.__claim_provisions_to_dict(
-            validated_data['submit_items'],
-            from_contained['items__Medication'])
-
-        truncated_data['services'] = self.__claim_provisions_to_dict(
-            validated_data['submit_services'],
-            from_contained['services__ActivityDefinition'])
-
-        # If those resources are created through contained id is not available until _create_or_update_contained is
-        # called. This ensures references are ok. Codes are assigned in converter as additional variables.
-        # .get() is used as those values are mandatory in claim and have to be unique.
-        truncated_data['health_facility_id'] = self.__get_contained_or_default_hf_id(from_contained, validated_data)
-        truncated_data['insuree_id'] = self.__get_contained_or_default_insuree(from_contained, validated_data)
-        truncated_data['admin_id'] = self.__get_contained_or_default_claim_admin(from_contained, validated_data)
-
-        user = self.context.get("request").user
-        if not user or not user.has_perms(
-            ClaimConfig.gql_mutation_create_claims_perms
-            + ClaimConfig.gql_mutation_submit_claims_perms
-        ):
-            return HttpResponseForbidden()
-
-        rule_engine_validation = GeneralConfiguration.get_claim_rule_engine_validation()
-        claim = ClaimSubmitService(user)\
-            .enter_and_submit(truncated_data, rule_engine_validation=rule_engine_validation)
-
-        attachments = validated_data.get('claim_attachments', [])
-        self.create_claim_attachments(claim.code, attachments)
+        claim = self._create_claim_from_validated_data(validated_data, from_contained)
         return self.create_claim_response(claim.code)
 
     def create_claim_response(self, claim_code):
@@ -180,3 +129,58 @@ class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
     def __id_from_contained(self, contained_collection, lookup_func):
         matching = [x.id for x in contained_collection if lookup_func(x)]
         return matching[0] if len(matching) != 0 else None
+
+    def _create_claim_from_validated_data(self, validated_data, contained):
+        essential_claim_fields = [
+            'date_claimed', 'date_from', 'date_to',
+            'icd_id', 'icd_1_id', 'icd_2_id', 'icd_3_id', 'icd_4_id',
+            'code',
+            'claimed',
+            'explanation',
+            'adjustment',
+            'category',
+            'visit_type',
+            'guarantee_id',
+
+            'insuree_id',
+            'health_facility_id',
+            'admin_id',
+
+            'items',
+            'services',
+
+            'json_ext'
+        ]
+        truncated_data = {k: v for k, v in validated_data.items() if k in essential_claim_fields}
+        truncated_data.pop('_state', None)
+
+        # Items and services passed in converter through additional attributes
+        truncated_data['items'] = self.__claim_provisions_to_dict(
+            validated_data['submit_items'],
+            contained['items__Medication'])
+
+        truncated_data['services'] = self.__claim_provisions_to_dict(
+            validated_data['submit_services'],
+            contained['services__ActivityDefinition'])
+
+        # If those resources are created through contained id is not available until _create_or_update_contained is
+        # called. This ensures references are ok. Codes are assigned in converter as additional variables.
+        # .get() is used as those values are mandatory in claim and have to be unique.
+        truncated_data['health_facility_id'] = self.__get_contained_or_default_hf_id(contained, validated_data)
+        truncated_data['insuree_id'] = self.__get_contained_or_default_insuree(contained, validated_data)
+        truncated_data['admin_id'] = self.__get_contained_or_default_claim_admin(contained, validated_data)
+
+        user = self.context.get("request").user
+        if not user or not user.has_perms(
+                ClaimConfig.gql_mutation_create_claims_perms
+                + ClaimConfig.gql_mutation_submit_claims_perms
+        ):
+            return HttpResponseForbidden()
+
+        rule_engine_validation = GeneralConfiguration.get_claim_rule_engine_validation()
+        claim = ClaimSubmitService(user) \
+            .enter_and_submit(truncated_data, rule_engine_validation=rule_engine_validation)
+
+        attachments = validated_data.get('claim_attachments', [])
+        self.create_claim_attachments(claim.code, attachments)
+        return claim
