@@ -11,7 +11,7 @@ from api_fhir_r4.converters.policyHolderOrganisationConverter import PolicyHolde
 from api_fhir_r4.converters.groupConverter import GroupConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.mapping.patientMapping import RelationshipMapping, EducationLevelMapping, \
-    PatientProfessionMapping, MaritalStatusMapping
+    PatientProfessionMapping, MaritalStatusMapping, PatientCategoryMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
 from fhir.resources.patient import Patient, PatientContact
 from fhir.resources.extension import Extension
@@ -291,17 +291,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_imis_gender(cls, imis_insuree, fhir_patient):
         gender = fhir_patient.gender
-    
         if gender is not None:
-            imis_gender_code = None
-            if gender == GeneralConfiguration.get_male_gender_code():
-                imis_gender_code = "M"
-            elif gender == GeneralConfiguration.get_female_gender_code():
-                imis_gender_code = "F"
-            elif gender == GeneralConfiguration.get_other_gender_code():
-                imis_gender_code = "O"
-            if imis_gender_code is not None:
-                imis_insuree.gender = Gender.objects.get(pk=imis_gender_code)
+            imis_gender = PatientCategoryMapping.imis_gender_mapping.get(gender)
+            imis_insuree.gender = imis_gender
 
     @classmethod
     def build_fhir_marital_status(cls, fhir_patient, imis_insuree):
