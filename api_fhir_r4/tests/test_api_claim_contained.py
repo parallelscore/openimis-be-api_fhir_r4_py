@@ -186,6 +186,10 @@ class ClaimAPIContainedTestBaseMixin:
     def assert_claim_admin_created(self):
         expected_claim_admin_uuid = 'AAAA5229-DD11-4383-863C-E2FAD1B20000'
         self._assert_unique_created(expected_claim_admin_uuid, ClaimAdmin)
+        # HF added using practitioner role
+        admin = ClaimAdmin.objects.get(uuid=expected_claim_admin_uuid)
+        hf = admin.health_facility
+        self.assertEqual(hf.uuid, 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000')
 
     def assert_items_created(self):
         expected_item_uuid = 'AAAA76E2-DC28-4B48-8E29-3AC4ABEC0000'

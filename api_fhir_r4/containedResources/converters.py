@@ -61,6 +61,9 @@ class _ConverterWrapper:
         assert reference_type == DEFAULT_REF_TYPE, \
             f'Invalid reference type, assigning contained resource uuid explicitly is available only for ' \
             f'{DEFAULT_REF_TYPE}'
+
+        assert contained_fhir_resource.get('id') is not None, \
+            F'Resources created from contained data requires non empty ID field.'
         converted.uuid = contained_fhir_resource['id']
 
     def __raise_default_exception(self, resource, error):

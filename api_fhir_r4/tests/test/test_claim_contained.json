@@ -598,6 +598,64 @@
             ]
         },
         {
+           "resourceType":"PractitionerRole",
+            "id": "AAAA5229-DD11-4383-863C-E2FAD1B20000",
+           "identifier":[
+              {
+                 "type":{
+                    "coding":[
+                       {
+                          "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
+                          "code":"Code"
+                       }
+                    ]
+                 },
+                 "value":"VITEST11"
+              }
+           ],
+           "practitioner":{
+              "reference":"Practitioner/AAAA5229-DD11-4383-863C-E2FAD1B20000",
+              "type":"Practitioner",
+              "identifier":{
+                 "type":{
+                    "coding":[
+                       {
+                          "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
+                          "code":"UUID"
+                       }
+                    ]
+                 },
+                 "value":"AAAA5229-DD11-4383-863C-E2FAD1B20000"
+              }
+           },
+           "organization":{
+              "reference":"Organization/AAAA5F9B-97C6-444B-AAD9-2FCCFD460000",
+              "type":"Organization",
+              "identifier":{
+                 "type":{
+                    "coding":[
+                       {
+                          "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
+                          "code":"UUID"
+                       }
+                    ]
+                 },
+                 "value":"AAAA5F9B-97C6-444B-AAD9-2FCCFD460000"
+              }
+           },
+           "code":[
+              {
+                 "coding":[
+                    {
+                       "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/practitioner-qualification-type",
+                       "code":"CA",
+                       "display":"Claim Administrator"
+                    }
+                 ]
+              }
+           ]
+        },
+        {
             "resourceType": "Medication",
             "id": "AAAA76E2-DC28-4B48-8E29-3AC4ABEC0000",
             "extension": [
