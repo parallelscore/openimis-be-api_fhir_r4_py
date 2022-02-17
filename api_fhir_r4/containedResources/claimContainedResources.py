@@ -4,7 +4,7 @@ from api_fhir_r4.containedResources.containedResources import AbstractContainedR
     ContainedResourceDefinition
 from api_fhir_r4.serializers import BaseFHIRSerializer, PatientSerializer, GroupSerializer, \
     HealthFacilityOrganisationSerializer, ClaimAdminPractitionerSerializer, MedicationSerializer, \
-    ActivityDefinitionSerializer
+    ActivityDefinitionSerializer, ClaimAdminPractitionerRoleSerializer
 
 
 class ClaimContainedResources(AbstractContainedResourceCollection):
@@ -18,6 +18,7 @@ class ClaimContainedResources(AbstractContainedResourceCollection):
             ),
             HealthFacilityOrganisationSerializer: ContainedResourceDefinition('health_facility', 'Organization'),
             ClaimAdminPractitionerSerializer: ContainedResourceDefinition('admin', 'Practitioner'),
+            ClaimAdminPractitionerRoleSerializer: ContainedResourceDefinition('admin', 'PractitionerRole'),
             MedicationSerializer: ContainedResourceDefinition(
                 'items', 'Medication',
                 lambda model, field: [

@@ -21,10 +21,9 @@ from medical.test_helpers import create_test_item, create_test_service
 from insuree.models import Insuree, Family
 
 
-class ClaimAPIContainedTests(GenericFhirAPITestMixin, APITestCase):
-
-    base_url = GeneralConfiguration.get_base_url()+'Claim/'
-    _test_json_path = "/test/test_claim_contained.json"
+class ClaimAPIContainedTestBaseMixin:
+    base_url = GeneralConfiguration.get_base_url() + 'Claim/'
+    _test_json_request_path = "/test/test_claim_contained.json"
 
     # diagnosis data
     _TEST_MAIN_ICD_CODE = 'T_CD'
@@ -78,7 +77,7 @@ class ClaimAPIContainedTests(GenericFhirAPITestMixin, APITestCase):
     _test_request_data_credentials = None
 
     def setUp(self):
-        super(ClaimAPIContainedTests, self).setUp()
+        super(ClaimAPIContainedTestBaseMixin, self).setUp()
         dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         json_representation = open(dir_path + self._test_json_path_credentials).read()
         self._test_request_data_credentials = json.loads(json_representation)
@@ -143,6 +142,94 @@ class ClaimAPIContainedTests(GenericFhirAPITestMixin, APITestCase):
         service.save()
         return service
 
+    def create_test_hf(self):
+        hf = HealthFacility()
+        hf.id = self._TEST_HF_ID
+        hf.uuid = 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000'
+        hf.code = self._TEST_HF_CODE
+        hf.name = self._TEST_HF_NAME
+        hf.level = self._TEST_HF_LEVEL
+        hf.legal_form_id = self._TEST_HF_LEGAL_FORM
+        hf.address = self._TEST_ADDRESS
+        hf.phone = self._TEST_PHONE
+        hf.fax = self._TEST_FAX
+        hf.email = self._TEST_EMAIL
+        hf.location_id = self._TEST_LOCATION.parent.parent.id
+        hf.offline = False
+        hf.audit_user_id = self._ADMIN_AUDIT_USER_ID
+        hf.save()
+        return hf
+
+    def assert_response(self, response_json):
+        self.assertEqual(response_json["outcome"], 'complete')
+        for item in response_json["item"]:
+            for adjudication in item["adjudication"]:
+                self.assertEqual(adjudication["category"]["coding"][0]["code"], f'{Claim.STATUS_REJECTED}')
+                # 2 not in price list
+                self.assertEqual(adjudication["reason"]["coding"][0]["code"], '2')
+
+        self.assertEqual(response_json["resourceType"], "ClaimResponse")
+
+    def assert_hf_created(self):
+        expected_hf_uuid = 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000'
+        self._assert_unique_created(expected_hf_uuid, HealthFacility)
+
+    def assert_insuree_created(self):
+        expected_insuree_uuid = 'AAAA08B5-6E85-470C-83EC-0EE9370F0000'
+        insuree = self._assert_unique_created(expected_insuree_uuid, Insuree)
+
+        expected_family_uuid = 'AAAA5232-9054-4D86-B4F2-0E9C4ADF0000'
+        family = self._assert_unique_created(expected_family_uuid, Family)
+
+        self.assertEqual(insuree, family.head_insuree)
+
+    def assert_claim_admin_created(self):
+        expected_claim_admin_uuid = 'AAAA5229-DD11-4383-863C-E2FAD1B20000'
+        self._assert_unique_created(expected_claim_admin_uuid, ClaimAdmin)
+        # HF added using practitioner role
+        admin = ClaimAdmin.objects.get(uuid=expected_claim_admin_uuid)
+        hf = admin.health_facility
+        self.assertEqual(hf.uuid, 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000')
+
+    def assert_items_created(self):
+        expected_item_uuid = 'AAAA76E2-DC28-4B48-8E29-3AC4ABEC0000'
+        self._assert_unique_created(expected_item_uuid, Item)
+
+        expected_service_uuid = 'AAAA29BA-3F4E-4E6F-B55C-23A488A10000'
+        self._assert_unique_created(expected_service_uuid, Service)
+
+    def _assert_unique_created(self, expected_uuid, django_model: Type[Model]):
+        msg = f'Contained resource should create unique object of type ' \
+              f'{django_model} with uuid {expected_uuid}'
+
+        query = django_model.objects.filter(uuid=expected_uuid).all()
+
+        self.assertEqual(query.count(), 1, msg)
+        return query.get()
+
+    def assert_hf_updated(self):
+        expected_updated_address = 'Uitly road 1'
+        hf = HealthFacility.objects.get(uuid='AAAA5F9B-97C6-444B-AAD9-2FCCFD460000')
+        self.assertEqual(hf.address, expected_updated_address)
+
+    def assert_contained(self, json_response):
+        contained = json_response['contained']
+        self.assertResourceExists(contained, 'Patient', 'AAAA08B5-6E85-470C-83EC-0EE9370F0000')
+        self.assertResourceExists(contained, 'Organization', 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000')
+        self.assertResourceExists(contained, 'Group', 'AAAA5232-9054-4D86-B4F2-0E9C4ADF0000')
+        self.assertResourceExists(contained, 'Practitioner', 'AAAA5229-DD11-4383-863C-E2FAD1B20000')
+        self.assertResourceExists(contained, 'Medication', 'AAAA76E2-DC28-4B48-8E29-3AC4ABEC0000')
+        self.assertResourceExists(contained, 'ActivityDefinition', 'AAAA29BA-3F4E-4E6F-B55C-23A488A10000')
+
+    def assertResourceExists(self, contained, resource_type, resource_id):
+        x = [x for x in contained if x['resourceType'] == resource_type and x['id'] == resource_id]
+        self.assertEqual(len(x), 1)
+
+
+class ClaimAPIContainedTests(ClaimAPIContainedTestBaseMixin, GenericFhirAPITestMixin, APITestCase):
+    base_url = GeneralConfiguration.get_base_url() + 'Claim/'
+    _test_json_path = "/test/test_claim_contained.json"
+    
     def test_post_should_create_correctly(self):
         response = self.client.post(
             GeneralConfiguration.get_base_url() + 'login/', data=self._test_request_data_credentials, format='json'
@@ -212,82 +299,3 @@ class ClaimAPIContainedTests(GenericFhirAPITestMixin, APITestCase):
         response = self.client.get(url, data=None, format='json', **headers)
         self.assert_contained(response.json())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def assert_response(self, response_json):
-        self.assertEqual(response_json["outcome"], 'complete')
-        for item in response_json["item"]:
-            for adjudication in item["adjudication"]:
-                self.assertEqual(adjudication["category"]["coding"][0]["code"], f'{Claim.STATUS_REJECTED}')
-                # 2 not in price list
-                self.assertEqual(adjudication["reason"]["coding"][0]["code"], '2')
-
-        self.assertEqual(response_json["resourceType"], "ClaimResponse")
-
-    def assert_hf_created(self):
-        expected_hf_uuid = 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000'
-        self._assert_unique_created(expected_hf_uuid, HealthFacility)
-
-    def assert_insuree_created(self):
-        expected_insuree_uuid = 'AAAA08B5-6E85-470C-83EC-0EE9370F0000'
-        insuree = self._assert_unique_created(expected_insuree_uuid, Insuree)
-
-        expected_family_uuid = 'AAAA5232-9054-4D86-B4F2-0E9C4ADF0000'
-        family = self._assert_unique_created(expected_family_uuid, Family)
-
-        self.assertEqual(insuree, family.head_insuree)
-
-    def assert_claim_admin_created(self):
-        expected_claim_admin_uuid = 'AAAA5229-DD11-4383-863C-E2FAD1B20000'
-        self._assert_unique_created(expected_claim_admin_uuid, ClaimAdmin)
-
-    def assert_items_created(self):
-        expected_item_uuid = 'AAAA76E2-DC28-4B48-8E29-3AC4ABEC0000'
-        self._assert_unique_created(expected_item_uuid, Item)
-
-        expected_service_uuid = 'AAAA29BA-3F4E-4E6F-B55C-23A488A10000'
-        self._assert_unique_created(expected_service_uuid, Service)
-
-    def _assert_unique_created(self, expected_uuid, django_model: Type[Model]):
-        msg = f'Contained resource should create unique object of type ' \
-              f'{django_model} with uuid {expected_uuid}'
-
-        query = django_model.objects.filter(uuid=expected_uuid).all()
-
-        self.assertEqual(query.count(), 1, msg)
-        return query.get()
-
-    def create_test_hf(self):
-        hf = HealthFacility()
-        hf.id = self._TEST_HF_ID
-        hf.uuid = 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000'
-        hf.code = self._TEST_HF_CODE
-        hf.name = self._TEST_HF_NAME
-        hf.level = self._TEST_HF_LEVEL
-        hf.legal_form_id = self._TEST_HF_LEGAL_FORM
-        hf.address = self._TEST_ADDRESS
-        hf.phone = self._TEST_PHONE
-        hf.fax = self._TEST_FAX
-        hf.email = self._TEST_EMAIL
-        hf.location_id = self._TEST_LOCATION.parent.parent.id
-        hf.offline = False
-        hf.audit_user_id = self._ADMIN_AUDIT_USER_ID
-        hf.save()
-        return hf
-
-    def assert_hf_updated(self):
-        expected_updated_address = 'Uitly road 1'
-        hf = HealthFacility.objects.get(uuid='AAAA5F9B-97C6-444B-AAD9-2FCCFD460000')
-        self.assertEqual(hf.address, expected_updated_address)
-
-    def assert_contained(self, json_response):
-        contained = json_response['contained']
-        self.assertResourceExists(contained, 'Patient', 'AAAA08B5-6E85-470C-83EC-0EE9370F0000')
-        self.assertResourceExists(contained, 'Organization', 'AAAA5F9B-97C6-444B-AAD9-2FCCFD460000')
-        self.assertResourceExists(contained, 'Group', 'AAAA5232-9054-4D86-B4F2-0E9C4ADF0000')
-        self.assertResourceExists(contained, 'Practitioner', 'AAAA5229-DD11-4383-863C-E2FAD1B20000')
-        self.assertResourceExists(contained, 'Medication', 'AAAA76E2-DC28-4B48-8E29-3AC4ABEC0000')
-        self.assertResourceExists(contained, 'ActivityDefinition', 'AAAA29BA-3F4E-4E6F-B55C-23A488A10000')
-
-    def assertResourceExists(self, contained, resource_type, resource_id):
-        x = [x for x in contained if x['resourceType'] == resource_type and x['id'] == resource_id]
-        self.assertEqual(len(x), 1)

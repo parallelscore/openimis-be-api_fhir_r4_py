@@ -3,7 +3,6 @@ import hashlib
 import re
 from urllib.parse import urljoin
 
-
 from typing import Type
 
 from claim.services import ClaimElementSubmit
