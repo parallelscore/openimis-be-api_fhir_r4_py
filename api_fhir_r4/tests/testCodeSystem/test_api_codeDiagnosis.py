@@ -22,5 +22,5 @@ class CodeSystemDiagnosisAPITests(GenericFhirAPITestMixin, APITestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
-        self.assertEqual(response_data['name'], 'openIMISDiagnosis')
-        self.assertEqual(response_data['title'], 'openIMIS Diagnosis')
+        self.assertEqual(response_data['name'], 'DiagnosisICD10Level1CS')
+        self.assertEqual(response_data['title'], 'ICD 10 Level 1 diagnosis (Claim)')

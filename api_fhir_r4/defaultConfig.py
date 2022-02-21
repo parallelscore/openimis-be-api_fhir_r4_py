@@ -11,6 +11,7 @@ DEFAULT_CFG = {
     "default_value_of_location_offline_attribute": False,
     "default_value_of_location_care_type": "B",
     "default_response_page_size": 10,
+    "claim_rule_engine_validation": True,
     "R4_fhir_identifier_type_config": {
         "system": "https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/openimis-identifiers",
         "fhir_code_for_imis_db_uuid_type": "UUID",
@@ -151,6 +152,23 @@ DEFAULT_CFG = {
         "fhir_ph_organisation_legal_form_code_system": "CodeSystem/organization-ph-legal-form",
         "fhir_ph_organisation_activity_code_system": "CodeSystem/organization-ph-activity",
         "fhir_ph_organisation_type_system": "http://terminology.hl7.org/CodeSystem/organization-type",
+        "fhir_ph_organisation_type_contactentity_type":"http://terminology.hl7.org/CodeSystem/contactentity-type"
+    },
+    "R4_fhir_insurance_organisation_config": {
+        "resource_type": 'insurance_organisation',
+        "id": 'openIMIS-Implementation',
+        "name": 'openIMIS Implementation',
+        "code": 'openIMIS',
+        "type": 'ins',
+        "email": 'implementation@openimis.org',
+        "phone": '0908060703',
+        "fax": '0908060730',
+        "contact_name": "Manuel D. Medina",
+        "municipality": "Jamu",
+        "city": "Jamula",
+        "district": "Rapta",
+        "state": "Ultha",
+        "line": "1 Pasay"
     },
     "R4_fhir_invoice_config": {
         "fhir_invoice_type_system": "CodeSystem/invoice-type",

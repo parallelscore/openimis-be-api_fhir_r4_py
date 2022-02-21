@@ -197,7 +197,7 @@ class InsurancePlanConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 display=_("Member Count"),
                 system=system,
                 unit="member",
-                value=imis_product.member_count
+                value=imis_product.max_members
             )
         )
 

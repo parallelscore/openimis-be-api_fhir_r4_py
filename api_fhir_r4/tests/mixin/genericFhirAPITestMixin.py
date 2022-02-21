@@ -16,11 +16,11 @@ class GenericFhirAPITestMixin(object):
 
     @property
     def base_url(self):
-        raise NotImplementedError()
+        return None
 
     @property
     def _test_json_path(self):
-        raise NotImplementedError()
+        return None
 
     _TEST_SUPERUSER_NAME = 'admin'
     _TEST_SUPERUSER_PASS = 'adminadmin'#'Admin123'

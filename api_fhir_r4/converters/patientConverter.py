@@ -11,7 +11,7 @@ from api_fhir_r4.converters.policyHolderOrganisationConverter import PolicyHolde
 from api_fhir_r4.converters.groupConverter import GroupConverter
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.mapping.patientMapping import RelationshipMapping, EducationLevelMapping, \
-    PatientProfessionMapping, MaritalStatusMapping
+    PatientProfessionMapping, MaritalStatusMapping, PatientCategoryMapping
 from api_fhir_r4.models.imisModelEnums import ImisMaritalStatus
 from fhir.resources.patient import Patient, PatientContact
 from fhir.resources.extension import Extension
@@ -32,11 +32,11 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_gender(fhir_patient, imis_insuree)
         cls.build_fhir_marital_status(fhir_patient, imis_insuree)
         cls.build_fhir_telecom(fhir_patient, imis_insuree)
-        cls.build_fhir_addresses(fhir_patient, imis_insuree)
+        cls.build_fhir_addresses(fhir_patient, imis_insuree, reference_type)
         cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
         cls.build_fhir_contact(fhir_patient, imis_insuree)
         cls.build_fhir_photo(fhir_patient, imis_insuree)
-        cls.build_fhir_general_practitioner(fhir_patient, imis_insuree)
+        cls.build_fhir_general_practitioner(fhir_patient, imis_insuree, reference_type)
         return fhir_patient
 
     @classmethod
@@ -291,17 +291,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_imis_gender(cls, imis_insuree, fhir_patient):
         gender = fhir_patient.gender
-    
         if gender is not None:
-            imis_gender_code = None
-            if gender == GeneralConfiguration.get_male_gender_code():
-                imis_gender_code = "M"
-            elif gender == GeneralConfiguration.get_female_gender_code():
-                imis_gender_code = "F"
-            elif gender == GeneralConfiguration.get_other_gender_code():
-                imis_gender_code = "O"
-            if imis_gender_code is not None:
-                imis_insuree.gender = Gender.objects.get(pk=imis_gender_code)
+            imis_gender = PatientCategoryMapping.imis_gender_mapping.get(gender)
+            imis_insuree.gender = imis_gender
 
     @classmethod
     def build_fhir_marital_status(cls, fhir_patient, imis_insuree):
@@ -340,7 +332,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         imis_insuree.phone, imis_insuree.email = cls.build_imis_phone_num_and_email(fhir_patient.telecom)
 
     @classmethod
-    def build_fhir_addresses(cls, fhir_patient, imis_insuree):
+    def build_fhir_addresses(cls, fhir_patient, imis_insuree, reference_type):
         addresses = []
         # family slice - required
         if imis_insuree.family is not None:
@@ -359,12 +351,13 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 # address location reference extension
                 extension = Extension.construct()
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-                extension.valueReference = LocationConverter.build_fhir_resource_reference(imis_family.location, 'Location')
+                extension.valueReference = LocationConverter\
+                    .build_fhir_resource_reference(imis_family.location, 'Location', reference_type=reference_type)
                 family_address.extension.append(extension)
 
                 family_address.city = imis_family.location.name
 
-            if family_address is not None:
+            if family_address:
                 if type(addresses) is not list:
                     addresses = [family_address]
                 else:
@@ -386,7 +379,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 # address location reference extension
                 extension = Extension.construct()
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-                extension.valueReference = LocationConverter.build_fhir_resource_reference(imis_insuree.current_village, 'Location')
+                extension.valueReference = LocationConverter\
+                    .build_fhir_resource_reference(imis_insuree.current_village, 'Location', reference_type=reference_type)
                 current_address.extension.append(extension)
 
                 current_address.city = imis_insuree.current_village.name
@@ -446,7 +440,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
             elif value == "patient.group.reference":
                 extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/patient-group-reference"
-                extension.valueReference = GroupConverter.build_fhir_resource_reference(imis_insuree.family, 'Group')
+                extension.valueReference = GroupConverter\
+                    .build_fhir_resource_reference(imis_insuree.family, 'Group', reference_type=reference_type)
 
             elif value == "patient.identification":
                 nested_extension = Extension.construct()
@@ -460,7 +455,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                         # add identifier extension
                         nested_extension = Extension.construct()
                         nested_extension.url = "type"
-                        system = "CodeSystem/patient-identification-types"
+                        system = "CodeSystem/patient-identification-type"
                         nested_extension.valueCodeableConcept = cls.build_codeable_concept(code=imis_insuree.type_of_id.code, system=system)
                         extension.extension.append(nested_extension)
 
@@ -549,11 +544,14 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                 imis_insuree.photo_id = obj.id
 
     @classmethod
-    def build_fhir_general_practitioner(cls, fhir_patient, imis_insuree):
+    def build_fhir_general_practitioner(cls, fhir_patient, imis_insuree, reference_type):
         if imis_insuree.health_facility:
-            fhir_patient.generalPractitioner = [
-                PolicyHolderOrganisationConverter.build_fhir_resource_reference(imis_insuree.health_facility, 'Organisation')
-            ]
+            hf = PolicyHolderOrganisationConverter.build_fhir_resource_reference(
+                imis_insuree.health_facility,
+                'Organization',
+                reference_type=reference_type
+            )
+            fhir_patient.generalPractitioner = [hf]
 
     @classmethod
     def _family_reference_identifier_type(cls, reference_type):

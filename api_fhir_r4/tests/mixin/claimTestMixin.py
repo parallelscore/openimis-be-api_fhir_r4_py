@@ -166,12 +166,14 @@ class ClaimTestMixin(GenericTestMixin):
         self.assertEqual(self._TEST_EXPLANATION, imis_obj.explanation)
         self.assertIsNotNone(imis_obj.admin)
         self.assertEqual(self._TEST_VISIT_TYPE, imis_obj.visit_type)
-        self.assertEqual(self._TEST_ITEM_CODE, imis_obj.submit_items[0].code)
-        self.assertEqual(self._TEST_ITEM_QUANTITY_PROVIDED, imis_obj.submit_items[0].quantity)
-        self.assertEqual(self._TEST_ITEM_PRICE_ASKED, imis_obj.submit_items[0].price)
-        self.assertEqual(self._TEST_SERVICE_CODE, imis_obj.submit_services[0].code)
-        self.assertEqual(self._TEST_SERVICE_QUANTITY_PROVIDED, imis_obj.submit_services[0].quantity)
-        self.assertEqual(self._TEST_SERVICE_PRICE_ASKED, imis_obj.submit_services[0].price)
+
+        self.assertEqual(self._TEST_ITEM_CODE, imis_obj.submit_items[0].item.code)
+        self.assertEqual(self._TEST_ITEM_QUANTITY_PROVIDED, imis_obj.submit_items[0].qty_provided)
+        self.assertEqual(self._TEST_ITEM_PRICE_ASKED, imis_obj.submit_items[0].price_asked)
+
+        self.assertEqual(self._TEST_SERVICE_CODE, imis_obj.submit_services[0].service.code)
+        self.assertEqual(self._TEST_SERVICE_QUANTITY_PROVIDED, imis_obj.submit_services[0].qty_provided)
+        self.assertEqual(self._TEST_SERVICE_PRICE_ASKED, imis_obj.submit_services[0].price_asked)
 
     def create_test_fhir_instance(self):
         fhir_claim = {}

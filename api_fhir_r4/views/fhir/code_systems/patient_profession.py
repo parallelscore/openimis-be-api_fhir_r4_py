@@ -26,9 +26,9 @@ class CodeSystemOpenIMISPatientProfessionViewSet(viewsets.ViewSet):
                 "model_name": 'Profession',
                 "code_field": 'id',
                 "display_field": 'profession',
-                "id": 'openIMISPatientProfession',
-                "name": 'openIMISPatientProfession',
-                "title": 'openIMIS Patient Profession',
+                "id": 'patient-profession',
+                "name": 'PatientProfessionCS',
+                "title": 'Profession (Patient)',
                 "description": "Indicates the profession of a Patient. "
                                "Values defined by openIMIS. Can be extended.",
                 "url": self.request.build_absolute_uri()
