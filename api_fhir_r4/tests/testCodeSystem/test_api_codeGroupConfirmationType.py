@@ -22,5 +22,5 @@ class CodeSystemGroupConfirmationTypeAPITests(GenericFhirAPITestMixin, APITestCa
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
-        self.assertEqual(response_data['name'], 'openIMISGroupConfirmationType')
-        self.assertEqual(response_data['title'], 'openIMIS Group Confirmation Type')
+        self.assertEqual(response_data['name'], 'GroupConfirmationTypeCS')
+        self.assertEqual(response_data['title'], 'Confirmation Types (Group)')

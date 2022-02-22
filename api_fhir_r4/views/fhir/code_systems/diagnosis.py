@@ -26,9 +26,9 @@ class CodeSystemOpenIMISDiagnosisViewSet(viewsets.ViewSet):
                 "model_name": 'Diagnosis',
                 "code_field": 'code',
                 "display_field": 'name',
-                "id": 'openIMISDiagnosis',
-                "name": 'openIMISDiagnosis',
-                "title": 'openIMIS Diagnosis',
+                "id": 'diagnosis-ICD10-level1',
+                "name": 'DiagnosisICD10Level1CS',
+                "title": 'ICD 10 Level 1 diagnosis (Claim)',
                 "description": "The actual list of diagnosis configured in openIMIS.",
                 "url": self.request.build_absolute_uri()
             }

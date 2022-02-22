@@ -1,34 +1,19 @@
 import json
 import os
 
-from core.models import User
-from core.services import create_or_update_interactive_user, create_or_update_core_user
-
 from rest_framework import status
 from rest_framework.test import APITestCase
-from api_fhir_r4.tests import GenericFhirAPITestMixin
-from api_fhir_r4.utils import DbManagerUtils
+
 from api_fhir_r4.configurations import GeneralConfiguration
+from api_fhir_r4.tests import GenericFhirAPITestMixin
+from api_fhir_r4.tests.mixin.logInMixin import LogInMixin
 
 
-class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
+class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase, LogInMixin):
     base_url = GeneralConfiguration.get_base_url()
     url_to_test_authorization = base_url + 'Group/'
-
     _test_json_path = "/test/test_login.json"
     _test_json_path_credentials = "/tests/test/test_login.json"
-    _TEST_EXPECTED_NAME = "UPDATED_NAME"
-    _TEST_USER_NAME = "TestUserTest2"
-    _TEST_USER_PASSWORD = "TestPasswordTest2"
-    _TEST_DATA_USER = {
-        "username": _TEST_USER_NAME,
-        "last_name": _TEST_USER_NAME,
-        "password": _TEST_USER_PASSWORD,
-        "other_names": _TEST_USER_NAME,
-        "user_types": "INTERACTIVE",
-        "language": "en",
-        "roles": [9],
-    }
     _test_request_data_credentials = None
 
     def setUp(self):
@@ -38,21 +23,8 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
         self._test_request_data_credentials = json.loads(json_representation)
         self.get_or_create_user_api()
 
-    def get_or_create_user_api(self):
-        user = DbManagerUtils.get_object_or_none(User, username=self._TEST_USER_NAME)
-        if user is None:
-            user = self.__create_user_interactive_core()
-        return user
-
     def get_bundle_from_json_response(self, response):
         pass
-
-    def __create_user_interactive_core(self):
-        i_user, i_user_created = create_or_update_interactive_user(
-            user_id=None, data=self._TEST_DATA_USER, audit_user_id=999, connected=False)
-        create_or_update_core_user(
-            user_uuid=None, username=self._TEST_DATA_USER["username"], i_user=i_user)
-        return DbManagerUtils.get_object_or_none(User, username=self._TEST_USER_NAME)
 
     def test_post_should_authorize_correctly(self):
         response = self.client.post(self.base_url + 'login/', data=self._test_request_data_credentials, format='json')
@@ -123,7 +95,7 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase):
             "Content-Type": "application/json",
             'HTTP_AUTHORIZATION': f"Bearer {token}"
         }
-        response = self.client.get(self.base_url + 'Invoice/', format='json', **headers)
+        response = self.client.get(self.base_url + 'Organization/', format='json', **headers)
         response_json = response.json()
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(

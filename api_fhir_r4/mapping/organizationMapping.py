@@ -14,6 +14,13 @@ class HealthFacilityOrganizationTypeMapping:
     LEGAL_FORM_SYSTEM = 'CodeSystem/organization-legal-form'
     LEGAL_FORM_URL = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/organization-legal-form'
 
+    LEGAL_FORM_MAPPING = {
+        'C': 'Charity',
+        'D': 'District Organization',
+        'G': 'Government',
+        'P': 'Private organization'
+    }
+
     ORGANIZATION_TYPE = 'prov'
 
     EMAIL_CONTACT_POINT_SYSTEM = ContactPointSystem.EMAIL
@@ -35,6 +42,14 @@ class HealthFacilityOrganizationTypeMapping:
     }
 
     LEVEL_SYSTEM = f'{GeneralConfiguration.get_system_base_url()}/CodeSystem/organization-hf-level'
+
+    TYPE_SYSTEM = f'{GeneralConfiguration.get_system_base_url()}/CodeSystem/organization-hf-care-type'
+
+    TYPE_DISPLAY_MAPPING = {
+        'O': 'Out-patient',
+        'I': 'In-patient',
+        'B': 'Both'
+    }
 
 
 class PolicyHolderConfigMapping:

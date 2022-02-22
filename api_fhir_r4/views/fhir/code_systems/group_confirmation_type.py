@@ -26,9 +26,9 @@ class CodeSystemOpenIMISGroupConfirmationTypeViewSet(viewsets.ViewSet):
                 "model_name": 'ConfirmationType',
                 "code_field": 'code',
                 "display_field": 'confirmationtype',
-                "id": 'openIMISGroupConfirmationType',
-                "name": 'openIMISGroupConfirmationType',
-                "title": 'openIMIS Group Confirmation Type',
+                "id": 'group-confirmation-type',
+                "name": 'GroupConfirmationTypeCS',
+                "title": 'Confirmation Types (Group)',
                 "description": "Indicates the confirmation type for the Group. "
                                "Values defined by openIMIS. Can be extended.",
                 "url": self.request.build_absolute_uri()

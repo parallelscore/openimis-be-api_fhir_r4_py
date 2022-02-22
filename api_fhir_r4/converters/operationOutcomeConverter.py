@@ -1,15 +1,16 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from claim.services import ClaimSubmitError
 from django.db import IntegrityError
 from django.http import Http404
 from django.http.response import HttpResponse
-from rest_framework.exceptions import APIException, ErrorDetail
+from rest_framework.exceptions import APIException, ErrorDetail, NotAuthenticated, AuthenticationFailed
 
 from api_fhir_r4.configurations import R4IssueTypeConfig
 from api_fhir_r4.converters import BaseFHIRConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.models import OperationOutcomeV2
 from fhir.resources.operationoutcome import OperationOutcomeIssue
-from pydantic.error_wrappers import ValidationError
+from pydantic.error_wrappers import ValidationError as PydanticValidationError
 
 
 class OperationOutcomeConverter(BaseFHIRConverter):
@@ -45,7 +46,9 @@ class OperationOutcomeConverter(BaseFHIRConverter):
             result = cls.build_for_key_error(obj)
         elif isinstance(obj, IntegrityError):
             result = cls.build_for_IntegrityError(obj)
-        elif isinstance(obj, ValidationError):
+        elif isinstance(obj, PydanticValidationError):
+            result = cls.build_for_PydanticValidationError(obj)
+        elif isinstance(obj, DjangoValidationError):
             result = cls.build_for_ValidationError(obj)
         else:
             result = cls.build_for_generic_error(obj)
@@ -59,10 +62,17 @@ class OperationOutcomeConverter(BaseFHIRConverter):
         return cls.build_outcome(severity, code, details_text)
 
     @classmethod
-    def build_for_ValidationError(cls, obj):
+    def build_for_PydanticValidationError(cls, obj):
         severity = "error"
         code = R4IssueTypeConfig.get_fhir_code_for_exception()
         details_text = str(obj)
+        return cls.build_outcome(severity, code, details_text)
+
+    @classmethod
+    def build_for_ValidationError(cls, obj):
+        severity = "error"
+        code = R4IssueTypeConfig.get_fhir_code_for_exception()
+        details_text = str(obj.messages)
         return cls.build_outcome(severity, code, details_text)
 
     @classmethod

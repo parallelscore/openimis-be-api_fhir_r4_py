@@ -27,5 +27,5 @@ class CodeSystemPatientEducationLevelAPITests(GenericFhirAPITestMixin, APITestCa
                 nursery = concept['display']
         self.assertEqual(nursery, 'Nursery')
         self.assertEqual(response_data['count'], self._EXPECTED_COUNT)
-        self.assertEqual(response_data['name'], 'openIMISPatientEducationLevel')
-        self.assertEqual(response_data['title'], 'openIMIS Patient Education Level')
+        self.assertEqual(response_data['name'], 'PatientEducationLevelCS')
+        self.assertEqual(response_data['title'], 'Education Level (Patient)')

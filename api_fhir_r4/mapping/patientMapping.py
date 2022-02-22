@@ -1,4 +1,4 @@
-from insuree.models import Profession, Education, IdentificationType, Relation
+from insuree.models import Profession, Education, IdentificationType, Relation, Gender
 
 from api_fhir_r4.configurations import GeneralConfiguration
 
@@ -62,6 +62,13 @@ class PatientCategoryMapping(object):
             "code": "child",
             "display": "Child",
         },
+    }
+
+    imis_gender_mapping = {
+        # FHIR Gender code to IMIS object
+        'male': Gender.objects.get(pk='M'),
+        'female': Gender.objects.get(pk='F'),
+        'other': Gender.objects.get(pk='O'),
     }
 
     imis_patient_category_flags = {

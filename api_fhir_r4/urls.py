@@ -50,9 +50,9 @@ if 'insuree' in imis_modules:
         basename="CodeSystem/patient-profession_R4"
     )
     router.register(
-        r'CodeSystem/patient-identification-types',
+        r'CodeSystem/patient-identification-type',
         fhir_viewsets.CodeSystemOpenIMISPatientIdentificationTypeViewSet,
-        basename="CodeSystem/patient-identification-types_R4"
+        basename="CodeSystem/patient-identification-type_R4"
     )
     router.register(
         r'CodeSystem/patient-contact-relationship',
@@ -61,9 +61,9 @@ if 'insuree' in imis_modules:
     )
     # code system for openimis group
     router.register(
-        r'CodeSystem/group-types',
+        r'CodeSystem/group-type',
         fhir_viewsets.CodeSystemOpenIMISGroupTypeViewSet,
-        basename="CodeSystem/group-types_R4"
+        basename="CodeSystem/group-type_R4"
     )
     router.register(
         r'CodeSystem/group-confirmation-type',
@@ -97,7 +97,7 @@ if 'policy' in imis_modules:
 
 # register endpoint for policy holder if used
 if 'policyholder' in imis_modules:
-    router.register(r'Organisation', fhir_viewsets.OrganisationViewSet, basename="Organisation_R4")
+    router.register(r'Organization', fhir_viewsets.OrganisationViewSet, basename="Organisation_R4")
     router.register(r'CodeSystem/organization-ph-legal-form', fhir_viewsets.CodeSystemOrganizationPHLegalFormViewSet,
                     basename="CodeSystem/organization-ph-legal-form_R4")
     router.register(r'CodeSystem/organization-ph-activity', fhir_viewsets.CodeSystemOrganizationPHActivityViewSet,
