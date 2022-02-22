@@ -69,7 +69,10 @@ class SubscriptionConverter(BaseFHIRConverter):
         criteria = deepcopy(imis_subscription.criteria)
         resource = criteria.pop('resource_type')
         arguments = '&'.join(f'{key}={value}' for key, value in criteria.items())
-        fhir_subscription['criteria'] = f'{resource}/?{arguments}'
+        if len(arguments) > 0:
+            fhir_subscription['criteria'] = f'{resource}/?{arguments}'
+        else:
+            fhir_subscription['criteria'] = f'{resource}/'
 
     @classmethod
     def _build_fhir_error(cls, fhir_subscription, imis_subscription):
