@@ -3,6 +3,7 @@ from typing import Iterable, List
 
 from fhir.resources.reference import Reference
 
+from api_fhir_r4.apps import logger
 from api_fhir_r4.converters import BaseFHIRConverter
 from api_fhir_r4.exceptions import FHIRRequestProcessException
 from django.utils.translation import gettext as _
@@ -29,9 +30,11 @@ def get_converted_contained_resource(
 
     def _validate_matching_contained(matching: List):
         if len(matching) > 1:
-            raise ContainedResourceProcessException(
-                f'More than one contained resource definition found for reference {reference}, references must be unique'
+            logger.warning([
+                f'More than one contained resource definition found for reference '
+                f'{reference}, references should be unique.']
             )
+            logger.debug(f"Dupliacted contained resources: {matching}")
 
     if reference:
         reference = reference.reference
@@ -43,7 +46,7 @@ def get_converted_contained_resource(
         ]
 
         _validate_matching_contained(contained)
-        if len(contained) == 1:
+        if len(contained) > 0:
             return converter_for_contained.to_imis_obj(contained[0].__dict__, audit_user_id)
 
     return None

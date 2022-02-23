@@ -133,6 +133,23 @@ class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
         return matching[0] if len(matching) != 0 else None
 
     def _create_claim_from_validated_data(self, validated_data, contained):
+        truncated_data = self._claim_input_from_validated_claim_data(validated_data, contained)
+        user = self.context.get("request").user
+        if not user or not user.has_perms(
+                ClaimConfig.gql_mutation_create_claims_perms
+                + ClaimConfig.gql_mutation_submit_claims_perms
+        ):
+            return HttpResponseForbidden()
+
+        rule_engine_validation = GeneralConfiguration.get_claim_rule_engine_validation()
+        claim = ClaimSubmitService(user) \
+            .enter_and_submit(truncated_data, rule_engine_validation=rule_engine_validation)
+
+        attachments = validated_data.get('claim_attachments', [])
+        self.create_claim_attachments(claim.code, attachments)
+        return claim
+
+    def _claim_input_from_validated_claim_data(self, validated_data, contained):
         essential_claim_fields = [
             'date_claimed', 'date_from', 'date_to',
             'icd_id', 'icd_1_id', 'icd_2_id', 'icd_3_id', 'icd_4_id',
@@ -171,18 +188,4 @@ class ClaimSerializer(ContainedContentSerializerMixin, BaseFHIRSerializer):
         truncated_data['health_facility_id'] = self.__get_contained_or_default_hf_id(contained, validated_data)
         truncated_data['insuree_id'] = self.__get_contained_or_default_insuree(contained, validated_data)
         truncated_data['admin_id'] = self.__get_contained_or_default_claim_admin(contained, validated_data)
-
-        user = self.context.get("request").user
-        if not user or not user.has_perms(
-                ClaimConfig.gql_mutation_create_claims_perms
-                + ClaimConfig.gql_mutation_submit_claims_perms
-        ):
-            return HttpResponseForbidden()
-
-        rule_engine_validation = GeneralConfiguration.get_claim_rule_engine_validation()
-        claim = ClaimSubmitService(user) \
-            .enter_and_submit(truncated_data, rule_engine_validation=rule_engine_validation)
-
-        attachments = validated_data.get('claim_attachments', [])
-        self.create_claim_attachments(claim.code, attachments)
-        return claim
+        return truncated_data

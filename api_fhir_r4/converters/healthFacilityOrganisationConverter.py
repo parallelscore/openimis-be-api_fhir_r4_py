@@ -215,17 +215,18 @@ class HealthFacilityOrganisationConverter(BaseFHIRConverter, PersonConverterMixi
         return extension
     @classmethod
     def __type_extension(cls, imis_organisation: HealthFacility):
-        care_type = imis_organisation.care_type
-        care_type_display = HealthFacilityOrganizationTypeMapping.TYPE_DISPLAY_MAPPING.get(care_type, None)
+        if imis_organisation.care_type and imis_organisation.care_type != ' ':
+            care_type = imis_organisation.care_type
+            care_type_display = HealthFacilityOrganizationTypeMapping.TYPE_DISPLAY_MAPPING.get(care_type, None)
 
-        extension = Extension.construct()
-        extension.url = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/organization-hf-care-type'
-        extension.valueCodeableConcept = cls.build_codeable_concept(
-            code=care_type,
-            system=HealthFacilityOrganizationTypeMapping.TYPE_SYSTEM,
-            display=care_type_display
-        )
-        return extension
+            extension = Extension.construct()
+            extension.url = f'{GeneralConfiguration.get_system_base_url()}StructureDefinition/organization-hf-care-type'
+            extension.valueCodeableConcept = cls.build_codeable_concept(
+                code=care_type,
+                system=HealthFacilityOrganizationTypeMapping.TYPE_SYSTEM,
+                display=care_type_display
+            )
+            return extension
 
     @classmethod
     def build_imis_hf_identiftier(cls, imis_hf, fhir_hf, errors):
@@ -275,10 +276,13 @@ class HealthFacilityOrganisationConverter(BaseFHIRConverter, PersonConverterMixi
 
     @classmethod
     def __get_unique_telecom(cls, fhir_hf, system, errors):
+        if not fhir_hf.telecom:
+            return None
+
         telecom = cls.get_contract_points_by_system_code(
             fhir_hf.telecom,
-            HealthFacilityOrganizationTypeMapping.FAX_CONTACT_POINT_SYSTEM
-        )
+            HealthFacilityOrganizationTypeMapping.FAX_CONTACT_POINT_SYSTEM)
+
         cls.valid_condition(
             len(telecom) > 1,
             _(f'More than one contact point of system {system} assigned to health facility'),

@@ -25,6 +25,7 @@ class GroupSerializer(BaseFHIRSerializer):
         return new_family
 
     def update(self, instance, validated_data):
+        # TODO: This doesn't work
         request = self.context.get("request")
         user = request.user
         chf_id = validated_data.get('chf_id')

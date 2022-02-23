@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Callable, Iterable, Union
 from django.db import models
@@ -10,6 +11,7 @@ from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 
 DEFAULT_REF_TYPE = ReferenceConverterMixin.UUID_REFERENCE_TYPE
+logger = logging.getLogger(__name__)
 
 
 class _ConverterWrapper:
@@ -44,6 +46,8 @@ class _ConverterWrapper:
             else:
                 return [self.__convert_single_resource(resource, method, args, reference_type)]
         except Exception as e:
+            logger.error(f"Failed to process contained resource ({resource.get('resourceType')}/{resource.get('id')}, "
+                         f"reason: {e}")
             self.__raise_default_exception(resource, e)
 
     def __convert_single_resource(self, resource, method, args, ref_type):
