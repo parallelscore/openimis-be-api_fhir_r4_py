@@ -7,7 +7,7 @@ from api_fhir_r4.model_retrievers import CodeIdentifierModelRetriever, DatabaseI
 from api_fhir_r4.multiserializer import modelViewset
 from api_fhir_r4.permissions import FHIRApiInvoicePermissions
 from api_fhir_r4.serializers import InvoiceSerializer, BillSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseMultiserializerFHIRView
+from api_fhir_r4.views.fhir.base import BaseMultiserializerFHIRView
 from api_fhir_r4.views.filters import DateUpdatedRequestParameterFilter
 from invoice.models import Bill
 from invoice.models import Invoice

@@ -284,3 +284,4 @@ from api_fhir_r4.converters.enrolmentOfficerPractitionerConverter import Enrolme
 from api_fhir_r4.converters.enrolmentOfficerPractitionerRoleConverter import EnrolmentOfficerPractitionerRoleConverter
 from api_fhir_r4.converters.communicationConverter import CommunicationConverter
 from api_fhir_r4.converters.invoiceConverter import InvoiceConverter, BillInvoiceConverter
+from api_fhir_r4.converters.subscriptionConverter import SubscriptionConverter

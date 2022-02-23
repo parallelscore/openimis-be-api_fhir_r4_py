@@ -9,7 +9,7 @@ from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin, MultiIdentifierUpd
 from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, CHFIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiInsureePermissions
 from api_fhir_r4.serializers import PatientSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
+from api_fhir_r4.views.fhir.base import BaseFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from claim.models import Claim
 from insuree.models import Insuree

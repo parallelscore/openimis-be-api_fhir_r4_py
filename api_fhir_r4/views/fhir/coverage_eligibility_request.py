@@ -3,7 +3,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from api_fhir_r4.permissions import FHIRApiCoverageEligibilityRequestPermissions
 from api_fhir_r4.serializers import CoverageEligibilityRequestSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
+from api_fhir_r4.views.fhir.base import BaseFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from insuree.models import Insuree
 

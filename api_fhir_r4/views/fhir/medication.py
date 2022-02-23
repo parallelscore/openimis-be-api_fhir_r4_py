@@ -4,7 +4,7 @@ from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin, MultiIdentifierUpd
 from api_fhir_r4.model_retrievers import CodeIdentifierModelRetriever, UUIDIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiMedicationPermissions
 from api_fhir_r4.serializers import MedicationSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
+from api_fhir_r4.views.fhir.base import BaseFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from medical.models import Item
 

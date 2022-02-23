@@ -13,9 +13,9 @@ from api_fhir_r4.model_retrievers import CodeIdentifierModelRetriever, DatabaseI
     UUIDIdentifierModelRetriever
 from api_fhir_r4.multiserializer import modelViewset
 from api_fhir_r4.permissions import FHIRApiOrganizationPermissions
+from api_fhir_r4.views.fhir.base import BaseMultiserializerFHIRView
 from api_fhir_r4.serializers import PolicyHolderOrganisationSerializer, HealthFacilityOrganisationSerializer, \
     InsuranceOrganizationSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseMultiserializerFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter, DateUpdatedRequestParameterFilter
 from location.models import HealthFacility
 from core.models import ModuleConfiguration

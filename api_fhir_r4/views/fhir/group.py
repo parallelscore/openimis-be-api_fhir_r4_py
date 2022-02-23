@@ -4,7 +4,7 @@ from api_fhir_r4.mixins import MultiIdentifierRetrieverMixin, MultiIdentifierUpd
 from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, GroupIdentifierModelRetriever
 from api_fhir_r4.permissions import FHIRApiGroupPermissions
 from api_fhir_r4.serializers import GroupSerializer
-from api_fhir_r4.views.fhir.fhir_base_viewset import BaseFHIRView
+from api_fhir_r4.views.fhir.base import BaseFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from insuree.models import Family
 

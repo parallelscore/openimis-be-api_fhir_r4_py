@@ -175,5 +175,10 @@ DEFAULT_CFG = {
         "fhir_invoice_charge_item_system": "CodeSystem/invoice-charge-item",
         "fhir_bill_type_system": "CodeSystem/bill-type",
         "fhir_bill_charge_item_system": "CodeSystem/bill-charge-item"
+    },
+    "R4_fhir_subscription_config": {
+        "fhir_sub_channel_rest_hook": "rest-hook",
+        "fhir_sub_status_off": "off",
+        "fhir_sub_status_active": "active"
     }
 }
