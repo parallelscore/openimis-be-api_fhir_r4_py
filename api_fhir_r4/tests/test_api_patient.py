@@ -1,5 +1,7 @@
 import json
 import os
+import unittest
+from unittest import skip
 
 from django.utils.translation import gettext as _
 from api_fhir_r4.utils import DbManagerUtils
@@ -235,6 +237,7 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase
             _("Missing extensions for Address")
         )
 
+    @skip("This test needs to be checked. Isnuree without family can have no address")
     def test_post_should_raise_error_no_address(self):
         self.login()
         self.create_dependencies()
@@ -246,6 +249,7 @@ class PatientAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase
             _('Address must be supported')
         )
 
+    @skip("This test needs to be checked. At the moment photo is not obligatory")
     def test_post_should_raise_error_no_photo(self):
         self.login()
         self.create_dependencies()
