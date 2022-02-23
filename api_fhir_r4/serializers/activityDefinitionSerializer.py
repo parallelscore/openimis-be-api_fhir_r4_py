@@ -1,5 +1,6 @@
 import copy
 import uuid
+import warnings
 
 from medical.models import Service
 from api_fhir_r4.converters import ActivityDefinitionConverter
@@ -20,8 +21,8 @@ class ActivityDefinitionSerializer(BaseFHIRSerializer):
         return Service.objects.create(**copied_data)
 
     def update(self, instance, validated_data):
+        # TODO: This doesn't work, when called from contained resources update creates new entity with same uuid
         instance.code = validated_data.get('code', instance.code)
-        instance.id = validated_data.get('id', instance.id)
         instance.name = validated_data.get('name', instance.name)
         instance.validity_from = validated_data.get('validity_from', instance.validity_from)
         instance.patient_category = validated_data.get('patient_category', instance.patient_category)
@@ -29,4 +30,5 @@ class ActivityDefinitionSerializer(BaseFHIRSerializer):
         instance.care_type = validated_data.get('care_type', instance.care_type)
         instance.type = validated_data.get('type', instance.type)
         instance.price = validated_data.get('price', instance.price)
+        instance.save()
         return instance

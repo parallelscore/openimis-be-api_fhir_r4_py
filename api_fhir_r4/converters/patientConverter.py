@@ -229,7 +229,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
                     family_reference = extension.valueReference.reference
         if family_reference:
             if imis_insuree.head:
-                for extension in  fhir_patient.extension:
+                for extension in fhir_patient.extension:
                     if "StructureDefinition/address-location-reference" in extension.url:
                         value = cls.get_location_reference(extension.valueReference.reference)
                         if value:
@@ -357,7 +357,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
                 family_address.city = imis_family.location.name
 
-            if family_address:
+            if family_address and family_address.extension:
                 if type(addresses) is not list:
                     addresses = [family_address]
                 else:
@@ -395,10 +395,11 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_imis_addresses(cls, imis_insuree, fhir_patient):
-        cls._validate_fhir_address(fhir_patient)
-        cls._validate_fhir_address_details(fhir_patient.address)
-        addresses = fhir_patient.address
-        for address in addresses:
+        # TODO: Validation to be checked with IG definition
+        # cls._validate_fhir_address(fhir_patient)
+        patient_addresses = fhir_patient.address or []
+        cls._validate_fhir_address_details(patient_addresses)
+        for address in patient_addresses:
             # insuree use temp address
             if address.use == "temp":
                 if address.type == "physical":
@@ -526,8 +527,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_imis_photo(cls, imis_insuree, fhir_patient, errors):
-        cls._validate_fhir_photo(fhir_patient)
-        if len(fhir_patient.photo) > 0:
+        if fhir_patient.photo and len(fhir_patient.photo) > 0:
+            cls._validate_fhir_photo(fhir_patient)
             if fhir_patient.photo[0].data:
                 photo = fhir_patient.photo[0].data
                 date = fhir_patient.photo[0].creation

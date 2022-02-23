@@ -83,6 +83,7 @@ class ClaimResponseMapping(object):
 
     rejection_reason_system = f'{GeneralConfiguration.get_system_base_url()}CodeSystem/claim-rejection-reasons'
     rejection_reason = {
+        -2: _("REJECTED BY AI EVALUATION"),
         -1: _("REJECTED BY MEDICAL OFFICER"),
         0: _("ACCEPTED"),
         1: _("INVALID ITEM OR SERVICE"),
