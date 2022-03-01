@@ -1,12 +1,13 @@
 import copy
 
 from insuree.apps import InsureeConfig
-from insuree.models import Insuree, Gender, Education, Profession, Family, InsureePhoto
-from insuree.gql_mutations import update_or_create_insuree, create_file
+from insuree.models import Insuree, Family
+from insuree.gql_mutations import create_file
 
 from api_fhir_r4.converters import PatientConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.serializers import BaseFHIRSerializer
+from insuree.services import InsureeService
 
 
 class PatientSerializer(BaseFHIRSerializer):
@@ -21,7 +22,7 @@ class PatientSerializer(BaseFHIRSerializer):
         copied_data = copy.deepcopy(validated_data)
         if '_state' in validated_data:
             del copied_data['_state']
-        obj = update_or_create_insuree(copied_data, user)
+        obj = InsureeService(user).create_or_update(copied_data)
         # create photo as a file to specified configured path
         if InsureeConfig.insuree_photos_root_path:
             create_file(date=obj.photo.date, insuree_id=obj.id, photo_bin=obj.photo.photo)
@@ -40,5 +41,5 @@ class PatientSerializer(BaseFHIRSerializer):
         validated_data["id"] = insuree.id
         validated_data["uuid"] = insuree.uuid
         del validated_data['_state']
-        instance = update_or_create_insuree(validated_data, user)
+        instance = InsureeService(user).create_or_update(validated_data)
         return instance

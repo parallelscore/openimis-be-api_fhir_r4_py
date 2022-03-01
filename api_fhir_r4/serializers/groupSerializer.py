@@ -1,10 +1,10 @@
 import copy
 
 from insuree.models import Family, Insuree
-from insuree.gql_mutations import update_or_create_family
 from api_fhir_r4.converters import GroupConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.serializers import BaseFHIRSerializer
+from insuree.services import FamilyService
 
 
 class GroupSerializer(BaseFHIRSerializer):
@@ -21,7 +21,7 @@ class GroupSerializer(BaseFHIRSerializer):
         copied_data["head_insuree"] = insuree.__dict__
         copied_data["contribution"] = None
         del copied_data['_state']
-        new_family = update_or_create_family(copied_data, user)
+        new_family = FamilyService(user).create_or_update(copied_data)
         return new_family
 
     def update(self, instance, validated_data):
@@ -35,5 +35,5 @@ class GroupSerializer(BaseFHIRSerializer):
         validated_data["id"] = family.id
         validated_data["uuid"] = family.uuid
         del validated_data['_state']
-        instance = update_or_create_family(validated_data, user)
+        instance = FamilyService(user).create_or_update(validated_data)
         return instance
