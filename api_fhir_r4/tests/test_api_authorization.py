@@ -55,7 +55,7 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase, LogInMixin):
         response = self.client.get(self.url_to_test_authorization, format='json', **headers)
         response_json = response.json()
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response_json["issue"][0]["details"]["text"], "Error on decoding token")
+        self.assertEqual(response_json["issue"][0]["details"]["text"], "Error decoding signature")
 
     def test_post_should_raise_lack_of_bearer_prefix(self):
         response = self.client.post(self.base_url + 'login/', data=self._test_request_data_credentials, format='json')
@@ -72,7 +72,8 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase, LogInMixin):
         if os.getenv('REMOTE_USER_AUTHENTICATION', 'False').lower() == 'false':
             self.assertEqual(response_json["issue"][0]["details"]["text"], "Missing 'Bearer' prefix")
         else:
-            self.assertEqual(response_json["issue"][0]["details"]["text"], "Basic auth error: there is no basic header")
+            self.assertTrue(response_json["issue"][0]["details"]["text"] != '',
+                            msg="401 Response without error message")
 
     def test_post_should_raise_unproper_structure_of_token(self):
         response = self.client.post(self.base_url + 'login/', data=self._test_request_data_credentials, format='json')
@@ -85,7 +86,8 @@ class AuthorizationAPITests(GenericFhirAPITestMixin, APITestCase, LogInMixin):
         response = self.client.get(self.url_to_test_authorization, format='json', **headers)
         response_json = response.json()
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response_json["issue"][0]["details"]["text"], "Improper structure of token")
+        self.assertTrue(response_json["issue"][0]["details"]["text"] != '',
+                        msg="401 Response without error message")
 
     def test_post_should_raise_forbidden(self):
         response = self.client.post(self.base_url + 'login/', data=self._test_request_data_credentials, format='json')
