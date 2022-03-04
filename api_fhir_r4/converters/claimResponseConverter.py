@@ -423,7 +423,7 @@ class ClaimResponseConverter(BaseFHIRConverter):
         return cls.build_codeable_concept(
             system=ClaimResponseMapping.rejection_reason_system,
             code=code,
-            display=ClaimResponseMapping.rejection_reason[int(rejected_reason)]
+            display=ClaimResponseMapping.rejection_reason[int(code)]
         )
 
     @classmethod

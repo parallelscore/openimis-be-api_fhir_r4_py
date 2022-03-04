@@ -21,7 +21,6 @@ class ActivityDefinitionSerializer(BaseFHIRSerializer):
         return Service.objects.create(**copied_data)
 
     def update(self, instance, validated_data):
-        # TODO: This doesn't work, when called from contained resources update creates new entity with same uuid
         instance.code = validated_data.get('code', instance.code)
         instance.name = validated_data.get('name', instance.name)
         instance.validity_from = validated_data.get('validity_from', instance.validity_from)
