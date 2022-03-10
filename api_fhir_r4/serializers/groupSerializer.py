@@ -13,15 +13,25 @@ class GroupSerializer(BaseFHIRSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
         user = request.user
+
         insuree_id = validated_data.get('head_insuree_id')
+        members_family = validated_data.pop('members_family')
+
         if Family.objects.filter(head_insuree_id=insuree_id).count() > 0:
             raise FHIRException('Exists family with the provided head')
+
         insuree = Insuree.objects.get(id=insuree_id)
         copied_data = copy.deepcopy(validated_data)
         copied_data["head_insuree"] = insuree.__dict__
         copied_data["contribution"] = None
         del copied_data['_state']
         new_family = update_or_create_family(copied_data, user)
+
+        # assign members of family (insuree) to the family
+        for mf in members_family:
+            mf.family = new_family
+            mf.save()
+
         return new_family
 
     def update(self, instance, validated_data):
