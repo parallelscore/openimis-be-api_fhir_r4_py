@@ -1,5 +1,8 @@
 from copy import deepcopy
 
+from rest_framework import fields
+from drf_spectacular.utils import inline_serializer, extend_schema_serializer, OpenApiExample
+
 from api_fhir_r4.converters import SubscriptionConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.models import Subscription
@@ -41,3 +44,20 @@ class SubscriptionSerializer(BaseFHIRSerializer):
         else:
             msg = result.get('message', 'Unknown')
             raise FHIRException(f'Error while updating a subscription: {msg}')
+
+
+class SubscriptionSerializerSchema(SubscriptionSerializer):
+    resourceType = fields.CharField(read_only=True)
+    id = fields.UUIDField(read_only=True)
+    status = fields.CharField()
+    end = fields.DateTimeField()
+    reason = fields.CharField()
+    criteria = fields.CharField()
+    channel = inline_serializer(
+        name='ChannelSerializer',
+        fields={
+            'type': fields.CharField(),
+            'endpoint': fields.CharField(),
+            'header': fields.ListField(child=fields.CharField(), min_length=0, max_length=1),
+        },
+    )

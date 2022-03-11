@@ -1,4 +1,7 @@
+from drf_spectacular.utils import extend_schema
 from graphql_jwt.utils import jwt_payload
+
+from api_fhir_r4.openapi_schema_extensions import get_login_schema
 from core.jwt import *
 from core.models import User
 from rest_framework import viewsets
@@ -9,6 +12,7 @@ from rest_framework.response import Response
 class LoginView(viewsets.ViewSet):
     permission_classes = (AllowAny,)
 
+    @extend_schema(**get_login_schema())
     def create(self, request, *args, **kwargs):
         data = request.data
         # check if we have both required data in request payload

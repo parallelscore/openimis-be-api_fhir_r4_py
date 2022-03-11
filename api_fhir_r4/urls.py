@@ -1,5 +1,7 @@
-from api_fhir_r4 import views
+from collections import OrderedDict
+
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.routers import DefaultRouter
 from openIMIS.openimisapps import *
 
@@ -108,5 +110,10 @@ if 'invoice' in imis_modules:
     router.register(r'Invoice', fhir_viewsets.InvoiceViewSet, basename="Invoice_R4")
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('docs/', SpectacularAPIView.as_view(), name='docs'),
+    path('docs/swagger/', SpectacularSwaggerView.as_view(url_name='docs'), name='swagger-ui'),
+    path('docs/redoc/', SpectacularRedocView.as_view(url_name='docs'), name='redoc'),
 ]
+
+OrderedDict
