@@ -23,16 +23,6 @@ class JWTAuthenticationScheme(TokenScheme):
         )
 
 
-def get_login_schema():
-    return {
-        'request': _get_inline_login_request_serializer(),
-        'responses': {
-            (200, 'application/json'): _get_inline_login_200_response_serializer(),
-            (401,): None
-        }
-    }
-
-
 def get_inline_error_serializer():
     return inline_serializer(
         name='InlineErrorSerializer',
@@ -43,7 +33,7 @@ def get_inline_error_serializer():
     )
 
 
-def _get_inline_login_request_serializer():
+def get_inline_login_request_serializer():
     return inline_serializer(
         name='InlineLoginRequestSerializer',
         fields={
@@ -53,7 +43,7 @@ def _get_inline_login_request_serializer():
     )
 
 
-def _get_inline_login_200_response_serializer():
+def get_inline_login_200_response_serializer():
     return inline_serializer(
         name='InlineLoginResponseSerializer',
         fields={
