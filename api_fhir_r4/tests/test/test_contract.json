@@ -59,9 +59,67 @@
          },
          "asset":[
             {
+               "extension":[
+                  {
+                     "extension":[
+                        {
+                           "url":"payer",
+                           "valueCodeableConcept":{
+                              "coding":[
+                                 {
+                                    "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/contract-premium-payer",
+                                    "code":"beneficiary",
+                                    "display":"Beneficiary"
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "url":"category",
+                           "valueCodeableConcept":{
+                              "coding":[
+                                 {
+                                    "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/contract-premium-category",
+                                    "code":"C",
+                                    "display":"Contribution and Others"
+                                 }
+                              ]
+                           }
+                        },
+                        {
+                           "url":"amount",
+                           "valueMoney":{
+                              "value":10000,
+                              "currency":"EUR"
+                           }
+                        },
+                        {
+                           "url":"date",
+                           "valueDate":"2021-06-20"
+                        },
+                        {
+                           "url":"receipt",
+                           "valueString":"RE185"
+                        },
+                        {
+                           "url":"type",
+                           "valueCodeableConcept":{
+                              "coding":[
+                                 {
+                                    "system":"https://openimis.github.io/openimis_fhir_r4_ig/CodeSystem/contract-premium-type",
+                                    "code":"C",
+                                    "display":"Cash"
+                                 }
+                              ]
+                           }
+                        }
+                     ],
+                     "url":"https://openimis.github.io/openimis_fhir_r4_ig/StructureDefinition/contract-premium"
+                  }
+               ],
                "typeReference":[
                   {
-                     "reference": "Patient/f8c56ada-d76d-4f6c-aad3-cfddc9fb38eb"
+                     "reference":"Patient/f8c56ada-d76d-4f6c-aad3-cfddc9fb38eb"
                   }
                ],
                "period":[
