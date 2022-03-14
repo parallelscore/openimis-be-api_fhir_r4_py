@@ -35,12 +35,6 @@ class SubscriptionNotificationResultManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().annotate(uuid=F('id'))
 
-    def successful_notifications(self):
-        return self.get_queryset().filter(status__in=(0, 1))
-
-    def failed_notifications(self):
-        return self.get_queryset().filter(status=2)
-
     def subscriber_notifications(self, subscriber: Subscription):
         return self.get_queryset().filter(subscription__id=subscriber.id)
 
