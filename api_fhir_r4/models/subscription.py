@@ -1,8 +1,13 @@
+import uuid
+
 from django.db import models
+from django.db.models import F
 from django.utils.translation import gettext as _
 from django_cryptography.fields import encrypt
 from jsonfallback.fields import FallbackJSONField
 
+from core.datetimes import ad_datetime
+from core.fields import DateTimeField
 from core.models import HistoryBusinessModel
 
 
@@ -24,3 +29,32 @@ class Subscription(HistoryBusinessModel):
     class Meta:
         managed = True
         db_table = 'tblSubscription'
+
+
+class SubscriptionNotificationResultManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(uuid=F('id'))
+
+    def successful_notifications(self):
+        return self.get_queryset().filter(status__in=(0, 1))
+
+    def failed_notifications(self):
+        return self.get_queryset().filter(status=2)
+
+    def subscriber_notifications(self, subscriber: Subscription):
+        return self.get_queryset().filter(subscription__id=subscriber.id)
+
+
+class SubscriptionNotificationResult(models.Model):
+    id = models.UUIDField(primary_key=True, db_column="UUID", default=uuid.uuid4, editable=False)
+    subscription = models.ForeignKey(
+        Subscription, on_delete=models.CASCADE, related_name='notifications_sent', null=False)
+    notified_successfully = models.BooleanField(blank=False, null=False)
+    notification_time = DateTimeField(db_column='Expiring', null=False, default=ad_datetime.AdDatetime.now)
+    error = models.TextField(blank=False, null=True, default=None)
+
+    objects = SubscriptionNotificationResultManager()
+
+    class Meta:
+        managed = True
+        db_table = 'tblSubscriptionNotificationResult'

@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from api_fhir_r4.converters import SubscriptionConverter
+from api_fhir_r4.subscriptions.subscriptionConverter import SubscriptionConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.models import Subscription
 from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiInvoicePermissions
