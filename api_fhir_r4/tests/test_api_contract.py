@@ -69,5 +69,7 @@ class ContractAPITests(GenericFhirAPITestMixin, APITestCase, LogInMixin):
             'HTTP_AUTHORIZATION': f"Bearer {token}"
         }
         response = self.client.post(self.base_url, data=self._test_request_data, format='json', **headers)
+        response_json = response.json()
+        print(response_json)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(response.content)
