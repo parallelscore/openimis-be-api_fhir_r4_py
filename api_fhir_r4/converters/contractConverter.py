@@ -461,6 +461,7 @@ class ContractConverter(BaseFHIRConverter, ReferenceConverterMixin):
                         if asset.extension and len(asset.extension) > 0:
                             if len(asset.extension[0].extension) > 0:
                                 imis_contribution = Premium()
+                                imis_contribution.uuid = None
                                 contribution_extensions = asset.extension[0].extension
                                 for fhir_contribution in contribution_extensions:
                                     cls.build_imis_contribution(fhir_contribution, imis_contribution)

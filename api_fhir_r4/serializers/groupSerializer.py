@@ -1,7 +1,7 @@
 import copy
 
 from insuree.models import Family, Insuree
-from insuree.gql_mutations import update_or_create_family
+from insuree.gql_mutations import update_or_create_family, update_or_create_insuree
 from api_fhir_r4.converters import GroupConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.serializers import BaseFHIRSerializer
@@ -29,8 +29,10 @@ class GroupSerializer(BaseFHIRSerializer):
 
         # assign members of family (insuree) to the family
         for mf in members_family:
-            mf.family = new_family
-            mf.save()
+            mf = mf.__dict__
+            del mf['_state']
+            mf['family_id'] = new_family.id
+            update_or_create_insuree(mf, user)
 
         return new_family
 

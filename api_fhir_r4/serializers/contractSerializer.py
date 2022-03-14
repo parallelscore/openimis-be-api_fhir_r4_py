@@ -1,9 +1,8 @@
 from api_fhir_r4.converters.contractConverter import ContractConverter
-from api_fhir_r4.configurations import R4CoverageConfig
 from api_fhir_r4.serializers import BaseFHIRSerializer
-from payment.services import match_payment
+from contribution.gql_mutations import update_or_create_premium
+from policy.gql_mutations import update_or_create_policy
 from policy.models import Policy
-from insuree.models import InsureePolicy,Insuree
 import copy
 from api_fhir_r4.exceptions import FHIRException
 
@@ -11,7 +10,10 @@ from api_fhir_r4.exceptions import FHIRException
 class ContractSerializer(BaseFHIRSerializer):
     fhirConverter = ContractConverter
 
-    def create(self,validated_data):
+    def create(self, validated_data):
+        request = self.context.get("request")
+        user = request.user
+
         family = validated_data.get('family_id')
         insurees = validated_data.pop('insurees')
         premiums = validated_data.pop('contributions')
@@ -21,34 +23,20 @@ class ContractSerializer(BaseFHIRSerializer):
 
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
-        policy = Policy.objects.create(**copied_data)
 
-        for patient in insurees:
-            insuree = Insuree.objects.get(uuid=patient)
-            InsureePolicy.objects.create(
-                policy=policy,
-                insuree=insuree,
-                start_date=policy.start_date,
-                effective_date=policy.effective_date,
-                expiry_date=policy.expiry_date,
-                enrollment_date=policy.enroll_date,
-                validity_to=policy.expiry_date
-            )
-
+        new_policy = update_or_create_policy(copied_data, user)
         # create contributions related to newly created policy
         if premiums:
             for premium in premiums:
-                premium.policy = policy
-                premium.audit_user_id = copied_data['audit_user_id']
-                premium.save()
+                premium = premium.__dict__
+                del premium['_state']
+                premium['policy_uuid'] = new_policy.uuid
+                premium['policy_id'] = new_policy.id
+                premium['audit_user_id'] = copied_data['audit_user_id']
+                premium = update_or_create_premium(premium, user)
+                new_policy = premium.policy
 
-            sum_premiums = policy.sum_premiums()
-            if sum_premiums >= policy.value:
-                policy.save_history()
-                policy.status = Policy.STATUS_ACTIVE
-                policy.save()
-
-        return policy
+        return new_policy
     
     def update(self, instance, validated_data):
         instance.save()
