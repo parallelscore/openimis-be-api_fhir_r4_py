@@ -1,5 +1,5 @@
 from copy import deepcopy
-from urllib.parse import urlparse, parse_qsl
+from urllib import parse
 
 from fhir.resources.subscription import Subscription as FHIRSubscription
 
@@ -68,8 +68,8 @@ class SubscriptionConverter(BaseFHIRConverter):
     def _build_fhir_criteria(cls, fhir_subscription, imis_subscription):
         criteria = deepcopy(imis_subscription.criteria)
         resource = criteria.pop('resource_type')
-        arguments = '&'.join(f'{key}={value}' for key, value in criteria.items())
-        fhir_subscription['criteria'] = f'{resource}/?{arguments}'
+        fhir_subscription['criteria'] = parse.urlunparse(
+            ('', '', resource, '', parse.urlencode(criteria, doseq=True), ''))
 
     @classmethod
     def _build_fhir_error(cls, fhir_subscription, imis_subscription):
@@ -123,8 +123,8 @@ class SubscriptionConverter(BaseFHIRConverter):
     @classmethod
     def _build_imis_criteria(cls, imis_subscription, fhir_subscription):
         if fhir_subscription.criteria:
-            parsed_criteria = urlparse(fhir_subscription.criteria)
-            imis_criteria = dict(parse_qsl(parsed_criteria.query))
+            parsed_criteria = parse.urlparse(fhir_subscription.criteria)
+            imis_criteria = dict(parse.parse_qsl(parsed_criteria.query))
             imis_criteria['resource_type'] = parsed_criteria.path.strip('/')
             imis_subscription['criteria'] = imis_criteria
             cls._validate_fhir_reason(imis_subscription, fhir_subscription)
