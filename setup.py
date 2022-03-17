@@ -31,7 +31,8 @@ setup(
         'openimis-be-location',
         'openimis-be-claim',
         'openimis-be-policy',
-        'openimis-be-policyholder'
+        'openimis-be-policyholder',
+        'orjson'
     ],
     classifiers=[
         'Environment :: Web Environment',
