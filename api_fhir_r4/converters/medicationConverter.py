@@ -90,9 +90,10 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_package_form(cls, fhir_medication, imis_medication):
         # TODO - Split medical item ItemPackage into ItemForm and ItemAmount => openIMIS side
-        codeable = CodeableConcept.construct()
-        codeable.text = imis_medication.package.lstrip()
-        fhir_medication.form = codeable
+        if imis_medication.package:
+            codeable = CodeableConcept.construct()
+            codeable.text = imis_medication.package.lstrip()
+            fhir_medication.form = codeable
 
     @classmethod
     def split_package_form(cls, form):
@@ -107,12 +108,13 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def build_fhir_package_amount(cls, fhir_medication, imis_medication):
         # TODO - Split medical item ItemPackage into ItemForm and ItemAmount => openIMIS side
-        amount = cls.split_package_amount(imis_medication.package)
-        ratio = Ratio.construct()
-        numerator = Quantity.construct()
-        numerator.value = amount
-        ratio.numerator = numerator
-        fhir_medication.amount = ratio
+        if imis_medication.package:
+            amount = cls.split_package_amount(imis_medication.package)
+            ratio = Ratio.construct()
+            numerator = Quantity.construct()
+            numerator.value = amount
+            ratio.numerator = numerator
+            fhir_medication.amount = ratio
 
     @classmethod
     def split_package_amount(cls, amount):
@@ -170,14 +172,16 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_medication_frequency(cls, fhir_medication, imis_medication):
-        medication_frequency = cls.build_fhir_medication_frequency_extension(imis_medication.frequency)
-        if type(fhir_medication.extension) is not list:
-            fhir_medication.extension = [medication_frequency]
-        else:
-            fhir_medication.extension.append(medication_frequency)
+        if imis_medication.frequency:
+            medication_frequency = cls.build_fhir_medication_frequency_extension(imis_medication.frequency)
+            if type(fhir_medication.extension) is not list:
+                fhir_medication.extension = [medication_frequency]
+            else:
+                fhir_medication.extension.append(medication_frequency)
 
     @classmethod
     def build_fhir_medication_frequency_extension(cls, value):
+        # TODO: Is this ok? Value is assigned to period instead of frequency
         extension = Extension.construct()
         timing = Timing.construct()
         timing_repeat = TimingRepeat.construct()
@@ -245,10 +249,13 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
             extension.extension = [gender]
         else:
             extension.extension.append(gender)
+
         age = cls.build_fhir_age(imis_medication)
         extension.extension.append(age)
+
         care_type = cls.build_fhir_care_type(imis_medication)
-        extension.extension.append(care_type)
+        if care_type:
+            extension.extension.append(care_type)
         fhir_medication.extension.append(extension)
 
     @classmethod
@@ -299,12 +306,13 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_care_type(cls, imis_medication):
-        code = cls.build_fhir_act_code(imis_medication)
-        display = ItemVenueTypeMapping.item_venue_type[code]
-        extension = Extension.construct()
-        usage_context_system = "http://terminology.hl7.org/CodeSystem/usage-context-type"
-        venue_system = "http://terminology.hl7.org/CodeSystem/v3-ActCode"
-        if imis_medication.care_type is not None:
+        if imis_medication.care_type:
+            code = cls.build_fhir_act_code(imis_medication)
+            display = ItemVenueTypeMapping.item_venue_type[code]
+            extension = Extension.construct()
+            usage_context_system = "http://terminology.hl7.org/CodeSystem/usage-context-type"
+            venue_system = "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+
             if code != "B":
                 extension.url = "CareType"
                 extension.valueUsageContext = UsageContext.construct()
@@ -315,7 +323,7 @@ class MedicationConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 cls.build_fhir_both_care_type(extension, venue_system)
             extension.valueUsageContext.code = cls._build_fhir_coding(
                 code="venue", display="Clinical Venue", system=usage_context_system)
-        return extension
+            return extension
 
     @classmethod
     def build_fhir_both_care_type(cls, extension, venue_system):

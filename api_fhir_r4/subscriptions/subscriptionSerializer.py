@@ -1,7 +1,9 @@
 from copy import deepcopy
 
-from api_fhir_r4.subscriptions.subscriptionConverter import SubscriptionConverter
-from api_fhir_r4.exceptions import FHIRException
+
+from rest_framework.exceptions import ValidationError, APIException, PermissionDenied
+
+from api_fhir_r4.subscriptions import SubscriptionConverter
 from api_fhir_r4.models import Subscription
 from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiInvoicePermissions
 from api_fhir_r4.serializers import BaseFHIRSerializer
@@ -47,21 +49,21 @@ class SubscriptionSerializer(BaseFHIRSerializer):
         if result.get('success', False):
             return Subscription.objects.get(id=result['data']['id'])
         else:
-            raise FHIRException(self._error_while_saving % {'msg': result.get('message', 'Unknown')})
+            raise APIException(self._error_while_saving % {'msg': result.get('message', 'Unknown')})
 
     def check_resource_rights(self, user, data):
         resource_type = data.get('criteria', {}).get('resource_type', '').lower()
         if not resource_type or resource_type not in self.resource_permissions:
-            raise FHIRException(self._error_while_saving % {'msg': f'Invalid resource_type ({resource_type})'})
+            raise ValidationError(self._error_while_saving % {'msg': f'Invalid resource_type ({resource_type})'})
 
         if not user.has_perms(self.resource_permissions[resource_type]):
-            raise FHIRException(
-                self._error_while_saving % {'msg': f'You have no permissions to subscribe to {resource_type}'})
+            raise PermissionDenied(
+                detail=self._error_while_saving % {'msg': f'You have no permissions to subscribe to {resource_type}'})
 
     def check_object_owner(self, user, instance):
         if str(user.id).lower() != str(instance.user_created.id).lower():
-            raise FHIRException(self._error_while_saving % {'msg': 'You are not the owner of this subscription'})
+            raise APIException(self._error_while_saving % {'msg': 'You are not the owner of this subscription'})
 
     def check_instance_id(self, instance, validated_data):
         if validated_data['id'] and str(instance.id) != validated_data['id']:
-            raise FHIRException(self._error_while_saving % {'msg': 'Invalid ID in the payload'})
+            raise APIException(self._error_while_saving % {'msg': 'Invalid ID in the payload'})

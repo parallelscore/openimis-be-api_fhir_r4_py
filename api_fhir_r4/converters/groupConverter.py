@@ -69,12 +69,13 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
     @classmethod
     def build_imis_head(cls, imis_family, fhir_family, errors):
         members = fhir_family.member
+        imis_family.members_family = []
         if not cls.valid_condition(members is None, _('Missing `member` attribute'), errors):
             if len(members) == 0:
                 members = None
                 cls.valid_condition(members is None, _('Missing member should not be empty'), errors)
             for member in members:
-                cls.build_imis_identifiers(imis_family, member.entity.reference)
+                cls.build_imis_identifiers(imis_family, member.entity.reference, imis_family.members_family)
         
     @classmethod
     def build_fhir_identifiers(cls, fhir_family, imis_family):
@@ -99,15 +100,20 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         identifiers.append(head_id)
 
     @classmethod
-    def build_imis_identifiers(cls, imis_family, reference):
+    def build_imis_identifiers(cls, imis_family, reference, members_family):
         cls._validate_fhir_family_identifier_code(reference)
         value = reference.split('/')[-1]
-        try:
-            imis_family.head_insuree = Insuree.objects.get(chf_id=value, validity_to__isnull=True)
-        except:
-            raise FHIRException(
-                _('Such insuree %(chf_id)s does not exist') % {'chf_id': value}
-            )
+        if len(members_family) == 0:
+            try:
+                imis_family.head_insuree = Insuree.objects.get(chf_id=value, validity_to__isnull=True)
+                members_family.append(imis_family.head_insuree)
+            except:
+                raise FHIRException(
+                    _('Such insuree %(chf_id)s does not exist') % {'chf_id': value}
+                )
+        else:
+            insuree = Insuree.objects.get(chf_id=value, validity_to__isnull=True)
+            imis_family.members_family.append(insuree)
 
     @classmethod
     def build_fhir_name(cls, fhir_family, imis_family):

@@ -1,6 +1,9 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Callable, Iterable, Union
-from django.db import models
+
+from django.core.exceptions import MultipleObjectsReturned
+from django.db import models, IntegrityError
 from django.forms import model_to_dict
 
 from api_fhir_r4.containedResources.converters import FHIRContainedResourceConverter, IMISContainedResourceConverter
@@ -8,6 +11,9 @@ from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 
 from api_fhir_r4.serializers import BaseFHIRSerializer
 from location.models import HealthFacility
+
+
+logger = logging.getLogger(__name__)
 
 
 class ContainedResourceManager:
@@ -67,10 +73,24 @@ class ContainedResourceManager:
         assert self.serialzier is not None, "Serializer is required to perform create and update"
 
     def _update(self, updated_instance):
-        instance = updated_instance.__class__.objects.get(uuid=updated_instance.uuid)
-        updated = self.serialzier.update(instance, self._model_to_dict(updated_instance))
-        updated.save()
-        return updated
+        try:
+            instance = updated_instance.__class__.objects.get(uuid=updated_instance.uuid)
+        except MultipleObjectsReturned as a:
+            logger.error(a)
+            raise IntegrityError(
+                F"While trying to use resource {updated_instance} for update of object"
+                F" with uuid {updated_instance.uuid} multiple objects with this uuid were found") from a
+
+        try:
+            updated = self.serialzier.update(instance, self._model_to_dict(updated_instance))
+            updated.save()
+            return updated
+        except Exception as e:
+            import warnings
+            warnings.warn(
+                F"Update from contained resource failed due to error: \n{e}.\n"
+                F"Instance will not be updated and default value will be used")
+            return instance
 
     def _create(self, instance):
         # Services from other modules are often called through update_or_create method. It treats objects with uuid
