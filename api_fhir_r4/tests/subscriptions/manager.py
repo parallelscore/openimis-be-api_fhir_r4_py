@@ -1,10 +1,6 @@
-import asyncio
 import datetime
-from unittest.mock import PropertyMock
 
-from asynctest import CoroutineMock, MagicMock, patch, call
-from aiohttp.web_response import Response
-from asgiref.sync import async_to_sync
+from asynctest import MagicMock
 from django.test import TestCase
 
 from api_fhir_r4.converters import ClaimConverter, ReferenceConverterMixin
@@ -13,10 +9,7 @@ from api_fhir_r4.subscriptions.notificationClient import RestSubscriptionNotific
     SubscriberNotificationOutput
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
 from api_fhir_r4.tests import CommunicationTestMixin
-from api_fhir_r4.utils import DbManagerUtils
-from core.models import User
 from api_fhir_r4.tests.mixin.logInMixin import LogInMixin
-from aiohttp import web
 
 
 class AsyncContextManagerMock(MagicMock):
