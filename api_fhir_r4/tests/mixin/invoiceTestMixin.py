@@ -14,14 +14,14 @@ class InvoiceTestMixin(GenericTestMixin, FhirConverterTestMixin):
     _TEST_INVOICE_CODE = 'TEST-CODE'
     _TEST_INVOICE_SUBJECT_TYPE_CODING = 'contribution'
     _TEST_INVOICE_THIRD_PARTY = Family()
-    _TEST_INVOICE_THIRD_PARTY_UUID = '98765432-1234-1234-1234-123456789012'
+    _TEST_INVOICE_THIRD_PARTY_UUID = '43C47D1E-5110-4880-8C53-6871E71BDDE8'
     _TEST_INVOICE_DATE = TimeUtils.str_iso_to_date('2021-01-01')
     _TEST_INVOICE_TOTAL_NET = 10000.0
     _TEST_INVOICE_TOTAL_GROSS = 10000.0
     _TEST_INVOICE_CURRENCY = 'USD'
     _TEST_LINE_ITEM_CHARGE_ITEM_CODING = 'policy'
-    _TEST_LiNE_ITEM_QUANTITY = 2
-    _TEST_LINE_ITEM_UNIT_PRICE = 5000.0
+    _TEST_LiNE_ITEM_QUANTITY = 1
+    _TEST_LINE_ITEM_UNIT_PRICE = 10000.0
     _TEST_LINE_ITEM_BASE_PRICE_COMPONENT_TYPE = 'base'
     _TEST_LINE_ITEM_DISCOUNT_COMPONENT_TYPE = 'discount'
     _TEST_LINE_ITEM_DISCOUNT = 0.1
@@ -62,8 +62,7 @@ class InvoiceTestMixin(GenericTestMixin, FhirConverterTestMixin):
 
     def verify_fhir_instance(self, fhir_obj):
         if not (hasattr(self, '_TEST_INVOICE_SUBJECT_TYPE') and hasattr(self, '_TEST_LINE_ITEM_CHARGE_ITEM')):
-            raise RuntimeError(
-                'To verify imis fhir instance first create imis instance with create_test_imis_instance()')
+            self.create_test_imis_instance()
 
         self.assertIs(type(fhir_obj), FHIRInvoice)
         self.assertEqual(fhir_obj.status, self._TEST_INVOICE_STATUS)

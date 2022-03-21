@@ -3,10 +3,11 @@ from urllib import parse
 
 from fhir.resources.subscription import Subscription as FHIRSubscription
 
-from api_fhir_r4.converters import BaseFHIRConverter
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.mapping.subscriptionMapping import SubscriptionChannelMapping, SubscriptionStatusMapping
 from api_fhir_r4.models import Subscription
+from api_fhir_r4.utils import TimeUtils
 
 
 class SubscriptionConverter(BaseFHIRConverter):
@@ -15,7 +16,7 @@ class SubscriptionConverter(BaseFHIRConverter):
     _error_forbidden_attr = f'`%(attr)s` attribute forbidden'
 
     @classmethod
-    def to_fhir_obj(cls, imis_subscription, reference_type):
+    def to_fhir_obj(cls, imis_subscription, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_subscription = {}
         cls._build_fhir_id(fhir_subscription, imis_subscription)
         cls._build_fhir_status(fhir_subscription, imis_subscription)
@@ -58,7 +59,7 @@ class SubscriptionConverter(BaseFHIRConverter):
 
     @classmethod
     def _build_fhir_end(cls, fhir_subscription, imis_subscription):
-        fhir_subscription['end'] = imis_subscription.expiring
+        fhir_subscription['end'] = imis_subscription.expiring.astimezone()
 
     @classmethod
     def _build_fhir_reason(cls, fhir_subscription, imis_subscription):
@@ -116,7 +117,7 @@ class SubscriptionConverter(BaseFHIRConverter):
     @classmethod
     def _build_imis_end(cls, imis_subscription, fhir_subscription):
         if fhir_subscription.end:
-            imis_subscription['expiring'] = fhir_subscription.end
+            imis_subscription['expiring'] = TimeUtils.str_iso_to_date(fhir_subscription.end)
         else:
             raise FHIRException(cls._error_invalid_attr % {'attr': 'end'})
 
