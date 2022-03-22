@@ -3,7 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from api_fhir_r4.models import Subscription
 from api_fhir_r4.permissions import FHIRApiSubscriptionPermissions
-from api_fhir_r4.serializers import SubscriptionSerializer
+from api_fhir_r4.subscriptions import SubscriptionSerializer
 from api_fhir_r4.services import SubscriptionService
 from api_fhir_r4.views.fhir.base import BaseFHIRView
 
