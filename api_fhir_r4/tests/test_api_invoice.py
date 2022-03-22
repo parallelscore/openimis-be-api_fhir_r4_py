@@ -18,8 +18,3 @@ class InvoiceAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase
         self.imis_invoice.thirdparty = Insuree.objects.first()
         self.imis_invoice.save(username=user.username)
         self.imis_invoice_line_item.save(username=user.username)
-
-    def tearDown(self):
-        user = self.get_or_create_user_api()
-        self.imis_invoice_line_item.delete(username=user.username)
-        self.imis_invoice.delete(username=user.username)
