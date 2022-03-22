@@ -19,10 +19,6 @@ class SubscriptionSerializer(BaseFHIRSerializer):
         'invoice': FHIRApiInvoicePermissions.permissions_get
     }
 
-    def to_internal_value(self, data):
-        data['end'] = TimeUtils.str_iso_to_date(data['end'])
-        return super().to_internal_value(data)
-
     def create(self, validated_data):
         user = self.context['request'].user
         self.check_resource_rights(user, validated_data)
