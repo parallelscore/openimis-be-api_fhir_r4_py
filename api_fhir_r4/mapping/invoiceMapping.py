@@ -56,6 +56,11 @@ class BillChargeItemMapping(object):
             "display": _("Claim"),
             "system": SYSTEM
         },
+        "policy": {
+            "code": "policy",
+            "display": _("Policy"),
+            "system": SYSTEM
+        }
     }
 
 
@@ -78,4 +83,9 @@ class BillTypeMapping(object):
             "display": _("Fees"),
             "system": SYSTEM
         },
+        "policy": {
+            "code": "policy",
+            "display": _("Policy"),
+            "system": SYSTEM
+        }
     }
