@@ -520,6 +520,22 @@ class SubscriptionConfiguration(BaseConfiguration):
         raise NotImplementedError('`build_configuration()` must be implemented.')
 
     @classmethod
+    def get_fhir_sub_search_perms(cls):
+        raise NotImplementedError('`get_fhir_sub_search_perms()` must be implemented.')
+
+    @classmethod
+    def get_fhir_sub_create_perms(cls):
+        raise NotImplementedError('`get_fhir_sub_create_perms()` must be implemented.')
+
+    @classmethod
+    def get_fhir_sub_update_perms(cls):
+        raise NotImplementedError('`get_fhir_sub_update_perms()` must be implemented.')
+
+    @classmethod
+    def get_fhir_sub_delete_perms(cls):
+        raise NotImplementedError('`get_fhir_sub_delete_perms()` must be implemented.')
+
+    @classmethod
     def get_fhir_subscription_channel_rest_hook(cls):
         raise NotImplementedError('`get_fhir_subscription_channel_rest_hook()` must be implemented.')
 

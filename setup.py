@@ -24,12 +24,15 @@ setup(
         'django-db-signals',
         'djangorestframework',
         'fhir.resources==6.2.0b3',
+        'aiohttp==3.8.1',
+        'asynctest==0.13.0',
         'openimis-be-core',
         'openimis-be-insuree',
         'openimis-be-location',
         'openimis-be-claim',
         'openimis-be-policy',
-        'openimis-be-policyholder'
+        'openimis-be-policyholder',
+        'orjson'
     ],
     classifiers=[
         'Environment :: Web Environment',

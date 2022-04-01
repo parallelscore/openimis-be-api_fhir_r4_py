@@ -9,6 +9,22 @@ class R4SubscriptionConfig(SubscriptionConfiguration):
         cls.get_config().R4_fhir_subscription_config = cfg['R4_fhir_subscription_config']
 
     @classmethod
+    def get_fhir_sub_search_perms(cls):
+        return cls.get_config_attribute('R4_fhir_subscription_config').get('get_fhir_sub_search_perms', ['158001'])
+
+    @classmethod
+    def get_fhir_sub_create_perms(cls):
+        return cls.get_config_attribute('R4_fhir_subscription_config').get('fhir_sub_create_perms', ['158002'])
+
+    @classmethod
+    def get_fhir_sub_update_perms(cls):
+        return cls.get_config_attribute('R4_fhir_subscription_config').get('get_fhir_sub_update_perms', ['158003'])
+
+    @classmethod
+    def get_fhir_sub_delete_perms(cls):
+        return cls.get_config_attribute('R4_fhir_subscription_config').get('get_fhir_sub_delete_perms', ['158004'])
+
+    @classmethod
     def get_fhir_subscription_channel_rest_hook(cls):
         return cls.get_config_attribute('R4_fhir_subscription_config').get('fhir_sub_channel_rest_hook', 'rest_hook')
 

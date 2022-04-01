@@ -7,7 +7,6 @@ from rest_framework import status
 
 from api_fhir_r4.configurations import R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter
-from fhir.resources.fhirabstractmodel import FHIRAbstractModel
 from fhir.resources.bundle import Bundle
 from api_fhir_r4.utils import DbManagerUtils
 
