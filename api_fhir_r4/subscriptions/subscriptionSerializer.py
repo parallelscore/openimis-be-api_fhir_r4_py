@@ -8,7 +8,6 @@ from api_fhir_r4.models import Subscription
 from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiInvoicePermissions
 from api_fhir_r4.serializers import BaseFHIRSerializer
 from api_fhir_r4.services import SubscriptionService
-from api_fhir_r4.utils import TimeUtils
 
 
 class SubscriptionSerializer(BaseFHIRSerializer):
@@ -17,7 +16,8 @@ class SubscriptionSerializer(BaseFHIRSerializer):
 
     resource_permissions = {
         'patient': FHIRApiInsureePermissions.permissions_get,
-        'invoice': FHIRApiInvoicePermissions.permissions_get
+        'invoice': FHIRApiInvoicePermissions.permissions_get,
+        'bill': FHIRApiInvoicePermissions.permissions_get
     }
 
     def create(self, validated_data):

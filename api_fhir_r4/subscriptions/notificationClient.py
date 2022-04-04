@@ -18,7 +18,7 @@ NOTIFICATION_CONTENT_TYPE = TypeVar('NOTIFICATION_CONTENT_TYPE')  # FHIR INPUT
 CLIENT_ACCEPTABLE_CONTENT_TYPE = TypeVar('CLIENT_ACCEPTABLE_CONTENT_TYPE')  # CLIENT INPUT
 NOTIFICATION_OUTPUT_TYPE = TypeVar('NOTIFICATION_OUTPUT_TYPE')  # CLIENT RESPONSE
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('openIMIS')
 
 
 class AbstractAsyncSubscriptionNotificationClient(
