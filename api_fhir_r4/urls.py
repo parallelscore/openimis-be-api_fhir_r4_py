@@ -1,7 +1,7 @@
-from api_fhir_r4 import views
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from openIMIS.openimisapps import *
+from openIMIS.openimisapps import openimis_apps
+
 
 from api_fhir_r4.views import LoginView, fhir as fhir_viewsets
 
