@@ -1,9 +1,10 @@
-from collections import OrderedDict
 
+from collections import OrderedDict
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.routers import DefaultRouter
-from openIMIS.openimisapps import *
+from openIMIS.openimisapps import openimis_apps
+
 
 from api_fhir_r4.views import LoginView, fhir as fhir_viewsets
 

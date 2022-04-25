@@ -1,7 +1,7 @@
 from api_fhir_r4.converters.contractConverter import ContractConverter
 from api_fhir_r4.serializers import BaseFHIRSerializer
 from contribution.gql_mutations import update_or_create_premium
-from policy.gql_mutations import update_or_create_policy
+from policy.services import PolicyService
 from policy.models import Policy
 import copy
 from api_fhir_r4.exceptions import FHIRException
@@ -24,7 +24,7 @@ class ContractSerializer(BaseFHIRSerializer):
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
 
-        new_policy = update_or_create_policy(copied_data, user)
+        new_policy = PolicyService(user).update_or_create(copied_data, user)
         # create contributions related to newly created policy
         if premiums:
             for premium in premiums:

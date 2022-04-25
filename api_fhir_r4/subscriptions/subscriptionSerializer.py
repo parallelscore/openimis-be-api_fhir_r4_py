@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError, APIException, PermissionD
 
 from api_fhir_r4.subscriptions import SubscriptionConverter
 from api_fhir_r4.models import Subscription
-from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiInvoicePermissions
+from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiInvoicePermissions, FHIRApiHealthServicePermissions
 from api_fhir_r4.serializers import BaseFHIRSerializer
 from api_fhir_r4.services import SubscriptionService
 
@@ -17,7 +17,9 @@ class SubscriptionSerializer(BaseFHIRSerializer):
 
     resource_permissions = {
         'patient': FHIRApiInsureePermissions.permissions_get,
-        'invoice': FHIRApiInvoicePermissions.permissions_get
+        'invoice': FHIRApiInvoicePermissions.permissions_get,
+        'bill': FHIRApiInvoicePermissions.permissions_get,
+        'organisation': FHIRApiHealthServicePermissions.permissions_get
     }
 
     def create(self, validated_data):
