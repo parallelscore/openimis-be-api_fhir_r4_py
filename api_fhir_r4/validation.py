@@ -1,5 +1,3 @@
-from django.core.exceptions import ValidationError
-
 from api_fhir_r4.models import Subscription
 from core.validation import BaseModelValidation
 

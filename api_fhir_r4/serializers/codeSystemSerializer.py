@@ -11,7 +11,7 @@ class CodeSystemSerializer(BaseFHIRSerializer):
         self.model = {}
 
         for field in self.codeSystemFields:
-            self.model[field] = kwargs.pop(field)
+            self.model[field] = kwargs.pop(field, None)
 
         if 'data' in kwargs:
             self.model['data'] = kwargs.pop('data')

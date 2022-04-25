@@ -1,6 +1,7 @@
 from copy import deepcopy
 
-
+from drf_spectacular.utils import inline_serializer
+from rest_framework import fields
 from rest_framework.exceptions import ValidationError, APIException, PermissionDenied
 
 from api_fhir_r4.subscriptions import SubscriptionConverter
@@ -64,3 +65,20 @@ class SubscriptionSerializer(BaseFHIRSerializer):
     def check_instance_id(self, instance, validated_data):
         if validated_data['id'] and str(instance.id) != validated_data['id']:
             raise APIException(self._error_while_saving % {'msg': 'Invalid ID in the payload'})
+
+
+class SubscriptionSerializerSchema(SubscriptionSerializer):
+    resourceType = fields.CharField(read_only=True)
+    id = fields.UUIDField(read_only=True)
+    status = fields.CharField()
+    end = fields.DateTimeField()
+    reason = fields.CharField()
+    criteria = fields.CharField()
+    channel = inline_serializer(
+        name='ChannelSerializer',
+        fields={
+            'type': fields.CharField(),
+            'endpoint': fields.CharField(),
+            'header': fields.ListField(child=fields.CharField(), min_length=0, max_length=1),
+        },
+    )
