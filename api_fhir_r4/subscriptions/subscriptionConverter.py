@@ -1,3 +1,4 @@
+import datetime
 from copy import deepcopy
 from urllib import parse
 
@@ -60,7 +61,8 @@ class SubscriptionConverter(BaseFHIRConverter):
 
     @classmethod
     def _build_fhir_end(cls, fhir_subscription, imis_subscription):
-        fhir_subscription['end'] = imis_subscription.expiring.astimezone()
+        date = imis_subscription.expiring.astimezone().isoformat()
+        fhir_subscription['end'] = date
 
     @classmethod
     def _build_fhir_reason(cls, fhir_subscription, imis_subscription):
@@ -122,7 +124,8 @@ class SubscriptionConverter(BaseFHIRConverter):
     @classmethod
     def _build_imis_end(cls, imis_subscription, fhir_subscription):
         if fhir_subscription.end:
-            imis_subscription['expiring'] = TimeUtils.str_iso_to_date(fhir_subscription.end)
+            imis_subscription['expiring'] = TimeUtils.str_iso_to_date(fhir_subscription.end).astimezone(
+                datetime.timezone.utc)
         else:
             raise FHIRException(cls._error_invalid_attr % {'attr': 'end'})
 
