@@ -16,13 +16,14 @@ class PractitionerRoleViewSet(BaseMultiserializerFHIRView,
                               modelViewset.MultiSerializerModelViewSet,
                               MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin):
     retrievers = [UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever]
-    permission_classes = (FHIRApiPractitionerPermissions,)
 
     @property
     def serializers(self):
         return {
-            ClaimAdminPractitionerRoleSerializer: (self._ca_queryset(), self._ca_serializer_validator),
-            EnrolmentOfficerPractitionerRoleSerializer: (self._eo_queryset(), self._eo_serializer_validator),
+            ClaimAdminPractitionerRoleSerializer:
+                (self._ca_queryset(), self._ca_serializer_validator, (FHIRApiPractitionerPermissions,)),
+            EnrolmentOfficerPractitionerRoleSerializer:
+                (self._eo_queryset(), self._eo_serializer_validator, (FHIRApiPractitionerPermissions,)),
         }
 
     @classmethod

@@ -17,15 +17,15 @@ class InvoiceViewSet(BaseMultiserializerFHIRView,
                      modelViewset.MultiSerializerModelViewSet,
                      MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin):
     retrievers = [UUIDIdentifierModelRetriever, DatabaseIdentifierModelRetriever, CodeIdentifierModelRetriever]
-    permission_classes = (FHIRApiInvoicePermissions,)
-
     lookup_field = 'identifier'
 
     @property
     def serializers(self):
         return {
-            InvoiceSerializer: (self._invoice_queryset(), self._invoice_serializer_validator),
-            BillSerializer: (self._bill_queryset(), self._bill_serializer_validator)
+            InvoiceSerializer:
+                (self._invoice_queryset(), self._invoice_serializer_validator, (FHIRApiInvoicePermissions,)),
+            BillSerializer:
+                (self._bill_queryset(), self._bill_serializer_validator, (FHIRApiInvoicePermissions,))
         }
 
     @classmethod
