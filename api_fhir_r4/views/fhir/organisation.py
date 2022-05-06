@@ -35,9 +35,12 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
     @property
     def serializers(self):
         return {
-            HealthFacilityOrganisationSerializer: (self._hf_queryset(), self._hf_serializer_validator),
-            PolicyHolderOrganisationSerializer: (self._ph_queryset(), self._ph_serializer_validator),
-            InsuranceOrganizationSerializer: (self._io_queryset(), self._io_serializer_validator),
+            HealthFacilityOrganisationSerializer:
+                (self._hf_queryset(), self._hf_serializer_validator, (FHIRApiOrganizationPermissions,)),
+            PolicyHolderOrganisationSerializer:
+                (self._ph_queryset(), self._ph_serializer_validator, (FHIRApiOrganizationPermissions,)),
+            InsuranceOrganizationSerializer:
+                (self._io_queryset(), self._io_serializer_validator, (FHIRApiOrganizationPermissions,)),
         }
 
     @classmethod
@@ -86,7 +89,7 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
         self._validate_list_model_request()
         filtered_querysets = {}  # {serialzer: qs}
 
-        for serializer, (qs, _) in self.get_eligible_serializers_iterator():
+        for serializer, (qs, _, _) in self.get_eligible_serializers_iterator():
             next_serializer_data = self.filter_queryset(qs)
             model = next_serializer_data.model
             filtered_querysets[model, serializer] = next_serializer_data
@@ -116,7 +119,7 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
     def retrieve(self, request, *args, **kwargs):
         self._validate_retrieve_model_request()
         retrieved = []
-        for serializer, (qs, _) in self.get_eligible_serializers_iterator():
+        for serializer, (qs, _, _) in self.get_eligible_serializers_iterator():
             if qs.model is not ModuleConfiguration:
                 ref_type, instance = self._get_object_with_first_valid_retriever(qs, kwargs['identifier'])
                 if instance:
