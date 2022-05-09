@@ -320,7 +320,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
     @classmethod
     def build_fhir_addresses(cls, fhir_patient, imis_insuree, reference_type):
         addresses = []
-        if imis_insuree.family and imis_insuree.family.address:
+        if imis_insuree.family and imis_insuree.family.location:
             family_address = cls._build_insuree_family_address(imis_insuree.family, reference_type)
             addresses.append(family_address)
 
@@ -348,12 +348,14 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def _build_or_validate_family_address(cls, imis_insuree, fhir_patient):
-        if not (family_location := cls.__build_imis_family_address(fhir_patient)):
+        if not (fhir_family_address := cls.__get_family_address_from_fhir_patient(fhir_patient)):
             return
 
         if not (family := cls.__get_family_from_fhir_patient_extension(fhir_patient)):
+            family_location = cls.__get_location_from_address(fhir_family_address)
             # Additional attribute for purpose of creating new family
-            imis_insuree.family_address = family_location
+            imis_insuree.family_location = family_location
+            imis_insuree.family_address = fhir_family_address.text
 
         # Temporary disabled, this type of check shouldn't be part of converter.
         # if family and family.location and (family.location.uuid != family_location.uuid):
@@ -677,18 +679,28 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def _build_insuree_family_address(cls, imis_insuree_family: Family, reference_type):
-        physical_location = imis_insuree_family.address
-        base_address = cls.__build_base_physical_address(physical_location, reference_type)
-        base_address.use = 'home'
-        return base_address
+        return cls.__build_address_of_use(
+            address_location=imis_insuree_family.location,
+            use='home',
+            location_text=imis_insuree_family.address,
+            reference_type=reference_type
+        )
 
     @classmethod
     def _build_insuree_address(cls, imis_insuree, reference_type):
-        physical_location = imis_insuree.current_village
-        base_address = cls.__build_base_physical_address(physical_location, reference_type)
-        base_address.use = 'temp'
-        if imis_insuree.current_address:
-            base_address.text = imis_insuree.current_address
+        return cls.__build_address_of_use(
+            address_location=imis_insuree.current_village,
+            use='temp',
+            location_text=imis_insuree.current_address,
+            reference_type=reference_type
+        )
+
+    @classmethod
+    def __build_address_of_use(cls, address_location: Location, use: str, location_text: str, reference_type):
+        base_address = cls.__build_base_physical_address(address_location, reference_type)
+        base_address.use = use
+        if location_text:
+            base_address.text = location_text
         return base_address
 
     @classmethod
