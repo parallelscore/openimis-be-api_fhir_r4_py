@@ -37,18 +37,18 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
     def _ca_serializer_validator(cls, context):
         return cls._base_request_validator_dispatcher(
             request=context['request'],
-            get_check=lambda x: cls._get_type_from_query(x) in ('prov', None),
-            post_check=lambda x: cls._get_type_from_body(x) == 'prov',
-            put_check=lambda x: cls._get_type_from_body(x) in ('prov', None),
+            get_check=lambda x: cls._get_type_from_query(x) in ('ca', None),
+            post_check=lambda x: cls._get_type_from_body(x) == 'ca',
+            put_check=lambda x: cls._get_type_from_body(x) in ('ca', None),
         )
 
     @classmethod
     def _eo_serializer_validator(cls, context):
         return cls._base_request_validator_dispatcher(
             request=context['request'],
-            get_check=lambda x: cls._get_type_from_query(x) in ('bus', None),
-            post_check=lambda x: cls._get_type_from_body(x) == 'bus',
-            put_check=lambda x: cls._get_type_from_body(x) in ('bus', None),
+            get_check=lambda x: cls._get_type_from_query(x) in ('eo', None),
+            post_check=lambda x: cls._get_type_from_body(x) == 'eo',
+            put_check=lambda x: cls._get_type_from_body(x) in ('eo', None),
         )
 
     @classmethod
@@ -81,12 +81,12 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
     @classmethod
     def _get_type_from_body(cls, request):
         try:
-            # See: http://hl7.org/fhir/R4/organization.html
-            return request.data['type'][0]['coding'][0]['code'].lower()
+            # See: http://hl7.org/fhir/R4/practitioner.html
+            return request.data['qualification'][0]['code']['coding'][0]['code'].lower()
         except KeyError:
             logger.exception(
                 "Failed to match IMIS practitioner type using request body. It should be accessible under"
-                "body.type[0].coding[0].code")
+                "body.qualification[0].code.coding[0].code")
             return None
 
     @classmethod
@@ -99,9 +99,8 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
     def _raise_no_eligible_serializer(self):
         raise AssertionError(
             "Failed to match serializer eligible for given request. "
-            "For POST request JSON should determine BUS/PROV type in body.type[0].coding[0].code")
+            "For POST request JSON should determine eo/ca type in body.type[0].coding[0].code")
 
     def _raise_multiple_eligible_serializers(self):
         raise AssertionError(
-            "Ambiguous request, more than one serializer is eligible for given action. "
-            "")
+            "Ambiguous request, more than one serializer is eligible for given action. ")

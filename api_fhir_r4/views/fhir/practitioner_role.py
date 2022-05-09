@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.request import Request
 
 from api_fhir_r4.mixins import MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin
@@ -10,6 +12,9 @@ from api_fhir_r4.views.fhir.base import BaseMultiserializerFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from claim.models import ClaimAdmin
 from core.models import Officer
+
+
+logger = logging.getLogger(__name__)
 
 
 class PractitionerRoleViewSet(BaseMultiserializerFHIRView,
@@ -30,18 +35,18 @@ class PractitionerRoleViewSet(BaseMultiserializerFHIRView,
     def _ca_serializer_validator(cls, context):
         return cls._base_request_validator_dispatcher(
             request=context['request'],
-            get_check=lambda x: cls._get_type_from_query(x) in ('prov', None),
-            post_check=lambda x: cls._get_type_from_body(x) == 'prov',
-            put_check=lambda x: cls._get_type_from_body(x) in ('prov', None),
+            get_check=lambda x: cls._get_type_from_query(x) in ('ca', None),
+            post_check=lambda x: cls._get_type_from_body(x) == 'ca',
+            put_check=lambda x: cls._get_type_from_body(x) in ('ca', None),
         )
 
     @classmethod
     def _eo_serializer_validator(cls, context):
         return cls._base_request_validator_dispatcher(
             request=context['request'],
-            get_check=lambda x: cls._get_type_from_query(x) in ('bus', None),
-            post_check=lambda x: cls._get_type_from_body(x) == 'bus',
-            put_check=lambda x: cls._get_type_from_body(x) in ('bus', None),
+            get_check=lambda x: cls._get_type_from_query(x) in ('eo', None),
+            post_check=lambda x: cls._get_type_from_body(x) == 'eo',
+            put_check=lambda x: cls._get_type_from_body(x) in ('eo', None),
         )
 
     @classmethod
@@ -74,9 +79,12 @@ class PractitionerRoleViewSet(BaseMultiserializerFHIRView,
     @classmethod
     def _get_type_from_body(cls, request):
         try:
-            # See: http://hl7.org/fhir/R4/organization.html
-            return request.data['type'][0]['coding'][0]['code'].lower()
+            # See: http://hl7.org/fhir/R4/practitionerRole.html
+            return request.data['code'][0]['coding'][0]['code'].lower()
         except KeyError:
+            logger.exception(
+                "Failed to match IMIS practitionerRole type using request body. It should be accessible under"
+                "body.code[0].coding[0].code")
             return None
 
     @classmethod

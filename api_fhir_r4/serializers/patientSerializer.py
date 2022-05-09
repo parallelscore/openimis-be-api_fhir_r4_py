@@ -23,7 +23,7 @@ class PatientSerializer(BaseFHIRSerializer):
             create_file(date=obj.photo.date, insuree_id=obj.id, photo_bin=obj.photo.photo)
 
         if copied_data['head']:
-            self._create_patient_family(obj, validated_data.get('family_address', None), copied_data['audit_user_id'])
+            self._create_patient_family(obj, validated_data)
         return obj
 
     def update(self, instance, validated_data):
@@ -49,11 +49,17 @@ class PatientSerializer(BaseFHIRSerializer):
     def _clean_data(self, validated_data):
         validated_data.pop('_state', None)
         validated_data.pop('family_address', None)
+        validated_data.pop('family_location', None)
         return validated_data
 
-    def _create_patient_family(self, obj, family_location, audit_user_id):
+    def _create_patient_family(self, obj, validated_data):
+        audit_user_id = validated_data['audit_user_id']
+        family_location = validated_data.get('family_location', None)
+        family_address = validated_data.get('family_address', None)
+
         obj.family = Family.objects.create(
             location=family_location,
+            address=family_address,
             head_insuree=obj,
             audit_user_id=audit_user_id
         )
