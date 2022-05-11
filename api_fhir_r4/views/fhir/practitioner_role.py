@@ -2,12 +2,23 @@ import logging
 
 from rest_framework.request import Request
 
-from api_fhir_r4.mixins import MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin
-from api_fhir_r4.model_retrievers import CodeIdentifierModelRetriever, UUIDIdentifierModelRetriever
+from api_fhir_r4.mixins import (
+    MultiIdentifierRetrieveManySerializersMixin,
+    MultiIdentifierRetrieverMixin
+)
+from api_fhir_r4.model_retrievers import (
+    CodeIdentifierModelRetriever,
+    UUIDIdentifierModelRetriever
+)
 from api_fhir_r4.multiserializer import modelViewset
-from api_fhir_r4.permissions import FHIRApiPractitionerPermissions
-from api_fhir_r4.serializers import ClaimAdminPractitionerRoleSerializer, \
+from api_fhir_r4.permissions import (
+    FHIRApiPractitionerPermissions,
+    FHIRApiPractitionerOfficerPermissions
+)
+from api_fhir_r4.serializers import (
+    ClaimAdminPractitionerRoleSerializer,
     EnrolmentOfficerPractitionerRoleSerializer
+)
 from api_fhir_r4.views.fhir.base import BaseMultiserializerFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from claim.models import ClaimAdmin
@@ -28,7 +39,7 @@ class PractitionerRoleViewSet(BaseMultiserializerFHIRView,
             ClaimAdminPractitionerRoleSerializer:
                 (self._ca_queryset(), self._ca_serializer_validator, (FHIRApiPractitionerPermissions,)),
             EnrolmentOfficerPractitionerRoleSerializer:
-                (self._eo_queryset(), self._eo_serializer_validator, (FHIRApiPractitionerPermissions,)),
+                (self._eo_queryset(), self._eo_serializer_validator, (FHIRApiPractitionerOfficerPermissions,)),
         }
 
     @classmethod
