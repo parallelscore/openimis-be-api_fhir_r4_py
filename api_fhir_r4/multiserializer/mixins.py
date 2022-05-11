@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.serializers import Serializer
 from rest_framework.exceptions import ValidationError, PermissionDenied
-from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.db.models.query import QuerySet
 from django.core.exceptions import ObjectDoesNotExist, FieldError
@@ -202,6 +201,74 @@ class MultiSerializerCreateModelMixin(GenericMultiSerializerViewsetMixin, ABC):
         self.validate_single_eligible_serializer()
 
 
+class _JoinedQuerysets:
+    def __init__(self, *qs):
+        self.querysets = qs
+
+    def __iter__(self):
+        return chain(self.querysets)
+
+    def __len__(self):
+        return sum([len(qs) for qs in self.querysets])
+
+    def __getitem__(self, k):
+        if not isinstance(k, (int, slice)):
+            raise TypeError
+
+        return self.__get_queryset_for_item(k)
+
+    def __get_queryset_for_item(self, k):
+        if isinstance(k, int):
+            return self.__get_queryset_for_index(k)
+        else:
+            # slice
+            if k.step:
+                raise ValidationError("Step not supported in joined queryset context.")
+            start, end = int(k.start) if k else None, int(k.stop) if k else None
+            intersection = [None, None]
+            final_query = []
+            if start:
+                start_qs, qs_idx = self.__get_queryset_for_index(start)
+                intersection[0] = self.querysets.index(start_qs) + 1
+                start_qs = start_qs.all()[:qs_idx]
+            if end:
+                end_qs, qs_idx = self.__get_queryset_for_index(end)
+                intersection[1] = self.querysets.index(end_qs)
+                end_qs = end_qs.all()[:qs_idx]
+
+            if start:
+                final_query.append(start_qs)
+
+            final_query.extend(self.querysets[intersection[0]:intersection[1]])
+
+            if end:
+                final_query.append(end_qs)
+
+            return list(chain(*final_query))
+
+    def __get_queryset_for_index(self, k):
+        """
+        Return queryset for which given index is relevant. If given index is out of range it raises IndexEr
+        Args:
+            k: index of element.
+
+        Returns:
+            Tuple of queryset and index k relative for given queryset
+
+        """
+        next_queryset_last_index = 0
+        for qs in self.querysets:
+            qs_len = qs.count()
+            next_queryset_last_index += qs_len
+            if k < next_queryset_last_index:
+                index_in_queryset = k - (next_queryset_last_index - qs_len)
+                return qs, index_in_queryset
+        raise IndexError
+
+    def count(self):
+        return sum([qs.count() for qs in self.querysets])
+
+
 class MultiSerializerListModelMixin(GenericMultiSerializerViewsetMixin, ABC):
     """
     List a queryset.
@@ -215,11 +282,20 @@ class MultiSerializerListModelMixin(GenericMultiSerializerViewsetMixin, ABC):
             model = next_serializer_data.model
             filtered_querysets[model, serializer] = next_serializer_data
 
-        page = self.paginate_queryset(list(chain(*filtered_querysets.values())))
-        data = self.__dispatch_page_data(page)
-        serialized_data = self._serialize_dispatched_data(data, dict(filtered_querysets.keys()))
-        data = self.get_paginated_response(serialized_data)
-        return data
+        if not filtered_querysets:
+            return {}
+
+        try:
+            querysets = self._join_querysets([*filtered_querysets.values()])
+            page = self.paginate_queryset(querysets)
+            data = self.__dispatch_page_data(page)
+            serialized_data = self._serialize_dispatched_data(data, dict(filtered_querysets.keys()))
+            data = self.get_paginated_response(serialized_data)
+            return data
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise e
 
     def _validate_list_model_request(self):
         # By default always valid
@@ -244,6 +320,17 @@ class MultiSerializerListModelMixin(GenericMultiSerializerViewsetMixin, ABC):
                 serialized.extend(serializer.data)
 
         return serialized
+
+    def _join_querysets(self, querysets: List[QuerySet]):
+        if len(querysets) == 0:
+            raise ValueError("At least one eligible queryset required.")
+        elif len(querysets) == 1:
+            return querysets[0]
+        else:
+            # Inefficient due to pulling every entry and not only paginated chunk
+            chained = _JoinedQuerysets(*querysets)
+            # Chain doesn't provide len, but it's required by paginator
+            return chained
 
 
 class MultiSerializerRetrieveModelMixin(GenericMultiSerializerViewsetMixin, ABC):
