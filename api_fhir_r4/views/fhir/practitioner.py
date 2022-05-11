@@ -2,11 +2,23 @@ import logging
 
 from rest_framework.request import Request
 
-from api_fhir_r4.mixins import MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin
-from api_fhir_r4.model_retrievers import UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever
+from api_fhir_r4.mixins import (
+    MultiIdentifierRetrieveManySerializersMixin,
+    MultiIdentifierRetrieverMixin
+)
+from api_fhir_r4.model_retrievers import (
+    UUIDIdentifierModelRetriever,
+    CodeIdentifierModelRetriever
+)
 from api_fhir_r4.multiserializer import modelViewset
-from api_fhir_r4.permissions import FHIRApiPractitionerPermissions
-from api_fhir_r4.serializers import ClaimAdminPractitionerSerializer, EnrolmentOfficerPractitionerSerializer
+from api_fhir_r4.permissions import (
+    FHIRApiPractitionerPermissions,
+    FHIRApiPractitionerOfficerPermissions
+)
+from api_fhir_r4.serializers import (
+    ClaimAdminPractitionerSerializer,
+    EnrolmentOfficerPractitionerSerializer
+)
 from api_fhir_r4.views.fhir.base import BaseMultiserializerFHIRView
 from api_fhir_r4.views.filters import ValidityFromRequestParameterFilter
 from claim.models import ClaimAdmin
@@ -20,7 +32,6 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
                           modelViewset.MultiSerializerModelViewSet,
                           MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin):
     retrievers = [UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever]
-    permission_classes = (FHIRApiPractitionerPermissions,)
 
     lookup_field = 'identifier'
 
@@ -30,7 +41,7 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
             ClaimAdminPractitionerSerializer:
                 (self._ca_queryset(), self._ca_serializer_validator, (FHIRApiPractitionerPermissions,)),
             EnrolmentOfficerPractitionerSerializer:
-                (self._eo_queryset(), self._eo_serializer_validator, (FHIRApiPractitionerPermissions,)),
+                (self._eo_queryset(), self._eo_serializer_validator, (FHIRApiPractitionerOfficerPermissions,)),
         }
 
     @classmethod
