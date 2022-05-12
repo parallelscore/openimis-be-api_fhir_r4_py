@@ -1,19 +1,21 @@
 from django.db.models.query import Q
 from django.utils.translation import gettext as _
+from fhir.resources.humanname import HumanName
+
 from insuree.models import Insuree, InsureePolicy, Family, FamilyType, ConfirmationType
 from policy.models import Policy
 from location.models import Location
 from api_fhir_r4.configurations import R4IdentifierConfig, GeneralConfiguration
-from api_fhir_r4.converters import BaseFHIRConverter, GroupConverterMixin, ReferenceConverterMixin
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 from api_fhir_r4.converters.locationConverter import LocationConverter
 from api_fhir_r4.mapping.groupMapping import GroupTypeMapping, ConfirmationTypeMapping
 from fhir.resources.extension import Extension
-from fhir.resources.group import Group
+from fhir.resources.group import Group, GroupMember
 from api_fhir_r4.utils import DbManagerUtils
 from api_fhir_r4.exceptions import FHIRException
 
 
-class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterMixin):
+class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def to_fhir_obj(cls, imis_family, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
@@ -29,7 +31,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         cls.build_fhir_active(fhir_family, imis_family)
         cls.build_fhir_quantity(fhir_family, imis_family)
         cls.build_fhir_name(fhir_family, imis_family)
-        cls.build_fhir_member(fhir_family, imis_family)
+        cls.build_fhir_member(fhir_family, imis_family, reference_type)
         return fhir_family
 
     @classmethod
@@ -139,8 +141,8 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
         fhir_family.active = True if number_of_active_policy > 0 else False
 
     @classmethod
-    def build_fhir_member(cls,fhir_family, imis_family):
-        fhir_family.member = cls.build_fhir_members(imis_family.uuid)
+    def build_fhir_member(cls,fhir_family, imis_family, reference_type):
+        fhir_family.member = cls.build_fhir_members(imis_family, reference_type)
 
     @classmethod
     def build_fhir_quantity(cls,fhir_family, imis_family):
@@ -278,6 +280,23 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 extension.extension.append(nested_extension)
 
     @classmethod
+    def build_fhir_names_for_person(cls, person_obj):
+        try:
+            return HumanName(**{
+                'use': 'usual',
+                'family': person_obj.last_name,
+                'given': [person_obj.other_names]
+            })
+        except AttributeError as e:
+            raise FHIRException([_('Missing `last_name` and `other_names` for IMIS object')]) from e
+
+    @classmethod
+    def build_fhir_members(cls, family, reference_type):
+        family_insurees =  family.members.all()
+        members = [cls._create_group_member(member, reference_type) for member in family_insurees]
+        return members
+
+    @classmethod
     def get_reference_obj_uuid(cls, imis_family: Family):
         return imis_family.uuid
 
@@ -323,3 +342,13 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin, GroupConverterM
                 raise FHIRException(
                     _('new Family without location')
                 )
+
+    @classmethod
+    def _create_group_member(cls, insuree, reference_type):
+        reference = cls.build_fhir_resource_reference(
+            insuree,
+            type='Patient',
+            display=insuree.chf_id,
+            reference_type=reference_type
+        )
+        return GroupMember(entity=reference)
