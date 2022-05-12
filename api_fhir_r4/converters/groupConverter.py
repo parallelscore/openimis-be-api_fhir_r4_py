@@ -56,6 +56,13 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return Group
 
     @classmethod
+    def build_fhir_pk(cls, fhir_obj, resource, reference_type: str = None):
+        if reference_type == ReferenceConverterMixin.CODE_REFERENCE_TYPE:
+            fhir_obj.id = resource.head_insuree.chf_id
+        else:
+            return super().build_fhir_pk(fhir_obj, resource, reference_type)
+
+    @classmethod
     def get_imis_obj_by_fhir_reference(cls, reference, errors=None):
         imis_family_uuid = cls.get_resource_id_from_reference(reference)
         return DbManagerUtils.get_object_or_none(Insuree, uuid=imis_family_uuid)
@@ -142,7 +149,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_member(cls,fhir_family, imis_family, reference_type):
-        fhir_family.member = cls.build_fhir_members(imis_family, reference_type)
+        fhir_family.member = cls.build_fhir_members(imis_family)
 
     @classmethod
     def build_fhir_quantity(cls,fhir_family, imis_family):
@@ -291,9 +298,9 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
             raise FHIRException([_('Missing `last_name` and `other_names` for IMIS object')]) from e
 
     @classmethod
-    def build_fhir_members(cls, family, reference_type):
+    def build_fhir_members(cls, family):
         family_insurees =  family.members.all()
-        members = [cls._create_group_member(member, reference_type) for member in family_insurees]
+        members = [cls._create_group_member(member) for member in family_insurees]
         return members
 
     @classmethod
@@ -344,11 +351,12 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
                 )
 
     @classmethod
-    def _create_group_member(cls, insuree, reference_type):
-        reference = cls.build_fhir_resource_reference(
+    def _create_group_member(cls, insuree):
+        # Due to circular dependency import has to be done inside of method
+        from api_fhir_r4.converters import PatientConverter
+        reference = PatientConverter.build_fhir_resource_reference(
             insuree,
             type='Patient',
-            display=insuree.chf_id,
-            reference_type=reference_type
+            display=insuree.chf_id
         )
         return GroupMember(entity=reference)
