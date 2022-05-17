@@ -23,7 +23,7 @@ class PaymentNoticeToFhirConverter(BaseFHIRConverter, ReferenceConverterMixin):
         cls.build_fhir_status(fhir_payment_notice, imis_payment)
         cls.build_fhir_created(fhir_payment_notice, imis_payment)
         cls.build_fhir_amount(fhir_payment_notice, imis_payment)
-        cls.build_fhir_payment(fhir_payment_notice, imis_payment, reference_type)
+        cls.build_fhir_payment(fhir_payment_notice, imis_payment)
         cls.build_fhir_recipient(fhir_payment_notice)
         fhir_payment_notice = PaymentNotice(**fhir_payment_notice)
         cls.build_fhir_pk(fhir_payment_notice, imis_payment, reference_type)
@@ -69,7 +69,7 @@ class PaymentNoticeToFhirConverter(BaseFHIRConverter, ReferenceConverterMixin):
         )
 
     @classmethod
-    def build_fhir_payment(cls, fhir_payment_notice, imis_payment, reference_type):
+    def build_fhir_payment(cls, fhir_payment_notice, imis_payment):
         json_ext = imis_payment.json_ext
         if json_ext:
             if 'reconciliation' in json_ext:
@@ -109,12 +109,12 @@ class PaymentNoticeToFhirConverter(BaseFHIRConverter, ReferenceConverterMixin):
         fhir_payment_notice["recipient"] = reference
 
     @classmethod
-    def get_reference_obj_uuid(cls, imis_payment_detail):
-        return imis_payment_detail.uuid
+    def get_reference_obj_uuid(cls, imis_payment):
+        return imis_payment.id
 
     @classmethod
-    def get_reference_obj_id(cls, imis_payment_detail):
-        return imis_payment_detail.uuid
+    def get_reference_obj_id(cls, imis_payment):
+        return imis_payment.id
 
     @classmethod
     def get_fhir_resource_type(cls):

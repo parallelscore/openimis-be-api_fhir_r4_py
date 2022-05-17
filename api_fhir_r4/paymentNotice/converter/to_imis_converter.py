@@ -27,16 +27,16 @@ SUBJECT_TYPE = ['bill', 'invoice']
 
 class PaymentNoticeToImisConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
-    def to_imis_obj(cls, fhir_payment_notice, data):
+    def to_imis_obj(cls, fhir_payment_notice, audit_user_id=None):
         errors = []
         fhir_payment_notice = PaymentNotice(**fhir_payment_notice)
         imis_payment = PaymentInvoice()
         imis_payment_detail = DetailPaymentInvoice()
-        cls.build_imis_payment_date_created(imis_payment, imis_payment_detail, fhir_payment_notice, errors)
+        cls.build_imis_payment_date_created(imis_payment, imis_payment_detail, fhir_payment_notice)
         cls.build_imis_payment_reconciliation_status(imis_payment, fhir_payment_notice, errors)
-        cls.build_imis_payment_amount(imis_payment, imis_payment_detail, fhir_payment_notice, errors)
-        cls.build_imis_payment_date_payment(imis_payment, fhir_payment_notice, errors)
-        cls.build_imis_payment_json_ext(imis_payment, fhir_payment_notice, errors)
+        cls.build_imis_payment_amount(imis_payment, imis_payment_detail, fhir_payment_notice)
+        cls.build_imis_payment_date_payment(imis_payment, fhir_payment_notice)
+        cls.build_imis_payment_json_ext(imis_payment, fhir_payment_notice)
         cls.build_imis_payment_detail_invoice(imis_payment_detail, fhir_payment_notice, errors)
         cls.build_imis_payment_detail_status(imis_payment_detail, fhir_payment_notice, errors)
         invoice_status = None
@@ -48,7 +48,7 @@ class PaymentNoticeToImisConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return imis_payment
 
     @classmethod
-    def build_imis_payment_date_created(cls, imis_payment, imis_payment_detail, fhir_payment_notice, errors):
+    def build_imis_payment_date_created(cls, imis_payment, imis_payment_detail, fhir_payment_notice):
         created = fhir_payment_notice.created
         imis_payment.date_created = created
         imis_payment.date_updated = created
@@ -85,7 +85,7 @@ class PaymentNoticeToImisConverter(BaseFHIRConverter, ReferenceConverterMixin):
             errors.append(ERROR_BAD_STATUS)
 
     @classmethod
-    def build_imis_payment_json_ext(cls, imis_payment, fhir_payment_notice, errors):
+    def build_imis_payment_json_ext(cls, imis_payment, fhir_payment_notice):
         # for saving PaymentReconciliation in json_ext
         reconciliation_id = cls.get_id_from_reference(fhir_payment_notice.payment)
         imis_payment.json_ext = {'reconciliation': {'id': reconciliation_id}}
@@ -105,12 +105,12 @@ class PaymentNoticeToImisConverter(BaseFHIRConverter, ReferenceConverterMixin):
         return ContentType.objects.get(model=subject_type)
 
     @classmethod
-    def build_imis_payment_amount(cls, imis_payment, imis_payment_detail, fhir_payment_notice, errors):
+    def build_imis_payment_amount(cls, imis_payment, imis_payment_detail, fhir_payment_notice):
         amount = fhir_payment_notice.amount.value
         imis_payment.amount_received = amount
         imis_payment_detail.amount = amount
 
     @classmethod
-    def build_imis_payment_date_payment(cls, imis_payment, fhir_payment_notice, errors):
+    def build_imis_payment_date_payment(cls, imis_payment, fhir_payment_notice):
         payment_date = fhir_payment_notice.paymentDate
         imis_payment.date_payment = payment_date
