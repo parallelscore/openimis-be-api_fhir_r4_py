@@ -1,6 +1,3 @@
-from fhir.resources.paymentnotice import PaymentNotice
-
-from api_fhir_r4.utils import TimeUtils
 from api_fhir_r4.tests import GenericTestMixin
 from invoice.models import (
     Invoice,
