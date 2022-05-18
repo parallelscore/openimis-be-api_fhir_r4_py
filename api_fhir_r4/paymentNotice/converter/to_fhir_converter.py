@@ -1,18 +1,17 @@
+from fhir.resources.reference import Reference
 from fhir.resources.paymentnotice import PaymentNotice
 
-from api_fhir_r4.defaultConfig import DEFAULT_CFG
-from api_fhir_r4.paymentNotice.mapping import (
-    PaymentNoticeStatusMapping,
-    PaymentNoticePaymentStatusMapping
-)
-
-from fhir.resources.reference import Reference
 from api_fhir_r4.configurations import (
     R4IdentifierConfig
 )
 from api_fhir_r4.converters import (
     BaseFHIRConverter,
     ReferenceConverterMixin
+)
+from api_fhir_r4.defaultConfig import DEFAULT_CFG
+from api_fhir_r4.paymentNotice.mapping import (
+    PaymentNoticeStatusMapping,
+    PaymentNoticePaymentStatusMapping
 )
 
 
@@ -45,10 +44,7 @@ class PaymentNoticeToFhirConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_status(cls, fhir_payment_notice, imis_payment):
-        imis_invoices = imis_payment.invoice_payments.all()
-        imis_invoice = None
-        for invoice in imis_invoices:
-            imis_invoice = invoice
+        imis_invoice = cls._fetch_invoice_related_to_payment(imis_payment)
         fhir_payment_notice['status'] = PaymentNoticeStatusMapping\
             .to_fhir_status[imis_invoice.status]
 
@@ -58,10 +54,7 @@ class PaymentNoticeToFhirConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_request(cls, fhir_payment_notice, imis_payment, reference_type):
-        imis_invoices = imis_payment.invoice_payments.all()
-        imis_invoice = None
-        for invoice in imis_invoices:
-            imis_invoice = invoice
+        imis_invoice = cls._fetch_invoice_related_to_payment(imis_payment)
         fhir_payment_notice.request = cls.build_fhir_resource_reference(
             imis_invoice.subject,
             type="Invoice",
@@ -119,3 +112,11 @@ class PaymentNoticeToFhirConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def get_fhir_resource_type(cls):
         return PaymentNotice
+
+    @classmethod
+    def _fetch_invoice_related_to_payment(cls, imis_payment):
+        imis_invoices = imis_payment.invoice_payments.all()
+        imis_invoice = None
+        for invoice in imis_invoices:
+            imis_invoice = invoice
+        return imis_invoice

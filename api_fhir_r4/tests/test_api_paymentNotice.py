@@ -6,7 +6,10 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 from api_fhir_r4.configurations import GeneralConfiguration
-from api_fhir_r4.tests import GenericFhirAPITestMixin
+from api_fhir_r4.tests import (
+    GenericFhirAPITestMixin,
+    FhirApiReadTestMixin
+)
 from api_fhir_r4.tests.mixin.logInMixin import LogInMixin
 from invoice.models import (
     Invoice,
@@ -16,7 +19,7 @@ from invoice.models import (
 from invoice.tests.helpers import create_test_invoice
 
 
-class PaymentNoticeAPITests(GenericFhirAPITestMixin, APITestCase, LogInMixin):
+class PaymentNoticeAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITestCase, LogInMixin):
 
     base_url = GeneralConfiguration.get_base_url()+'PaymentNotice/'
     _test_json_path = "/test/test_payment_notice.json"

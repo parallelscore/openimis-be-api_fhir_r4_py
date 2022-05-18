@@ -10,14 +10,14 @@ from api_fhir_r4.converters import (
     BaseFHIRConverter,
     ReferenceConverterMixin
 )
-from invoice.models import (
-    PaymentInvoice,
-    DetailPaymentInvoice
-)
 from api_fhir_r4.paymentNotice.mapping import (
     PaymentNoticeStatusMapping,
     PaymentNoticePaymentDetailStatusMapping,
     PaymentNoticePaymentStatusMapping
+)
+from invoice.models import (
+    PaymentInvoice,
+    DetailPaymentInvoice
 )
 
 PAYMENT_STATUS = ['cleared', 'paid']
