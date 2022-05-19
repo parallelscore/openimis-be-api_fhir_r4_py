@@ -19,15 +19,19 @@ class PaymentNoticeConverterTestCase(PaymentNoticeTestMixin, LogInMixin, Convert
     fhir_resource = PaymentNotice
     json_repr = 'test/test_payment_notice.json'
 
-    def test_to_fhir_obj(self):
-        user = self.get_or_create_user_api()
-        invoice = create_test_invoice(subject=None, thirdparty=None, user=None, **{
+    def create_dependencies(self, user):
+        invoice = create_test_invoice(subject=None, thirdparty=None, user=user, **{
             'id': 'bd84b2f2-ec1d-48de-8f8c-5a477aa4a29f',
             'amount_total': '10000.0',
             'amount_net': '10000.0',
             'user_created': user,
             'user_updated': user
         })
+        return invoice
+
+    def test_to_fhir_obj(self):
+        user = self.get_or_create_user_api()
+        invoice = self.create_dependencies(user)
         imis_payment, imis_payment_detail = self.create_test_imis_instance()
         imis_payment.save(username=user.username)
         imis_payment_detail.payment = imis_payment
@@ -39,13 +43,7 @@ class PaymentNoticeConverterTestCase(PaymentNoticeTestMixin, LogInMixin, Convert
 
     def test_to_imis_obj(self):
         user = self.get_or_create_user_api()
-        invoice = create_test_invoice(subject=None, thirdparty=None, user=user, **{
-            'id': 'bd84b2f2-ec1d-48de-8f8c-5a477aa4a29f',
-            'amount_total': '10000.0',
-            'amount_net': '10000.0',
-            'user_created': user,
-            'user_updated': user
-        })
+        invoice = self.create_dependencies(user)
         fhir_payment_notice = self.create_test_fhir_instance()
         imis_payment = PaymentNoticeConverter.to_imis_obj(fhir_payment_notice)
         imis_payment.save(username=user.username)
