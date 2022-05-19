@@ -256,6 +256,12 @@ class BaseFHIRConverter(ABC):
         quantity.value = value
         return quantity
 
+    @classmethod
+    def get_id_from_reference(cls, reference):
+        splited_reference_string = reference.reference.split('/')
+        id_from_reference = splited_reference_string.pop()
+        return id_from_reference
+
 
 from api_fhir_r4.converters.personConverterMixin import PersonConverterMixin
 from api_fhir_r4.converters.referenceConverterMixin import ReferenceConverterMixin
