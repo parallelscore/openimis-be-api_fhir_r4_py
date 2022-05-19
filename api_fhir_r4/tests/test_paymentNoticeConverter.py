@@ -39,7 +39,7 @@ class PaymentNoticeConverterTestCase(PaymentNoticeTestMixin, LogInMixin, Convert
 
     def test_to_imis_obj(self):
         user = self.get_or_create_user_api()
-        invoice = create_test_invoice(subject=None, thirdparty=None, user=None, **{
+        invoice = create_test_invoice(subject=None, thirdparty=None, user=user, **{
             'id': 'bd84b2f2-ec1d-48de-8f8c-5a477aa4a29f',
             'amount_total': '10000.0',
             'amount_net': '10000.0',

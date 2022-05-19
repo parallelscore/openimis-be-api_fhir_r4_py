@@ -36,7 +36,7 @@ class PaymentNoticeAPITests(GenericFhirAPITestMixin, FhirApiReadTestMixin, APITe
         self._user = self.get_or_create_user_api()
 
     def create_dependencies(self):
-        invoice = create_test_invoice(subject=None, thirdparty=None, user=None, **{
+        invoice = create_test_invoice(subject=None, thirdparty=None, user=self._user, **{
             'id': self._test_invoice_uuid,
             'amount_total': '10000.0',
             'amount_net': '10000.0',
