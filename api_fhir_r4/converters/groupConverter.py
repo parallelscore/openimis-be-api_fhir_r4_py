@@ -65,10 +65,10 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
     @classmethod
     def get_imis_obj_by_fhir_reference(cls, reference, errors=None):
         imis_family_uuid = cls.get_resource_id_from_reference(reference)
-        return DbManagerUtils.get_object_or_none(Insuree, uuid=imis_family_uuid)
+        return DbManagerUtils.get_object_or_none(Family, uuid=imis_family_uuid)
 
     @classmethod
-    def build_human_names(cls,fhir_family, imis_family):
+    def build_human_names(cls, fhir_family, imis_family):
         name = cls.build_fhir_names_for_person(imis_family)
         if type(fhir_family.head) is not list:
             fhir_family.head = [name]

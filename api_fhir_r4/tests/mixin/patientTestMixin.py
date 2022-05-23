@@ -223,27 +223,28 @@ class PatientTestMixin(GenericTestMixin):
 
         addresses = [family_address]
 
-        # insuree slice
-        current_address = PatientConverter.build_fhir_address(self._TEST_ADDRESS, "temp", "physical")
-        current_address.state = imis_location.parent.parent.parent.name
-        current_address.district = imis_location.parent.parent.name
-
-        # municipality extension
-        extension = Extension.construct()
-        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-municipality"
-        extension.valueString = imis_location.parent.name
-        current_address.extension = [extension]
-
-        # address location reference extension
-        extension = Extension.construct()
-        extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
-        reference_location = Reference.construct()
-        reference_location.reference = F"Location/{imis_location.uuid}"
-        extension.valueReference = reference_location
-        current_address.extension.append(extension)
-        current_address.city = imis_location.name
-
-        addresses.append(current_address)
+        # Commented out, as sinel addres extension is required
+        # # insuree slice
+        # current_address = PatientConverter.build_fhir_address(self._TEST_ADDRESS, "temp", "physical")
+        # current_address.state = imis_location.parent.parent.parent.name
+        # current_address.district = imis_location.parent.parent.name
+        #
+        # # municipality extension
+        # extension = Extension.construct()
+        # extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-municipality"
+        # extension.valueString = imis_location.parent.name
+        # current_address.extension = [extension]
+        #
+        # # address location reference extension
+        # extension = Extension.construct()
+        # extension.url = f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/address-location-reference"
+        # reference_location = Reference.construct()
+        # reference_location.reference = F"Location/{imis_location.uuid}"
+        # extension.valueReference = reference_location
+        # current_address.extension.append(extension)
+        # current_address.city = imis_location.name
+        #
+        # addresses.append(current_address)
         fhir_patient.address = addresses
 
         # test mocked_photo
