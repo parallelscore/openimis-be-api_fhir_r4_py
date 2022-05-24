@@ -294,13 +294,17 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
     def build_fhir_members(cls, family):
-        family_insurees =  family.members.all()
+        family_insurees = family.members.all()
         members = [cls._create_group_member(member) for member in family_insurees]
         return members
 
     @classmethod
     def get_reference_obj_uuid(cls, imis_family: Family):
         return imis_family.uuid
+
+    @classmethod
+    def get_reference_obj_code(cls, imis_family: Family):
+        return imis_family.head_insuree.chf_id
 
     # fhir validations
     @classmethod

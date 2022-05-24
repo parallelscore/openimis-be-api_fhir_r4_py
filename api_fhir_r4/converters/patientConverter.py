@@ -500,8 +500,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
 
     @classmethod
     def build_fhir_general_practitioner(cls, fhir_patient, imis_insuree, reference_type):
+        from api_fhir_r4.converters import HealthFacilityOrganisationConverter
         if imis_insuree.health_facility:
-            hf = cls.build_fhir_resource_reference(
+            hf = HealthFacilityOrganisationConverter.build_fhir_resource_reference(
                 imis_insuree.health_facility,
                 'Organization',
                 reference_type=reference_type
