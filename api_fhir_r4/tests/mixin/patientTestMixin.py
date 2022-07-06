@@ -223,7 +223,7 @@ class PatientTestMixin(GenericTestMixin):
 
         addresses = [family_address]
 
-        # Commented out, as sinel addres extension is required
+        # Commented out, as single address extension is required
         # # insuree slice
         # current_address = PatientConverter.build_fhir_address(self._TEST_ADDRESS, "temp", "physical")
         # current_address.state = imis_location.parent.parent.parent.name
