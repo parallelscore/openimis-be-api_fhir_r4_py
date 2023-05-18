@@ -1,24 +1,13 @@
 from rest_framework import status
 
-from api_fhir_r4.configurations import ModuleConfiguration
-from api_fhir_r4.utils import FunctionUtils
 from rest_framework.response import Response
 
 from rest_framework.views import exception_handler
 
 
 def call_default_exception_handler(exc, context):
-    response = None
-    handler = ModuleConfiguration.get_default_api_error_handler()
-    if handler:
-        # Call default exception handler which can be defined in separate IMIS handler
-        func = FunctionUtils.get_function_by_str(handler)
-        if func:
-            response = func(exc, context)
-    else:
-        # Call REST framework's default exception handler first, to get the standard error response.
-        response = exception_handler(exc, context)
-    return response
+    # Call REST framework's default exception handler first, to get the standard error response.
+    return exception_handler(exc, context)
 
 
 def fhir_api_exception_handler(exc, context):
