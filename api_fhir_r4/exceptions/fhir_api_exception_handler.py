@@ -1,13 +1,16 @@
 from rest_framework import status
-
 from rest_framework.response import Response
-
-from rest_framework.views import exception_handler
+from rest_framework import exceptions, status, views
 
 
 def call_default_exception_handler(exc, context):
     # Call REST framework's default exception handler first, to get the standard error response.
-    return exception_handler(exc, context)
+    response = views.exception_handler(exc, context)
+
+    if isinstance(exc, (exceptions.AuthenticationFailed, exceptions.NotAuthenticated)):
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return response
+    return response
 
 
 def fhir_api_exception_handler(exc, context):

@@ -1,9 +1,7 @@
 from api_fhir_r4.configurations import BaseConfiguration, GeneralConfiguration, R4ApiFhirConfig
-from django.conf import settings
 
 
 class ModuleConfiguration(BaseConfiguration):
-
     @classmethod
     def build_configuration(cls, cfg):
         GeneralConfiguration.build_configuration(cfg)
