@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError, APIException, PermissionD
 from api_fhir_r4.configurations import R4SubscriptionConfig
 from api_fhir_r4.subscriptions import SubscriptionConverter
 from api_fhir_r4.models import Subscription
-from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiInvoicePermissions, \
+from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiGroupPermissions, FHIRApiInvoicePermissions, \
     FHIRApiHealthServicePermissions
 from api_fhir_r4.serializers import BaseFHIRSerializer
 from api_fhir_r4.services import SubscriptionService
@@ -20,7 +20,11 @@ class SubscriptionSerializer(BaseFHIRSerializer):
     resource_permissions = {
         'patient': FHIRApiInsureePermissions.permissions_get,
         'invoice': FHIRApiInvoicePermissions.permissions_get,
-        'organisation': FHIRApiHealthServicePermissions.permissions_get
+        'organization': FHIRApiHealthServicePermissions.permissions_get,
+        'group': FHIRApiGroupPermissions.permissions_get,
+        'location': FHIRApiHealthServicePermissions.permissions_get
+
+
     }
 
     def create(self, validated_data):
@@ -38,7 +42,8 @@ class SubscriptionSerializer(BaseFHIRSerializer):
         self.check_object_owner(user, instance)
         self.check_resource_rights(user, validated_data)
         service = SubscriptionService(user)
-        copied_data = {key: value for key, value in deepcopy(validated_data).items() if value is not None}
+        copied_data = {key: value for key, value in deepcopy(
+            validated_data).items() if value is not None}
         copied_data['id'] = instance.id
         del copied_data['_state'], copied_data['_original_state']
         result = service.update(copied_data)
@@ -48,12 +53,15 @@ class SubscriptionSerializer(BaseFHIRSerializer):
         if result.get('success', False):
             return Subscription.objects.get(id=result['data']['id'])
         else:
-            raise APIException(self._error_while_saving % {'msg': result.get('message', 'Unknown')})
+            raise APIException(self._error_while_saving %
+                               {'msg': result.get('message', 'Unknown')})
 
     def check_resource_rights(self, user, data):
-        resource = data.get('criteria', {}).get(R4SubscriptionConfig.get_fhir_sub_criteria_key_resource(), '').lower()
+        resource = data.get('criteria', {}).get(
+            R4SubscriptionConfig.get_fhir_sub_criteria_key_resource(), '').lower()
         if not resource or resource not in self.resource_permissions:
-            raise ValidationError(self._error_while_saving % {'msg': f'Invalid resource ({resource})'})
+            raise ValidationError(self._error_while_saving %
+                                  {'msg': f'Invalid resource ({resource})'})
 
         if not user.has_perms(self.resource_permissions[resource]):
             raise PermissionDenied(
@@ -61,11 +69,13 @@ class SubscriptionSerializer(BaseFHIRSerializer):
 
     def check_object_owner(self, user, instance):
         if str(user.id).lower() != str(instance.user_created.id).lower():
-            raise APIException(self._error_while_saving % {'msg': 'You are not the owner of this subscription'})
+            raise APIException(self._error_while_saving % {
+                               'msg': 'You are not the owner of this subscription'})
 
     def check_instance_id(self, instance, validated_data):
         if validated_data['id'] and str(instance.id) != validated_data['id']:
-            raise APIException(self._error_while_saving % {'msg': 'Invalid ID in the payload'})
+            raise APIException(self._error_while_saving %
+                               {'msg': 'Invalid ID in the payload'})
 
 
 class SubscriptionSerializerSchema(SubscriptionSerializer):

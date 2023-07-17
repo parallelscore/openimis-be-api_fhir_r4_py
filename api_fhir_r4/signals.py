@@ -2,7 +2,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from api_fhir_r4.converters import PatientConverter, BillInvoiceConverter, InvoiceConverter, \
+from api_fhir_r4.converters import PatientConverter, GroupConverter, BillInvoiceConverter, InvoiceConverter, \
     HealthFacilityOrganisationConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
@@ -29,6 +29,17 @@ def bind_service_signals():
             bind_type=ServiceSignalBindType.AFTER
         )
 
+        def on_family_create_or_update(**kwargs):
+            model = kwargs.get('result', None)
+            if model:
+                notify_subscribers(model, GroupConverter(), 'Group', None)
+
+        bind_service_signal(
+            'family_service.create_or_update',
+            on_family_create_or_update,
+            bind_type=ServiceSignalBindType.AFTER
+        )
+
     if 'location' in imis_modules:
         def on_hf_create_or_update(**kwargs):
             model = kwargs.get('result', None)
@@ -41,6 +52,7 @@ def bind_service_signals():
             on_hf_create_or_update,
             bind_type=ServiceSignalBindType.AFTER
         )
+
     if 'invoice' in imis_modules:
         from invoice.models import Bill, Invoice
 
@@ -89,7 +101,7 @@ def notify_subscribers(model, converter, resource_name, resource_type_name):
         subscriptions = SubscriptionCriteriaFilter(model, resource_name,
                                                    resource_type_name).get_filtered_subscriptions()
         print(subscriptions)
-        return
+
         RestSubscriptionNotificationManager(
             converter).notify_subscribers_with_resource(model, subscriptions)
     except Exception as e:

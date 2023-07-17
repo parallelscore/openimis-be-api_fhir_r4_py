@@ -33,16 +33,17 @@ class SubscriptionCriteriaFilter:
 
             queryset = queryset.filter(**query_params)
 
-        if self.fhir_resource_type_name:
-            # previous
-            # queryset = queryset.filter(
-            #     ~Q(criteria__jsoncontainskey=R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type() | Q(
-            #         criteria__jsoncontains={
-            #             R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type(): self.fhir_resource_type_name})))
-            query_params = {
-                f"criteria__{R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type()}": self.fhir_resource_type_name}
-            queryset = queryset.filter(
-                ~Q(criteria__jsoncontainskey=R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type() | Q(**query_params)))
+        # if self.fhir_resource_type_name:
+        #     # previous
+        #     # queryset = queryset.filter(
+        #     #     ~Q(criteria__jsoncontainskey=R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type() | Q(
+        #     #         criteria__jsoncontains={
+        #     #             R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type(): self.fhir_resource_type_name})))
+        #     query_params = {
+        #         f"criteria__{R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type()}": self.fhir_resource_type_name}
+        #     # queryset = queryset.filter(
+        #     #     ~Q(criteria__jsoncontainskey=R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type() | Q(**query_params)))
+        #     queryset = queryset.filter(**query_params)
         return queryset.all()
 
     def _get_matching_subscriptions(self, subscriptions):
