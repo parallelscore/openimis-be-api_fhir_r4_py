@@ -33,7 +33,8 @@ def bind_service_signals():
         def on_hf_create_or_update(**kwargs):
             model = kwargs.get('result', None)
             if model:
-                notify_subscribers(model, HealthFacilityOrganisationConverter(), 'Organisation', 'bus')
+                notify_subscribers(
+                    model, HealthFacilityOrganisationConverter(), 'Organization', 'bus')
 
         bind_service_signal(
             'health_facility_service.update_or_create',
@@ -52,7 +53,8 @@ def bind_service_signals():
                     notify_subscribers(model, BillInvoiceConverter(), 'Invoice',
                                        BillTypeMapping.invoice_type[model.subject_type.model])
                 except ObjectDoesNotExist:
-                    logger.error(f'Bill returned from service does not exists ({model_uuid})')
+                    logger.error(
+                        f'Bill returned from service does not exists ({model_uuid})')
                     import traceback
                     logger.debug(traceback.format_exc())
 
@@ -65,7 +67,8 @@ def bind_service_signals():
                     notify_subscribers(model, InvoiceConverter(), 'Invoice',
                                        InvoiceTypeMapping.invoice_type[model.subject_type.model])
                 except ObjectDoesNotExist:
-                    logger.error(f'Invoice returned from service does not exists ({model_uuid})')
+                    logger.error(
+                        f'Invoice returned from service does not exists ({model_uuid})')
                     import traceback
                     logger.debug(traceback.format_exc())
 
@@ -85,7 +88,10 @@ def notify_subscribers(model, converter, resource_name, resource_type_name):
     try:
         subscriptions = SubscriptionCriteriaFilter(model, resource_name,
                                                    resource_type_name).get_filtered_subscriptions()
-        RestSubscriptionNotificationManager(converter).notify_subscribers_with_resource(model, subscriptions)
+        print(subscriptions)
+        return
+        RestSubscriptionNotificationManager(
+            converter).notify_subscribers_with_resource(model, subscriptions)
     except Exception as e:
         logger.error(f'Notifying subscribers failed: {e}')
         import traceback

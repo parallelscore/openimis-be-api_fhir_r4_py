@@ -15,8 +15,10 @@ import orjson
 from api_fhir_r4.models import Subscription
 
 NOTIFICATION_CONTENT_TYPE = TypeVar('NOTIFICATION_CONTENT_TYPE')  # FHIR INPUT
-CLIENT_ACCEPTABLE_CONTENT_TYPE = TypeVar('CLIENT_ACCEPTABLE_CONTENT_TYPE')  # CLIENT INPUT
-NOTIFICATION_OUTPUT_TYPE = TypeVar('NOTIFICATION_OUTPUT_TYPE')  # CLIENT RESPONSE
+CLIENT_ACCEPTABLE_CONTENT_TYPE = TypeVar(
+    'CLIENT_ACCEPTABLE_CONTENT_TYPE')  # CLIENT INPUT
+NOTIFICATION_OUTPUT_TYPE = TypeVar(
+    'NOTIFICATION_OUTPUT_TYPE')  # CLIENT RESPONSE
 
 logger = logging.getLogger('openIMIS')
 
@@ -43,7 +45,8 @@ class AbstractAsyncSubscriptionNotificationClient(
         async with aiohttp.ClientSession() as session:
             tasks = []
             for sub in subscribers:
-                task = asyncio.ensure_future(self._send_notification_async(payload, sub, session))
+                task = asyncio.ensure_future(
+                    self._send_notification_async(payload, sub, session))
                 tasks.append(task)
             result = await asyncio.gather(*tasks)
             return result
@@ -87,26 +90,29 @@ class SubscriberNotificationOutput:
 
 
 class RestSubscriptionNotificationClient(AbstractAsyncSubscriptionNotificationClient[
-                                RestNotificationContentType, Union[str, bytes], SubscriberNotificationOutput]):
+        RestNotificationContentType, Union[str, bytes], SubscriberNotificationOutput]):
     async def _send_notification_async(self, content: CLIENT_ACCEPTABLE_CONTENT_TYPE, subscriber: Subscription,
                                        client_session: aiohttp.ClientSession) -> NOTIFICATION_OUTPUT_TYPE:
         try:
             post_args = self._post_args(content, subscriber)
+
             async with client_session.post(**post_args) as post:
-                response = await post.json()
+                response = await post.json(content_type=None)
                 status = post.status
                 if status >= 400:
                     return SubscriberNotificationOutput(subscriber, False, response)
                 else:
                     return SubscriberNotificationOutput(subscriber, True, None)
         except Exception as e:
-            logger.error(F"Sending subscription notification has failed due to {e}")
+            logger.error(
+                F"Sending subscription notification has failed due to {e}")
             import traceback
             logger.debug(traceback.format_exc())
             return SubscriberNotificationOutput(subscriber, False, e)
 
     def _normalize_payload(self, payload: NOTIFICATION_CONTENT_TYPE) -> CLIENT_ACCEPTABLE_CONTENT_TYPE:
-        return payload if isinstance(payload, str) else self.__transform_payload(payload)
+        return payload if isinstance(
+            payload, str) else self.__transform_payload(payload)
 
     @property
     def _base_headers(self):
@@ -126,12 +132,16 @@ class RestSubscriptionNotificationClient(AbstractAsyncSubscriptionNotificationCl
 
     def _post_args(self, content, subscriber: Subscription):
         try:
-            subscriber_headers = json.loads(subscriber.headers)
+            header_list = subscriber.headers.split(": ")
+            # subscriber_headers = json.loads(subscriber.headers)
+            subscriber_headers = {header_list[0]: header_list[1]}
         except TypeError as e:
-            logger.debug(f"Notification failed due to invalid headers format: {subscriber.headers}.")
+            logger.debug(
+                f"Notification failed due to invalid headers format: {subscriber.headers}.")
             raise TypeError(f"Invalid format of headers for '{subscriber}'."
                             f" Headers should be provided as JSON string.") \
                 from e
+
         return {
             'headers': {**self._base_headers, **subscriber_headers},
             'url': subscriber.endpoint,

@@ -60,10 +60,10 @@ class RestSubscriptionNotificationManager:
     def __save_result_in_db(self, result: SubscriberNotificationOutput):
         new_entry = SubscriptionNotificationResult(
             subscription=result.subscription,
-            error=str(result.reason_of_failure) if result.reason_of_failure else None,
+            error=str(
+                result.reason_of_failure) if result.reason_of_failure else None,
             notified_successfully=result.notification_success,
             notification_time=core.datetimes.ad_datetime.AdDatetime.now()
         )
         new_entry.save()
         return new_entry
-

@@ -22,14 +22,27 @@ class SubscriptionCriteriaFilter:
     def _get_all_active_subscriptions(self):
         queryset = Subscription.objects.filter(status=Subscription.SubscriptionStatus.ACTIVE.value,
                                                expiring__gt=datetime.now(), is_deleted=False)
+
         if self.fhir_resource_name:
-            queryset = queryset.filter(criteria__jsoncontains={
-                R4SubscriptionConfig.get_fhir_sub_criteria_key_resource(): self.fhir_resource_name})
+
+            # Previous
+            # queryset = queryset.filter(criteria__jsoncontains={
+            #     R4SubscriptionConfig.get_fhir_sub_criteria_key_resource(): self.fhir_resource_name})
+            query_params = {
+                f"criteria__{R4SubscriptionConfig.get_fhir_sub_criteria_key_resource()}": self.fhir_resource_name}
+
+            queryset = queryset.filter(**query_params)
+
         if self.fhir_resource_type_name:
+            # previous
+            # queryset = queryset.filter(
+            #     ~Q(criteria__jsoncontainskey=R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type() | Q(
+            #         criteria__jsoncontains={
+            #             R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type(): self.fhir_resource_type_name})))
+            query_params = {
+                f"criteria__{R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type()}": self.fhir_resource_type_name}
             queryset = queryset.filter(
-                ~Q(criteria__jsoncontainskey=R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type() | Q(
-                    criteria__jsoncontains={
-                        R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type(): self.fhir_resource_type_name})))
+                ~Q(criteria__jsoncontainskey=R4SubscriptionConfig.get_fhir_sub_criteria_key_resource_type() | Q(**query_params)))
         return queryset.all()
 
     def _get_matching_subscriptions(self, subscriptions):
