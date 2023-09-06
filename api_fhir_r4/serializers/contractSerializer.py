@@ -18,15 +18,19 @@ class ContractSerializer(BaseFHIRSerializer):
         insurees = validated_data.pop('insurees')
         premiums = validated_data.pop('contributions')
 
-        if Policy.objects.filter(family_id=family).filter(start_date__range=[validated_data.get('effective_date'),validated_data.get('expiry_date')]).count() > 0:
+        if Policy.objects.filter(family_id=family).filter(start_date__range=[validated_data.get('effective_date'), validated_data.get('expiry_date')]).count() > 0:
             raise FHIRException('Contract exists for this patient')
 
         copied_data = copy.deepcopy(validated_data)
+
         del copied_data['_state']
-        #TODO should we implement a way to create a resource with a given uuid
+
+        # TODO should we implement a way to create a resource with a given uuid
         del copied_data['uuid']
 
         new_policy = PolicyService(user).update_or_create(copied_data, user)
+
+        # print(new_policy)
         # create contributions related to newly created policy
         if premiums:
             for premium in premiums:
@@ -35,11 +39,15 @@ class ContractSerializer(BaseFHIRSerializer):
                 premium['policy_uuid'] = new_policy.uuid
                 premium['policy_id'] = new_policy.id
                 premium['audit_user_id'] = copied_data['audit_user_id']
+                # Remove created_date since it is a timestamp
+                # del premium["created_date"]
+
                 premium = update_or_create_premium(premium, user)
+
                 new_policy = premium.policy
 
         return new_policy
-    
+
     def update(self, instance, validated_data):
         instance.save()
         return instance

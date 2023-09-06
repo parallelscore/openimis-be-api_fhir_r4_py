@@ -39,14 +39,43 @@ class GroupSerializer(BaseFHIRSerializer):
 
     def update(self, instance, validated_data):
         # TODO: This doesn't work
+        # request = self.context.get("request")
+        # user = request.user
+        # chf_id = validated_data.get('chf_id')
+
+        # print(chf_id)
+        # if Family.objects.filter(head_insuree_id=chf_id).count() == 0:
+        #     raise FHIRException(
+        #         'No family with following chfid `{}`'.format(chf_id))
+        # family = Family.objects.get(
+        #     head_insuree_id=chf_id, validity_to__isnull=True)
+        # validated_data["id"] = family.id
+        # validated_data["uuid"] = family.uuid
+        # del validated_data['_state']
+        # instance = FamilyService(user).create_or_update(validated_data)
+        # return instance
+
         request = self.context.get("request")
+
         user = request.user
-        chf_id = validated_data.get('chf_id')
-        if Family.objects.filter(head_insuree_id=chf_id).count() == 0:
-            raise FHIRException('No family with following chfid `{}`'.format(chf_id))
-        family = Family.objects.get(head_insuree_id=chf_id, validity_to__isnull=True)
+
+        head_insuree_id = validated_data.get('head_insuree_id')
+
+        print(validated_data)
+        if Family.objects.filter(head_insuree_id=head_insuree_id).count() == 0:
+            raise FHIRException(
+                'No family with following head insuree Id `{}`'.format(head_insuree_id))
+        family = Family.objects.get(
+            head_insuree_id=head_insuree_id, validity_to__isnull=True)
         validated_data["id"] = family.id
+
         validated_data["uuid"] = family.uuid
+
+        validated_data["head_insuree"] = Insuree.objects.get(
+            id=head_insuree_id, head=True).__dict__
+
         del validated_data['_state']
+
         instance = FamilyService(user).create_or_update(validated_data)
+
         return instance
