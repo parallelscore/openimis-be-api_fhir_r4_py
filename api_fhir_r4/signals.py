@@ -2,7 +2,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from api_fhir_r4.converters import PatientConverter, GroupConverter, BillInvoiceConverter, InvoiceConverter, \
+from api_fhir_r4.converters import PatientConverter, GroupConverter, BillInvoiceConverter, CoverageConverter, InvoiceConverter, \
     HealthFacilityOrganisationConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
@@ -95,13 +95,24 @@ def bind_service_signals():
             bind_type=ServiceSignalBindType.AFTER
         )
 
+    if 'policy' in imis_modules:
+        def on_policy_create_or_update(**kwargs):
+            model = kwargs.get('result', None)
+            if model:
+                notify_subscribers(
+                    model, CoverageConverter(), 'Coverage', None)
+
+        bind_service_signal(
+            'policy_service.create_or_update',
+            on_policy_create_or_update,
+            bind_type=ServiceSignalBindType.AFTER
+        )
+
 
 def notify_subscribers(model, converter, resource_name, resource_type_name):
     try:
         subscriptions = SubscriptionCriteriaFilter(model, resource_name,
                                                    resource_type_name).get_filtered_subscriptions()
-        print(subscriptions)
-
         RestSubscriptionNotificationManager(
             converter).notify_subscribers_with_resource(model, subscriptions)
     except Exception as e:
