@@ -105,6 +105,7 @@ def bind_service_signals():
         bind_service_signal(
             'policy_service.create_or_update',
             on_policy_create_or_update,
+
             bind_type=ServiceSignalBindType.AFTER
         )
 
