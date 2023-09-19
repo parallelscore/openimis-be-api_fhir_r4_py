@@ -8,7 +8,7 @@ from api_fhir_r4.configurations import R4SubscriptionConfig
 from api_fhir_r4.subscriptions import SubscriptionConverter
 from api_fhir_r4.models import Subscription
 from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiGroupPermissions, FHIRApiInvoicePermissions, \
-    FHIRApiHealthServicePermissions, FHIRApiCoverageRequestPermissions
+    FHIRApiHealthServicePermissions, FHIRApiCoverageRequestPermissions, FHIRApiClaimPermissions
 from api_fhir_r4.serializers import BaseFHIRSerializer
 from api_fhir_r4.services import SubscriptionService
 
@@ -23,7 +23,8 @@ class SubscriptionSerializer(BaseFHIRSerializer):
         'organization': FHIRApiHealthServicePermissions.permissions_get,
         'group': FHIRApiGroupPermissions.permissions_get,
         'location': FHIRApiHealthServicePermissions.permissions_get,
-        'coverage': FHIRApiCoverageRequestPermissions.permissions_get
+        'coverage': FHIRApiCoverageRequestPermissions.permissions_get,
+        'claim': FHIRApiClaimPermissions.permissions_get
     }
 
     def create(self, validated_data):
