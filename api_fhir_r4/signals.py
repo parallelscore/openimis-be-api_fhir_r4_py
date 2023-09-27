@@ -3,7 +3,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 
 from api_fhir_r4.converters import PatientConverter, GroupConverter, BillInvoiceConverter, CoverageConverter, ClaimConverter, InvoiceConverter, \
-    HealthFacilityOrganisationConverter
+    HealthFacilityOrganisationConverter, MedicationConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
 from api_fhir_r4.subscriptions.subscriptionCriteriaFilter import SubscriptionCriteriaFilter
@@ -110,6 +110,7 @@ def bind_service_signals():
         )
 
     if 'claim' in imis_modules:
+        # claim.enter_and_submit_claim
         def on_claim_enter_or_submit(**kwargs):
 
             model = kwargs.get('result', None)
@@ -125,7 +126,19 @@ def bind_service_signals():
             bind_type=ServiceSignalBindType.AFTER
         )
 
-        # claim.enter_and_submit_claim
+    if 'medical' in imis_modules:
+        def on_medication_create_or_update(**kwargs):
+            model = kwargs.get('result', None)
+            if model:
+                notify_subscribers(
+                    model, MedicationConverter(), 'Medication', None)
+
+        bind_service_signal(
+            'medication_service.create_or_update',
+            on_medication_create_or_update,
+
+            bind_type=ServiceSignalBindType.AFTER
+        )
 
 
 def notify_subscribers(model, converter, resource_name, resource_type_name):
