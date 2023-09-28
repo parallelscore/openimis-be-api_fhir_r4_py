@@ -3,7 +3,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 
 from api_fhir_r4.converters import PatientConverter, GroupConverter, BillInvoiceConverter, CoverageConverter, ClaimConverter, InvoiceConverter, \
-    HealthFacilityOrganisationConverter, MedicationConverter
+    HealthFacilityOrganisationConverter, MedicationConverter, ActivityDefinitionConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
 from api_fhir_r4.subscriptions.subscriptionCriteriaFilter import SubscriptionCriteriaFilter
@@ -127,15 +127,28 @@ def bind_service_signals():
         )
 
     if 'medical' in imis_modules:
-        def on_medication_create_or_update(**kwargs):
+        def on_medication_item_create_or_update(**kwargs):
             model = kwargs.get('result', None)
             if model:
                 notify_subscribers(
                     model, MedicationConverter(), 'Medication', None)
 
+        def on_medication_service_create_or_update(**kwargs):
+            model = kwargs.get('result', None)
+            if model:
+                notify_subscribers(
+                    model, ActivityDefinitionConverter(), 'ActivityDefinition', None)
+
+        bind_service_signal(
+            'medication_item.create_or_update',
+            on_medication_item_create_or_update,
+
+            bind_type=ServiceSignalBindType.AFTER
+        )
+
         bind_service_signal(
             'medication_service.create_or_update',
-            on_medication_create_or_update,
+            on_medication_service_create_or_update,
 
             bind_type=ServiceSignalBindType.AFTER
         )

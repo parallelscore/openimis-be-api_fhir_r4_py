@@ -8,7 +8,7 @@ from api_fhir_r4.configurations import R4SubscriptionConfig
 from api_fhir_r4.subscriptions import SubscriptionConverter
 from api_fhir_r4.models import Subscription
 from api_fhir_r4.permissions import FHIRApiInsureePermissions, FHIRApiGroupPermissions, FHIRApiInvoicePermissions, \
-    FHIRApiHealthServicePermissions, FHIRApiCoverageRequestPermissions, FHIRApiMedicationPermissions, FHIRApiClaimPermissions
+    FHIRApiHealthServicePermissions, FHIRApiCoverageRequestPermissions, FHIRApiMedicationPermissions, FHIRApiActivityDefinitionPermissions, FHIRApiClaimPermissions
 from api_fhir_r4.serializers import BaseFHIRSerializer
 from api_fhir_r4.services import SubscriptionService
 
@@ -25,7 +25,8 @@ class SubscriptionSerializer(BaseFHIRSerializer):
         'location': FHIRApiHealthServicePermissions.permissions_get,
         'coverage': FHIRApiCoverageRequestPermissions.permissions_get,
         'claim': FHIRApiClaimPermissions.permissions_get,
-        'medication': FHIRApiMedicationPermissions.permissions_get
+        'medication': FHIRApiMedicationPermissions.permissions_get,
+        'activitydefinition': FHIRApiActivityDefinitionPermissions.permissions_get
     }
 
     # Add test here

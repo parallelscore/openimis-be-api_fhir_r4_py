@@ -2,7 +2,7 @@ import copy
 import uuid
 
 from medical.models import Item
-from medical.services import MedicationService
+from medical.services import MedicationItemService
 from api_fhir_r4.converters import MedicationConverter
 from api_fhir_r4.exceptions import FHIRException
 from api_fhir_r4.serializers import BaseFHIRSerializer
@@ -28,7 +28,7 @@ class MedicationSerializer(BaseFHIRSerializer):
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
         # return Item.objects.create(**copied_data)
-        return MedicationService(user).create_or_update(copied_data)
+        return MedicationItemService(user).create_or_update(copied_data)
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
@@ -48,6 +48,4 @@ class MedicationSerializer(BaseFHIRSerializer):
             'patient_category', instance.patient_category)
         instance.audit_user_id = self.get_audit_user_id()
         # instance.save()
-        return MedicationService(user).create_or_update(instance.__dict__)
-
-        return instance
+        return MedicationItemService(user).create_or_update(instance.__dict__)
