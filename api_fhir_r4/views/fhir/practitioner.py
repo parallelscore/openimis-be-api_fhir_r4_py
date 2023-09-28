@@ -33,15 +33,18 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
                           MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin):
     retrievers = [UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever]
 
-    lookup_field = 'identifier'
+    # lookup_field = 'identifier'
+    lookup_field = 'uuid'
 
     @property
     def serializers(self):
         return {
             ClaimAdminPractitionerSerializer:
-                (self._ca_queryset(), self._ca_serializer_validator, (FHIRApiPractitionerPermissions,)),
+                (self._ca_queryset(), self._ca_serializer_validator,
+                 (FHIRApiPractitionerPermissions,)),
             EnrolmentOfficerPractitionerSerializer:
-                (self._eo_queryset(), self._eo_serializer_validator, (FHIRApiPractitionerOfficerPermissions,)),
+                (self._eo_queryset(), self._eo_serializer_validator,
+                 (FHIRApiPractitionerOfficerPermissions,)),
         }
 
     @classmethod
@@ -88,7 +91,8 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
         return ValidityFromRequestParameterFilter(self.request).filter_queryset(queryset)
 
     def _eo_queryset(self):
-        queryset = Officer.objects.filter(validity_to__isnull=True).order_by('validity_from').all()
+        queryset = Officer.objects.filter(
+            validity_to__isnull=True).order_by('validity_from').all()
         return ValidityFromRequestParameterFilter(self.request).filter_queryset(queryset)
 
     @classmethod

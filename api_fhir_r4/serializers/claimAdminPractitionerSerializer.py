@@ -20,15 +20,18 @@ class ClaimAdminPractitionerSerializer(BaseFHIRSerializer):
             validated_data['uuid'] = uuid.uuid4()
 
         if ClaimAdmin.objects.filter(code=code).count() > 0:
-            raise FHIRException('Exists practitioner with following code `{}`'.format(code))
+            raise FHIRException(
+                'Exists practitioner with following code `{}`'.format(code))
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
         return ClaimAdmin.objects.create(**copied_data)
 
     def update(self, instance, validated_data):
         instance.code = validated_data.get('code', instance.code)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.other_names = validated_data.get('other_names', instance.other_names)
+        instance.last_name = validated_data.get(
+            'last_name', instance.last_name)
+        instance.other_names = validated_data.get(
+            'other_names', instance.other_names)
         instance.dob = validated_data.get('dob', instance.dob)
         instance.phone = validated_data.get('phone', instance.phone)
         instance.email_id = validated_data.get('email_id', instance.email_id)
