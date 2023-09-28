@@ -2,7 +2,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from api_fhir_r4.converters import PatientConverter, GroupConverter, BillInvoiceConverter, CoverageConverter, ClaimConverter, InvoiceConverter, \
+from api_fhir_r4.converters import PatientConverter, GroupConverter, ClaimAdminPractitionerConverter, BillInvoiceConverter, CoverageConverter, ClaimConverter, InvoiceConverter, \
     HealthFacilityOrganisationConverter, MedicationConverter, ActivityDefinitionConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
@@ -122,6 +122,21 @@ def bind_service_signals():
         bind_service_signal(
             'claim.enter_and_submit_claim',
             on_claim_enter_or_submit,
+
+            bind_type=ServiceSignalBindType.AFTER
+        )
+
+        def on_claimadmin_created_or_updated(**kwargs):
+
+            model = kwargs.get('result', None)
+
+            if model:
+                notify_subscribers(
+                    model, ClaimAdminPractitionerConverter(), 'Practitioner', None)
+
+        bind_service_signal(
+            'claimadmin.create_or_update',
+            on_claimadmin_created_or_updated,
 
             bind_type=ServiceSignalBindType.AFTER
         )
