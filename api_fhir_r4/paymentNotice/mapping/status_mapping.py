@@ -13,10 +13,10 @@ class PaymentNoticeStatusMapping:
     _IMIS_CANCELLED = Invoice.Status.CANCELLED.value or 3
     _FHIR_CANCELLED = R4PaymentNoticeConfig.get_fhir_payment_notice_status_cancelled()
 
-    _IMIS_DRAFT = Invoice.Status.DRAFT.value or 4
+    _IMIS_DRAFT = Invoice.Status.DRAFT.value or 0
     _FHIR_DRAFT = R4PaymentNoticeConfig.get_fhir_payment_notice_status_draft()
 
-    _IMIS_ENTERED_IN_ERROR = Invoice.Status.DELETED.value
+    _IMIS_ENTERED_IN_ERROR = Invoice.Status.DELETED.value or 4
     _FHIR_ENTERED_IN_ERROR = R4PaymentNoticeConfig.get_fhir_payment_notice_status_entered_in_error()
 
     to_fhir_status = {
