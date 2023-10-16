@@ -83,10 +83,9 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
         if cls.valid_condition(members is None, _('Missing `member` attribute'), errors) \
                 or cls.valid_condition(members is None, _('Missing member should not be empty'), errors):
             return
-
         for member in members:
             cls._add_member_to_family(
-                imis_family, member.entity, imis_family.members_family)
+                imis_family, member.entity, imis_family.members_family, fhir_family)
 
     @classmethod
     def build_fhir_identifiers(cls, fhir_family, imis_family):
@@ -111,15 +110,23 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
         identifiers.append(head_id)
 
     @classmethod
-    def _add_member_to_family(cls, imis_family, reference, members_family):
+    def _add_member_to_family(cls, imis_family, reference, members_family, fhir_family):
         cls._validate_fhir_family_identifier_code(reference)
         insuree = cls._insuree_from_reference(reference)
-        if cls._insuree_has_family(insuree):
-            raise FHIRException(F"Insuree {insuree} already asigned to family")
 
-        if len(members_family) == 0:
+        # Head insuree should not be assigned to a family when a new Group
+        if fhir_family.id is None and cls._insuree_has_family(insuree):
+            raise FHIRException(
+                F"Insuree {insuree} already asigned to family")
+
+        if insuree.head:
             imis_family.head_insuree = insuree
-        members_family.append(imis_family.head_insuree)
+
+        members_family.append(insuree)
+
+        # if len(members_family) == 0:
+        #     imis_family.head_insuree = insuree
+        # members_family.append(imis_family.head_insuree)
 
     @classmethod
     def build_fhir_name(cls, fhir_family, imis_family):

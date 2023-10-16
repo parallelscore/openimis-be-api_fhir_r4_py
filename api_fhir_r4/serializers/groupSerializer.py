@@ -54,14 +54,12 @@ class GroupSerializer(BaseFHIRSerializer):
         # del validated_data['_state']
         # instance = FamilyService(user).create_or_update(validated_data)
         # return instance
-
         request = self.context.get("request")
 
         user = request.user
 
         head_insuree_id = validated_data.get('head_insuree_id')
 
-        print(validated_data)
         if Family.objects.filter(head_insuree_id=head_insuree_id).count() == 0:
             raise FHIRException(
                 'No family with following head insuree Id `{}`'.format(head_insuree_id))
