@@ -15,7 +15,7 @@ class MedicationSerializer(BaseFHIRSerializer):
         request = self.context.get("request")
         user = request.user
         code = validated_data.get('code')
-
+        
         if Item.objects.filter(code=code).count() > 0:
             raise FHIRException(
                 'Exists medical item with following code `{}`'.format(code))
@@ -27,8 +27,9 @@ class MedicationSerializer(BaseFHIRSerializer):
 
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
+        del copied_data['uuid']
         # return Item.objects.create(**copied_data)
-        return MedicationItemService(user).create_or_update(copied_data)
+        return MedicationItemService(user).create_or_update(copied_data, Item)
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
@@ -48,4 +49,4 @@ class MedicationSerializer(BaseFHIRSerializer):
             'patient_category', instance.patient_category)
         instance.audit_user_id = self.get_audit_user_id()
         # instance.save()
-        return MedicationItemService(user).create_or_update(instance.__dict__)
+        return MedicationItemService(user).create_or_update(instance.__dict__, Item)

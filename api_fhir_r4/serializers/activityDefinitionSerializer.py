@@ -22,8 +22,9 @@ class ActivityDefinitionSerializer(BaseFHIRSerializer):
 
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
+        del copied_data['uuid']
         # return Service.objects.create(**copied_data)
-        return MedicationServiceService(user).create_or_update(copied_data)
+        return MedicationServiceService(user).create_or_update(copied_data, Service)
 
     def update(self, instance, validated_data):
 
@@ -44,6 +45,6 @@ class ActivityDefinitionSerializer(BaseFHIRSerializer):
         # instance.save()
         instance.audit_user_id = self.get_audit_user_id()
 
-        return MedicationServiceService(user).create_or_update(instance.__dict__)
+        return MedicationServiceService(user).create_or_update(instance.__dict__, Service)
 
         # return instance
