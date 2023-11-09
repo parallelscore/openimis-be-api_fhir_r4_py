@@ -10,7 +10,9 @@ from api_fhir_r4.views import LoginView, fhir as fhir_viewsets
 
 imis_modules = openimis_apps()
 
+
 router = DefaultRouter()
+
 router.register(r'login', LoginView, basename="login")
 router.register(r'Subscription', fhir_viewsets.SubscriptionViewSet, basename='Subscription_R4')
 
@@ -118,4 +120,11 @@ urlpatterns = [
     path('docs/redoc/', SpectacularRedocView.as_view(url_name='docs'), name='redoc'),
 ]
 
-OrderedDict
+# Find and update the lookup regex for the 'Organization' URL pattern
+# for pattern in urlpatterns[0].url_patterns:
+#     print(pattern.__str__())
+    # if pattern.pattern == '^Organization/(?P<<lookup_field>>[^/.]+)/$':
+    #     pattern.lookup_str = f'{fhir_viewsets.OrganisationViewSet().lookup_field}/{pattern.lookup_str}'
+    #     break
+
+# OrderedDict

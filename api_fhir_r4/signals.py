@@ -3,7 +3,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 
 from api_fhir_r4.converters import PatientConverter, GroupConverter, ClaimAdminPractitionerConverter, BillInvoiceConverter, CoverageConverter, ClaimConverter, InvoiceConverter, \
-    HealthFacilityOrganisationConverter, MedicationConverter, ActivityDefinitionConverter
+    HealthFacilityOrganisationConverter, MedicationConverter, ActivityDefinitionConverter, LocationConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
 from api_fhir_r4.subscriptions.subscriptionCriteriaFilter import SubscriptionCriteriaFilter
@@ -46,10 +46,22 @@ def bind_service_signals():
             if model:
                 notify_subscribers(
                     model, HealthFacilityOrganisationConverter(), 'Organization', 'bus')
+            
+        def on_location_create_or_update(**kwargs):
+            model = kwargs.get('result', None)
+            if model:
+                notify_subscribers(
+                    model, LocationConverter(), 'Location', None)
 
         bind_service_signal(
             'health_facility_service.update_or_create',
             on_hf_create_or_update,
+            bind_type=ServiceSignalBindType.AFTER
+        )
+        
+        bind_service_signal(
+            'location_service.update_or_create',
+            on_location_create_or_update,
             bind_type=ServiceSignalBindType.AFTER
         )
 

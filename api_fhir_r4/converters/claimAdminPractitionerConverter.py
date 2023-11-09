@@ -1,11 +1,12 @@
 from claim.models import ClaimAdmin
 from django.utils.translation import gettext as _
-
+from location.models import HealthFacility
 from api_fhir_r4.configurations import GeneralConfiguration, R4IdentifierConfig
 from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from fhir.resources.extension import Extension
 from fhir.resources.practitioner import Practitioner, PractitionerQualification
 from api_fhir_r4.utils import TimeUtils, DbManagerUtils
+from api_fhir_r4.exceptions import FHIRException
 import logging
 logger = logging.getLogger('openIMIS')
 
@@ -32,6 +33,7 @@ class ClaimAdminPractitionerConverter(BaseFHIRConverter, PersonConverterMixin, R
         cls.build_imis_names(imis_claim_admin, fhir_practitioner)
         cls.build_imis_birth_date(imis_claim_admin, fhir_practitioner)
         cls.build_imis_contacts(imis_claim_admin, fhir_practitioner)
+        cls.build_imis_extension(imis_claim_admin, fhir_practitioner, errors)
         cls.check_errors(errors)
         return imis_claim_admin
 
@@ -146,3 +148,35 @@ class ClaimAdminPractitionerConverter(BaseFHIRConverter, PersonConverterMixin, R
             display=_("Claim Administrator")
         )
         fhir_practitioner.qualification = [qualification]
+
+    # fhir validations
+    @classmethod
+    def _validate_fhir_extension_is_exist(cls, fhir_practitioner):
+        if not fhir_practitioner.extension or len(fhir_practitioner.extension) == 0:
+            raise FHIRException(
+                _('Practitioner Organization reference with _refrence is required')
+            )
+            
+    @classmethod
+    def build_imis_extension(cls, imis_claim_admin, fhir_practitioner, errors):
+        cls._validate_fhir_extension_is_exist(fhir_practitioner)
+        for extension in fhir_practitioner.extension:
+            if extension.url == f"{GeneralConfiguration.get_system_base_url()}StructureDefinition/reference":
+                identifier_value = extension.valueReference.identifier.value
+                reference_display =  extension.valueReference.display
+                reference_code = extension.valueReference.reference.split("/")[1]
+                
+                if not (identifier_value == reference_display == reference_code):
+                    raise FHIRException(
+                _('Practitioner Organization code mismatched')
+                )
+              
+                health_facility = HealthFacility.objects \
+                    .filter(
+                        validity_to__isnull=True,
+                        code=extension.valueReference.identifier.value,
+                    ).first()
+                    
+                imis_claim_admin.health_facility = health_facility
+                    
+                cls.valid_condition(imis_claim_admin.health_facility is None, _('Invalid the organization code'), errors)

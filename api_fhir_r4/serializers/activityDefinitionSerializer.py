@@ -23,6 +23,8 @@ class ActivityDefinitionSerializer(BaseFHIRSerializer):
         copied_data = copy.deepcopy(validated_data)
         del copied_data['_state']
         del copied_data['uuid']
+        
+        copied_data["audit_user_id"] = self.get_audit_user_id()
         # return Service.objects.create(**copied_data)
         return MedicationServiceService(user).create_or_update(copied_data, Service)
 

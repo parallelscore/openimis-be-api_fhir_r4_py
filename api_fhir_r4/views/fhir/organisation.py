@@ -6,9 +6,10 @@ from django.http import Http404
 from itertools import chain
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework import viewsets
 
 from api_fhir_r4.defaultConfig import DEFAULT_CFG
-from api_fhir_r4.mixins import MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin
+from api_fhir_r4.mixins import MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin, MultiIdentifierUpdateMixin
 from api_fhir_r4.model_retrievers import (
     CodeIdentifierModelRetriever,
     DatabaseIdentifierModelRetriever,
@@ -41,9 +42,11 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
                           modelViewset.MultiSerializerModelViewSet,
                           MultiIdentifierRetrieveManySerializersMixin, MultiIdentifierRetrieverMixin):
     retrievers = [UUIDIdentifierModelRetriever, DatabaseIdentifierModelRetriever, CodeIdentifierModelRetriever]
-
-    lookup_field = 'identifier'
-
+    
+   
+    lookup_field = 'uuid'
+    # lookup_field = 'identifier'
+   
     @property
     def serializers(self):
         return {
@@ -62,7 +65,7 @@ class OrganisationViewSet(BaseMultiserializerFHIRView,
             get_check=lambda x: cls._get_type_from_query(x) in ('prov', None),
             post_check=lambda x: cls._get_type_from_body(x) == 'prov',
             put_check=lambda x: cls._get_type_from_body(x) in ('prov', None),
-        )
+        )       
 
     @classmethod
     def _ph_serializer_validator(cls, context):
