@@ -34,6 +34,7 @@ class PractitionerViewSet(BaseMultiserializerFHIRView,
     retrievers = [UUIDIdentifierModelRetriever, CodeIdentifierModelRetriever]
 
     # lookup_field = 'identifier'
+    #
     lookup_field = 'uuid'
 
     @property
