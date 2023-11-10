@@ -380,7 +380,6 @@ class MultiSerializerUpdateModelMixin(GenericMultiSerializerViewsetMixin, ABC):
 
     def _update_for_serializer(self, serializer, instance, data, partial, *args, **kwargs):
         context = self.get_serializer_context()  # Required for audit user id
-        print(context)
         serializer = serializer(instance, data=data, partial=partial, context=context, *args, **kwargs)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
