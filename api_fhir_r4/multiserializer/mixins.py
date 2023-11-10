@@ -84,6 +84,9 @@ class GenericMultiSerializerViewsetMixin(ABC):
     def get_eligible_serializers(self) -> List[Type[Serializer]]:
         eligible = []
         context = self.get_serializer_context()
+        
+        print("context")
+        print(context)
 
         eligible_from_permissions = self._get_eligible_from_user_permissions()
 
@@ -117,9 +120,12 @@ class GenericMultiSerializerViewsetMixin(ABC):
         )
 
         queryset = self.filter_queryset(qs)
-
         try:
             filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+            
+            if filter_kwargs[self.lookup_field]:
+                filter_kwargs[self.lookup_field] =  filter_kwargs[self.lookup_field].upper()
+            
             obj = queryset.get(**filter_kwargs)
             # May raise a permission denied
             self.check_object_permissions(self.request, obj)
@@ -367,6 +373,7 @@ class MultiSerializerUpdateModelMixin(GenericMultiSerializerViewsetMixin, ABC):
     def update(self, request, *args, **kwargs):
         self._validate_update_request()
         partial = kwargs.pop('partial', False)
+      
         results = []
         for serializer, (qs, _, _) in self.get_eligible_serializers_iterator():
             instance = self.get_object_by_queryset(qs=qs)
@@ -378,6 +385,7 @@ class MultiSerializerUpdateModelMixin(GenericMultiSerializerViewsetMixin, ABC):
 
     def _update_for_serializer(self, serializer, instance, data, partial, *args, **kwargs):
         context = self.get_serializer_context()  # Required for audit user id
+        print(context)
         serializer = serializer(instance, data=data, partial=partial, context=context, *args, **kwargs)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
