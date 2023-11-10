@@ -84,12 +84,8 @@ class GenericMultiSerializerViewsetMixin(ABC):
     def get_eligible_serializers(self) -> List[Type[Serializer]]:
         eligible = []
         context = self.get_serializer_context()
-        
-        print("context")
-        print(context)
 
         eligible_from_permissions = self._get_eligible_from_user_permissions()
-
         for serializer, (queryset, eligibility_validator, permission_class) in self.serializers.items():
             if eligibility_validator(context) and serializer in eligible_from_permissions:
                 eligible.append(serializer)
@@ -284,7 +280,6 @@ class MultiSerializerListModelMixin(GenericMultiSerializerViewsetMixin, ABC):
     def list(self, request, *args, **kwargs):
         self._validate_list_model_request()
         filtered_querysets = {}  # {serialzer: qs}
-
         for serializer, (qs, _, _) in self.get_eligible_serializers_iterator():
             next_serializer_data = self.filter_queryset(qs)
             model = next_serializer_data.model
